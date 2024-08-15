@@ -11,8 +11,81 @@ from PIL import ImageGrab, Image, ImageTk
 import json
 import tkinter as tk
 import threading
+import pytesseract
 
-import threading
+
+custom_config = r'--oem 3 --psm 6 outputbase digits'
+pytesseract.pytesseract.tesseract_cmd = 'C:\Program Files\Tesseract-OCR\\tesseract.exe'
+
+
+class Screenshot:
+    def __init__(self, screenshot, left_up, right_down):
+        self.screenshot = screenshot
+        self.left_up = left_up
+        self.right_down = right_down
+
+    def calculate_middle(self):
+        pass
+
+    def find_anti_bot(self):
+        cropped_image = Image.fromarray(self.screenshot)
+        # Now use pyautogui to locate the template in the cropped screenshot
+        try:
+            location = pyautogui.locate('bot_ochrana.png', cropped_image, confidence=0.72)
+            print(f'Object found at location: {location}')
+            # Bot check found, now defeat it
+            return self.defeat_anti_bot()
+
+        except pyautogui.ImageNotFoundException:
+            print('not found')
+            return None
+
+    def defeat_anti_bot(self):
+        options = list()
+
+        x1, y1 = 10, 80  # Top-left corner
+        x2, y2 = 190, 240  # Bottom-right corner
+        code_to_find = Screenshot(self.screenshot[y1:y2, x1:x2], (x1, y1), (x2, y2))
+        x1, y1 = 25, 70  # z lava, z hora
+        x2, y2 = 80, 90  # z prava, z dola
+        options.append(Screenshot(self.screenshot[y1:y2, x1:x2], (x1, y1), (x2, y2)))
+
+        x1, y1 = 100, 70  # z lava, z hora
+        x2, y2 = 150, 90  # z prava, z dola
+        options.append(Screenshot(self.screenshot[y1:y2, x1:x2], (x1, y1), (x2, y2)))
+
+        x1, y1 = 25, 100  # z lava, z hora
+        x2, y2 = 80, 120  # z prava, z dola
+        options.append(Screenshot(self.screenshot[y1:y2, x1:x2], (x1, y1), (x2, y2)))
+
+        x1, y1 = 100, 100  # z lava, z hora
+        x2, y2 = 150, 120  # z prava, z dola
+        options.append(Screenshot(self.screenshot[y1:y2, x1:x2], (x1, y1), (x2, y2)))
+
+        x1, y1 = 70, 130  # z lava, z hora
+        x2, y2 = 120, 150  # z prava, z dola
+        options.append(Screenshot(self.screenshot[y1:y2, x1:x2], (x1, y1), (x2, y2)))
+
+        extracted_text_code_to_find = pytesseract.image_to_string(code_to_find, config=custom_config)
+        code_to_find_number = extracted_text_code_to_find[:4]
+
+        for option in options:
+            resized_option = resize_image(option.screenshot)
+            extracted_text_option = pytesseract.image_to_string(resized_option, config=custom_config)
+            option_number = extracted_text_option[:4]
+
+            if option_number == code_to_find_number:
+                result_x1, result_y1 = option.left_up
+                result_x2, result_y2 = option.right_down
+
+                result_center_x = result_x1 + (result_x2 - result_x1) // 2
+                result_center_y = result_y1 + (result_y2 - result_y1) // 2
+
+                pos_x = result_center_x + 10
+                pos_y = result_center_y + 80
+
+                return pos_x, pos_y
+
 
 
 class ApplicationWindow:
@@ -24,7 +97,7 @@ class ApplicationWindow:
         self.root.geometry(f"{width}x{height}")
 
         # Create a label (as an example widget)
-        self.label = tk.Label(self.root, text="Hello, World!")
+        self.label = tk.Label(self.root, text="Metin2 bot :-)")
         self.label.pack(pady=20)
 
         # Create a button to start Metin location
@@ -34,10 +107,6 @@ class ApplicationWindow:
 
         self.image_label = None
         self.screenshot_img = None
-
-        # Display the screenshot at the bottom
-        if screenshot is not None:
-            self.display_screenshot(screenshot)
 
         self.metin = Metin()
 
@@ -113,6 +182,9 @@ class Metin:
         self.upper = None
         self.contour_low = 0
         self.contour_high = 0
+        self.pic_path = 'bot_ochrana.png'
+        self.template = cv2.imread('bot_ochrana.png', cv2.IMREAD_COLOR)
+        self.template_gray = cv2.cvtColor(self.template, cv2.COLOR_BGR2GRAY)
 
     def locate_metin(self, image):
         np_image = np.array(image)
@@ -121,7 +193,7 @@ class Metin:
         # Convert the image to HSV
         hsv = cv2.cvtColor(np_image, cv2.COLOR_BGR2HSV)
         mask = cv2.inRange(hsv, self.lower, self.upper)
-        masked_img = cv2.bitwise_and(np_image, np_image, mask=mask)
+        # masked_img = cv2.bitwise_and(np_image, np_image, mask=mask)
         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         selected_contour = None
         selected_contour_pos = None
@@ -145,6 +217,18 @@ class Metin:
             cv2.rectangle(np_image, (x, y), (x + w, y + h), (255, 0, 0), 2)  # Draw rectangle
 
         return selected_contour_pos, np_image
+
+    def look_for_bot_check(self):
+        pass
+
+
+def resize_image(image):
+    height, width = image.shape[:2]
+    new_width = int(width * 2)
+    new_height = int(height * 2)
+
+    # Resize the image
+    return cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_LINEAR)
 
 
 def get_window_screenshot(window):
