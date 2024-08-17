@@ -119,6 +119,12 @@ class ApplicationWindow:
         self.text_metin_hp_check = tk.Entry(self.root, width=50)
         self.text_metin_hp_check.pack(pady=5)
 
+        # Create a text entry field
+        self.entry_skills_check = tk.Label(self.root, text="Skills to activate:")
+        self.entry_skills_check.pack(pady=5)
+        self.text_skills_check = tk.Entry(self.root, width=50)
+        self.text_skills_check.pack(pady=5)
+
         # Create a dropdown (Combobox) to choose from specific values
         self.dropdown_label = tk.Label(self.root, text="Choose metin stone:")
         self.dropdown_label.pack(pady=5)
@@ -159,6 +165,7 @@ class ApplicationWindow:
         self.text_tesseract_path.insert(0, cfg['tesseract_path'])
         self.text_bot_check.insert(0, cfg['bot_test_img_path'])
         self.text_metin_hp_check.insert(0, cfg['metin_hp_img_path'])
+        self.text_skills_check.insert(0, cfg['skills_to_activate'])
 
     def apply_fields(self):
         pytesseract.pytesseract.tesseract_cmd = self.text_tesseract_path.get()
@@ -167,6 +174,7 @@ class ApplicationWindow:
         self.cfg['bot_test_img_path'] = self.text_bot_check.get()
         self.cfg['tesseract_path'] = self.text_tesseract_path.get()
         self.cfg['metin_hp_img_path'] = self.text_metin_hp_check.get()
+        self.cfg['skills_to_activate'] = self.text_skills_check.get()
 
         save_config(self.cfg, 'Config.json')
 
@@ -228,11 +236,13 @@ class ApplicationWindow:
             x_middle = (x2 - x1) // 2
             y_middle = (y2 - y1) // 2
             if self.metin.god_buff_cd == 0:
+                print('klik1')
                 self.metin.god_buff_cd = time.time()
                 pydirectinput.press('F9')
             else:
                 god_buff_timr_diff = time.time() - self.metin.god_buff_cd
-                if god_buff_timr_diff > 31:
+                if god_buff_timr_diff > 1860:
+                    print('klik2')
                     pydirectinput.press('F9')
             pydirectinput.press('F4')
             values = self.metin.locate_metin(np_image_crop, x_middle, y_middle)
