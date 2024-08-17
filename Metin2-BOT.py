@@ -273,7 +273,8 @@ class ApplicationWindow:
                             # 850, 60
                             x_to_cancel = self.metin.window_left + 850
                             y_to_cancel = self.metin.window_top + 60
-                            pyautogui.click(x_to_cancel, y_to_cancel)
+                            pyautogui.moveTo(x_to_cancel, y_to_cancel)
+                            pyautogui.click()
                             pydirectinput.press('a')
 
                     time.sleep(0.5)
