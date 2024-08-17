@@ -96,6 +96,11 @@ class ApplicationWindow:
                                                      command=self.start_metin_location_thread)
         self.start_metin_location_button.pack(pady=10)
 
+        # Create a button to stop Metin location
+        self.stop_metin_location_button = tk.Button(self.root, text="Stop Metin Location",
+                                                    command=self.stop_metin_location)
+        self.stop_metin_location_button.pack(pady=10)
+
         # Create a text entry field
         self.entry_tesseract_path = tk.Label(self.root, text="tesseract path:")
         self.entry_tesseract_path.pack(pady=5)
@@ -131,6 +136,8 @@ class ApplicationWindow:
         self.screenshot_img = None
 
         self.metin = None
+
+        self.running = False
 
         self.tesseract_path = ''
         self.metin_stones = []
@@ -184,8 +191,9 @@ class ApplicationWindow:
         self.root.after(0, update_image)
 
     def start_metin_location_thread(self):
-        # Start a new thread for the Metin location process
-        threading.Thread(target=self.start_metin_location, daemon=True).start()
+        if not self.running:  # Prevent starting multiple threads
+            self.running = True
+            threading.Thread(target=self.start_metin_location, daemon=True).start()
 
     def start_metin_location(self):
         window_title = "EmtGen"
@@ -198,7 +206,9 @@ class ApplicationWindow:
                 self.metin.contour_high = metin_config['contourHigh']
         self.metin.lower, self.metin.upper = create_low_upp(metin_mask)
 
-        while True:
+        target_pixel_value = np.array([187, 19, 19])
+
+        while self.running:
             metin_window = gw.getWindowsWithTitle(window_title)[0]
             screenshot = get_window_screenshot(metin_window)
 
@@ -211,11 +221,12 @@ class ApplicationWindow:
             # original: width: 1296, height: 1063
             x1, y1 = 259, 212  # z lava, z hora
             x2, y2 = 1036, 744  # z prava, z dola
-            x_middle = x2 - x1
-            y_middle = y2 - y1
 
             np_image = np.array(screenshot)
             np_image_crop = np_image[y1: y2, x1: x2]
+
+            x_middle = (x2 - x1) // 2
+            y_middle = (y2 - y1) // 2
 
             values = self.metin.locate_metin(np_image_crop, x_middle, y_middle)
             if values is not None:
@@ -234,13 +245,37 @@ class ApplicationWindow:
                     pyautogui.moveTo(metin_pos_x, metin_pos_y)
                     pyautogui.click()
                     self.metin.destroying_metin = True
+                    self.metin.metin_destroying_time = time.time()
+                    self.metin.metin_is_being_destroyed = False
                 else:
-                    print('nici sa metin')
+
                     x1, y1 = 432, 70  # z lava, z hore
                     x2, y2 = 450, 90  # z prava, z dola
                     hp_bar = np_image[y1: y2, x1: x2]
                     metin_is_alive = self.metin.locate_metin_hp(hp_bar, 0.7)
                     self.metin.destroying_metin = metin_is_alive
+                    print(f'nici sa metin {metin_is_alive}')
+                    pydirectinput.press('e')
+                    metin_destroy_time_diff = time.time() - self.metin.metin_destroying_time
+                    if metin_is_alive and metin_destroy_time_diff > 5 and not self.metin.metin_is_being_destroyed:
+                        x1, y1 = 832, 75  # z lava, z hore
+                        x2, y2 = 850, 85  # z prava, z dola
+                        red_hp = np_image[y1: y2, x1: x2]
+                        height, width, _ = red_hp.shape
+
+                        center_y = height // 2
+                        center_x = width // 2
+
+                        center_pixel = red_hp[center_y, center_x]
+
+                        if np.array_equal(center_pixel, target_pixel_value):
+                            print("The pixel value matches [187, 19, 19].")
+                            # 850, 60
+                            x_to_cancel = self.metin.window_left + 850
+                            y_to_cancel = self.metin.window_top + 60
+                            pyautogui.click(x_to_cancel, y_to_cancel)
+                            pydirectinput.press('a')
+
                     time.sleep(0.5)
                 if self.metin.solved_at is not None:
                     time_diff = time.time() - self.metin.solved_at
@@ -273,6 +308,9 @@ class ApplicationWindow:
         else:
             print('no antibot')
 
+    def stop_metin_location(self):
+        self.running = False
+
     def run(self):
         self.root.mainloop()
 
@@ -293,6 +331,8 @@ class Metin:
         self.metin_hp_img = metin_hp_img
         self.bot_img_path = bot_img_path
         self.destroying_metin = False
+        self.metin_destroying_time = 0
+        self.metin_is_being_destroyed = False
 
     def on_found(self):
         self.solving_bot_check = True
@@ -315,8 +355,14 @@ class Metin:
                 if self.contour_high > cv2.contourArea(contour) > self.contour_low:  # 900
                     x, y, w, h = cv2.boundingRect(contour)
                     cv2.rectangle(np_image, (x, y), (x + w, y + h), (0, 255, 0), 2)  # Draw rectangle
-                    cur_distance = abs(x_middle - contour[0][0][0]) + abs(
-                        y_middle - contour[0][0][1])
+
+                    contour_center_x = x + w // 2
+                    contour_center_y = y + h // 2
+
+                    # Draw a line from the middle of the screenshot to the center of the contour
+                    cv2.line(np_image, (x_middle, y_middle), (contour_center_x, contour_center_y), (255, 190, 200), 2)
+                    # Optionally, you can calculate the distance between the middle of the screenshot and the contour center
+                    cur_distance = abs(x_middle - contour_center_x) + abs(y_middle - contour_center_y)
                     if cur_distance < min_distance:
                         min_distance = cur_distance
                         selected_contour = contour
