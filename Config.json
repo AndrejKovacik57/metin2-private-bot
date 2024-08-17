@@ -1,32 +1,33 @@
 {
-  "tesseract_path": "C:\\Program Files\\Tesseract-OCR\\\\tesseract.exe",
-  "bot_test_img_path": "bot_ochrana2.png",
-  "metin_stones":[
-    {
-      "name": "Metin kralovske skeble",
-      "mask": {
-        "hMin": 0,
-        "sMin": 0,
-        "vMin": 0,
-        "hMax": 76,
-        "sMax": 117,
-        "vMax": 115
-      },
-      "contourLow": 2500,
-      "contourHigh": 7000
-    },
-    {
-      "name": "Kamen lesu",
-      "mask": {
-        "hMin": 38,
-        "sMin": 104,
-        "vMin": 51,
-        "hMax": 92,
-        "sMax": 255,
-        "vMax": 239
-      },
-      "contourLow": 800,
-      "contourHigh": 3000
-    }
-  ]
+    "tesseract_path": "C:\\Program Files\\Tesseract-OCR\\tesseract.exe",
+    "bot_test_img_path": "bot_ochrana2.png",
+    "metin_hp_img_path": "metin_hp.png",
+    "metin_stones": [
+        {
+            "name": "Metin kralovske skeble",
+            "mask": {
+                "hMin": 0,
+                "sMin": 0,
+                "vMin": 0,
+                "hMax": 76,
+                "sMax": 117,
+                "vMax": 115
+            },
+            "contourLow": 2500,
+            "contourHigh": 7000
+        },
+        {
+            "name": "Kamen lesu",
+            "mask": {
+                "hMin": 38,
+                "sMin": 104,
+                "vMin": 51,
+                "hMax": 92,
+                "sMax": 255,
+                "vMax": 239
+            },
+            "contourLow": 800,
+            "contourHigh": 3000
+        }
+    ]
 }

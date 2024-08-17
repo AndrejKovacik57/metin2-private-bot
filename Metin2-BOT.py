@@ -1,11 +1,7 @@
 import pyautogui
-# import pydirectinput
-# import autoit
-import keyboard
 import cv2
 import numpy as np
 import time
-import os
 import pygetwindow as gw
 from PIL import ImageGrab, Image, ImageTk
 import json
@@ -13,10 +9,9 @@ import tkinter as tk
 from tkinter import ttk
 import threading
 import pytesseract
-
+import pydirectinput
 
 custom_config = r'--oem 3 --psm 6 outputbase digits'
-
 
 
 class Screenshot:
@@ -26,11 +21,11 @@ class Screenshot:
         self.right_down = right_down
         self.on_found_callback = on_found_callback
 
-    def find_anti_bot(self):
+    def find_anti_bot(self, needle):
         # cropped_image = Image.fromarray(self.screenshot)
         # Now use pyautogui to locate the template in the cropped screenshot
         try:
-            location = pyautogui.locate('', self.screenshot, confidence=0.60)
+            location = pyautogui.locate(needle, self.screenshot, confidence=0.60)
         except pyautogui.ImageNotFoundException:
             print('not found')
             return None
@@ -96,20 +91,28 @@ class ApplicationWindow:
         # Set window size
         self.root.geometry(f"{width}x{height}")
 
-        # Create a label (as an example widget)
-        self.label = tk.Label(self.root, text="Metin2 bot :-)")
-        self.label.pack(pady=20)
-
         # Create a button to start Metin location
         self.start_metin_location_button = tk.Button(self.root, text="Start metin location",
                                                      command=self.start_metin_location_thread)
         self.start_metin_location_button.pack(pady=10)
 
         # Create a text entry field
-        self.entry_label = tk.Label(self.root, text="Enter something:")
-        self.entry_label.pack(pady=5)
-        self.text_entry = tk.Entry(self.root, width=50)
-        self.text_entry.pack(pady=5)
+        self.entry_tesseract_path = tk.Label(self.root, text="tesseract path:")
+        self.entry_tesseract_path.pack(pady=5)
+        self.text_tesseract_path = tk.Entry(self.root, width=50)
+        self.text_tesseract_path.pack(pady=5)
+
+        # Create a text entry field
+        self.entry_bot_check = tk.Label(self.root, text="bot check img:")
+        self.entry_bot_check.pack(pady=5)
+        self.text_bot_check = tk.Entry(self.root, width=50)
+        self.text_bot_check.pack(pady=5)
+
+        # Create a text entry field
+        self.entry_metin_hp_check = tk.Label(self.root, text="metin hp img:")
+        self.entry_metin_hp_check.pack(pady=5)
+        self.text_metin_hp_check = tk.Entry(self.root, width=50)
+        self.text_metin_hp_check.pack(pady=5)
 
         # Create a dropdown (Combobox) to choose from specific values
         self.dropdown_label = tk.Label(self.root, text="Choose metin stone:")
@@ -117,6 +120,12 @@ class ApplicationWindow:
         self.metin_options = ["Option 1", "Option 2", "Option 3", "Option 4"]  # Add your specific options here
         self.dropdown = ttk.Combobox(self.root, values=self.metin_options)
         self.dropdown.pack(pady=5)
+
+        # Create a button to start Metin location
+        self.apply = tk.Button(self.root, text="Apply", command=self.apply_fields)
+        self.apply.pack(pady=10)
+
+        self.cfg = {}
 
         self.image_label = None
         self.screenshot_img = None
@@ -129,18 +138,30 @@ class ApplicationWindow:
 
     def load_config_values(self):
         cfg = load_config('Config.json')
+        self.cfg = cfg
+
         pytesseract.pytesseract.tesseract_cmd = cfg['tesseract_path']
-        self.metin = Metin(cfg['bot_test_img_path'])
+        self.metin = Metin(cfg['bot_test_img_path'], cfg['metin_hp_img_path'])
         self.metin_stones = cfg['metin_stones']
         self.metin_options = [item['name'] for item in self.metin_stones]
 
         self.dropdown['values'] = self.metin_options
-
-        # Optionally, set the default value (if needed)
         if self.metin_options:
             self.dropdown.set(self.metin_options[0])
 
+        self.text_tesseract_path.insert(0, cfg['tesseract_path'])
+        self.text_bot_check.insert(0, cfg['bot_test_img_path'])
+        self.text_metin_hp_check.insert(0, cfg['metin_hp_img_path'])
 
+    def apply_fields(self):
+        pytesseract.pytesseract.tesseract_cmd = self.text_tesseract_path.get()
+        self.metin.bot_img_path = self.text_bot_check.get()
+
+        self.cfg['bot_test_img_path'] = self.text_bot_check.get()
+        self.cfg['tesseract_path'] = self.text_tesseract_path.get()
+        self.cfg['metin_hp_img_path'] = self.text_metin_hp_check.get()
+
+        save_config(self.cfg, 'Config.json')
 
     def display_screenshot(self, screenshot):
         # This method should only be called from the main thread
@@ -172,7 +193,7 @@ class ApplicationWindow:
         metin_mask = {}
         for metin_config in self.metin_stones:
             if metin_config['name'] == selected_value:
-                metin_mask = metin_config['mask']
+                metin_mask = metin_config
                 self.metin.contour_low = metin_config['contourLow']
                 self.metin.contour_high = metin_config['contourHigh']
         self.metin.lower, self.metin.upper = create_low_upp(metin_mask)
@@ -205,20 +226,33 @@ class ApplicationWindow:
                 self.display_screenshot(output_image)
                 metin_pos_x, metin_pos_y = selected_contour_pos
 
-                metin_pos_x += self.metin.window_left
-                metin_pos_y += self.metin.window_top
+                metin_pos_x += self.metin.window_left + x1
+                metin_pos_y += self.metin.window_top + y1
 
-                pyautogui.moveTo(metin_pos_x, metin_pos_y)
-
+                if not self.metin.destroying_metin:
+                    print('nenici sa metin')
+                    pyautogui.moveTo(metin_pos_x, metin_pos_y)
+                    pyautogui.click()
+                    self.metin.destroying_metin = True
+                else:
+                    print('nici sa metin')
+                    x1, y1 = 432, 70  # z lava, z hore
+                    x2, y2 = 450, 90  # z prava, z dola
+                    hp_bar = np_image[y1: y2, x1: x2]
+                    metin_is_alive = self.metin.locate_metin_hp(hp_bar, 0.7)
+                    self.metin.destroying_metin = metin_is_alive
+                    time.sleep(0.5)
                 if self.metin.solved_at is not None:
                     time_diff = time.time() - self.metin.solved_at
                     if time_diff > 30:
                         self.bot_solver()
+                        self.metin.solved_at = time.time()
                 else:
                     self.metin.solved_at = time.time()
                     self.bot_solver()
             else:
                 self.display_screenshot(np_image_crop)
+                pydirectinput.press('q')
                 print("No valid contour found.")
 
     def bot_solver(self):
@@ -244,7 +278,7 @@ class ApplicationWindow:
 
 
 class Metin:
-    def __init__(self, bot_img_path):
+    def __init__(self, bot_img_path, metin_hp_img):
         self.window_top = None
         self.window_left = None
         self.window_right = None
@@ -256,8 +290,9 @@ class Metin:
         self.solving_bot_check = False
         self.contour_low = 0
         self.contour_high = 0
-        self.template = cv2.imread(bot_img_path, cv2.IMREAD_COLOR)
-        self.template_gray = cv2.cvtColor(self.template, cv2.COLOR_BGR2GRAY)
+        self.metin_hp_img = metin_hp_img
+        self.bot_img_path = bot_img_path
+        self.destroying_metin = False
 
     def on_found(self):
         self.solving_bot_check = True
@@ -300,17 +335,27 @@ class Metin:
         x2, y2 = 190, 240  # Bottom-right corner
         cropped_image = np_image[y1:y2, x1:x2]
         screenshot = Screenshot(cropped_image, (10, 80), (190, 240), on_found_callback=self.on_found())
-        result = screenshot.find_anti_bot()
+        result = screenshot.find_anti_bot(self.bot_img_path)
         print(f'result = {result}')
         if result is not None:
             pos_x, pos_y = result
             to_click_x = pos_x + self.window_left
             to_click_y = pos_y + self.window_top
             pyautogui.moveTo(to_click_x, to_click_y)
+            pyautogui.click()
 
             return True
 
         return False
+
+    def locate_metin_hp(self, np_image, confidence=0.8):
+        location = None
+        try:
+            location = pyautogui.locate(self.metin_hp_img, np_image, confidence=confidence)
+        except pyautogui.ImageNotFoundException:
+            return False
+        if location is not None:
+            return True
 
 
 def resize_image(image):
@@ -335,6 +380,11 @@ def load_config(name):
     with open(name, 'r') as config:
         config_dict = json.load(config)
     return config_dict
+
+
+def save_config(config_dict, name):
+    with open(name, 'w') as config:
+        json.dump(config_dict, config, indent=4)
 
 
 def create_low_upp(metin_mask):
