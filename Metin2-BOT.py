@@ -227,7 +227,14 @@ class ApplicationWindow:
 
             x_middle = (x2 - x1) // 2
             y_middle = (y2 - y1) // 2
-
+            if self.metin.god_buff_cd == 0:
+                self.metin.god_buff_cd = time.time()
+                pydirectinput.press('F9')
+            else:
+                god_buff_timr_diff = time.time() - self.metin.god_buff_cd
+                if god_buff_timr_diff > 31:
+                    pydirectinput.press('F9')
+            pydirectinput.press('F4')
             values = self.metin.locate_metin(np_image_crop, x_middle, y_middle)
             if values is not None:
                 selected_contour_pos, output_image = values
@@ -241,6 +248,7 @@ class ApplicationWindow:
                 metin_pos_y += self.metin.window_top + y1
 
                 if not self.metin.destroying_metin:
+                    pydirectinput.press('z')
                     print('nenici sa metin')
                     pyautogui.moveTo(metin_pos_x, metin_pos_y)
                     pyautogui.click()
@@ -334,6 +342,7 @@ class Metin:
         self.destroying_metin = False
         self.metin_destroying_time = 0
         self.metin_is_being_destroyed = False
+        self.god_buff_cd = 0
 
     def on_found(self):
         self.solving_bot_check = True
