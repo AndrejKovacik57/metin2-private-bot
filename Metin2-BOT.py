@@ -154,7 +154,7 @@ class ApplicationWindow:
         self.cfg = cfg
 
         pytesseract.pytesseract.tesseract_cmd = cfg['tesseract_path']
-        self.metin = Metin(cfg['bot_test_img_path'], cfg['metin_hp_img_path'])
+        self.metin = Metin(cfg['bot_test_img_path'], cfg['metin_hp_img_path'], cfg['skills_to_activate'].split())
         self.metin_stones = cfg['metin_stones']
         self.metin_options = [item['name'] for item in self.metin_stones]
 
@@ -175,6 +175,8 @@ class ApplicationWindow:
         self.cfg['tesseract_path'] = self.text_tesseract_path.get()
         self.cfg['metin_hp_img_path'] = self.text_metin_hp_check.get()
         self.cfg['skills_to_activate'] = self.text_skills_check.get()
+
+        self.metin.skills_to_activate = self.cfg['skills_to_activate'].split()
 
         save_config(self.cfg, 'Config.json')
 
@@ -232,17 +234,26 @@ class ApplicationWindow:
 
             np_image = np.array(screenshot)
             np_image_crop = np_image[y1: y2, x1: x2]
-
             x_middle = (x2 - x1) // 2
             y_middle = (y2 - y1) // 2
+
+            if self.metin.skills_time == 0:
+                print('skill1')
+                self.metin.skills_time = time.time()
+                self.metin.activate_skills()
+            else:
+                skill_time = time.time() - self.metin.skills_time
+                if skill_time > 1860:
+                    print('skill2')
+                    self.metin.activate_skills()
             if self.metin.god_buff_cd == 0:
-                print('klik1')
+                print('god buff1')
                 self.metin.god_buff_cd = time.time()
                 pydirectinput.press('F9')
             else:
                 god_buff_timr_diff = time.time() - self.metin.god_buff_cd
                 if god_buff_timr_diff > 1860:
-                    print('klik2')
+                    print('god buff2')
                     pydirectinput.press('F9')
             pydirectinput.press('F4')
             values = self.metin.locate_metin(np_image_crop, x_middle, y_middle)
@@ -335,7 +346,7 @@ class ApplicationWindow:
 
 
 class Metin:
-    def __init__(self, bot_img_path, metin_hp_img):
+    def __init__(self, bot_img_path, metin_hp_img, skills_to_activate):
         self.window_top = None
         self.window_left = None
         self.window_right = None
@@ -353,6 +364,9 @@ class Metin:
         self.metin_destroying_time = 0
         self.metin_is_being_destroyed = False
         self.god_buff_cd = 0
+        self.skills_to_activate = skills_to_activate
+        self.skill_positions = {'1': 1, '2': 2, '3': 3, '4': 4, 'F1': 5, 'F2': 6, 'F3': 7, 'F4': 8}
+        self.skills_time = 0
 
     def on_found(self):
         self.solving_bot_check = True
@@ -422,6 +436,39 @@ class Metin:
             return False
         if location is not None:
             return True
+
+    def activate_skills(self):
+        x1, y1 = 568, 1020  # z lava, z hore
+        x2, y2 = 835, 1050  # z prava, z dola
+        max_attempts = 10
+        for skill_to_activate in self.skills_to_activate:
+            for counter in range(max_attempts):
+                print(f'---{skill_to_activate} try {counter}---')
+                skill_pos = self.skill_positions[skill_to_activate]
+                pixels = []
+                offset = 16 if skill_pos < 5 else 30 # 14 pixels between nums and Fs
+                skill_pixel_position = 32 * (skill_pos - 1) + offset
+                for _ in range(3):
+                    np_image = np.array(get_window_screenshot(self.metin_window))
+                    skills = np_image[y1: y2, x1: x2]
+                    pixel = skills[0, skill_pixel_position].tolist()
+                    if pixel not in pixels:
+                        pixels.append(pixel)
+                    time.sleep(0.1)
+                num_of_diff_pixels = len(pixels)
+                print(f'num_of_diff_pixels: {num_of_diff_pixels}')
+                if num_of_diff_pixels > 1:
+                    print('skill active')
+                    break
+                else:
+                    if counter > 1:
+                        # couldnt activate skill because character is on horse, we go down from mount
+                        pydirectinput.keyDown('ctrl')
+                        pydirectinput.press('g')
+                        pydirectinput.keyUp('ctrl')
+                    print('skill not active')
+                    pydirectinput.press(skill_to_activate)
+                    counter += 1
 
 
 def resize_image(image):
