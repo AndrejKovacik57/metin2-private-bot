@@ -249,13 +249,18 @@ class ApplicationWindow:
             if self.metin.god_buff_cd == 0:
                 print('god buff1')
                 self.metin.god_buff_cd = time.time()
+                self.metin.metin_window.activate()
                 pydirectinput.press('F9')
             else:
                 god_buff_timr_diff = time.time() - self.metin.god_buff_cd
                 if god_buff_timr_diff > 1860:
                     print('god buff2')
+                    self.metin.metin_window.activate()
                     pydirectinput.press('F9')
+
+            self.metin.metin_window.activate()
             pydirectinput.press('F4')
+
             values = self.metin.locate_metin(np_image_crop, x_middle, y_middle)
             if values is not None:
                 selected_contour_pos, output_image = values
@@ -269,10 +274,13 @@ class ApplicationWindow:
                 metin_pos_y += self.metin.window_top + y1
 
                 if not self.metin.destroying_metin:
+                    self.metin.metin_window.activate()
                     pydirectinput.press('z')
                     print('nenici sa metin')
+
                     pyautogui.moveTo(metin_pos_x, metin_pos_y)
                     pyautogui.click()
+
                     self.metin.destroying_metin = True
                     self.metin.metin_destroying_time = time.time()
                     self.metin.metin_is_being_destroyed = False
@@ -284,7 +292,10 @@ class ApplicationWindow:
                     metin_is_alive = self.metin.locate_metin_hp(hp_bar, 0.7)
                     self.metin.destroying_metin = metin_is_alive
                     print(f'nici sa metin {metin_is_alive}')
+
+                    self.metin.metin_window.activate()
                     pydirectinput.press('e')
+
                     metin_destroy_time_diff = time.time() - self.metin.metin_destroying_time
                     if metin_is_alive and metin_destroy_time_diff > 5 and not self.metin.metin_is_being_destroyed:
                         x1, y1 = 832, 75  # z lava, z hore
@@ -302,8 +313,11 @@ class ApplicationWindow:
                             # 850, 60
                             x_to_cancel = self.metin.window_left + 850
                             y_to_cancel = self.metin.window_top + 60
+
                             pyautogui.moveTo(x_to_cancel, y_to_cancel)
                             pyautogui.click()
+
+                            self.metin.metin_window.activate()
                             pydirectinput.press('a')
 
                     time.sleep(0.5)
@@ -316,6 +330,7 @@ class ApplicationWindow:
                         self.metin.solved_at = time.time()
             else:
                 self.display_screenshot(np_image_crop)
+                self.metin.metin_window.activate()
                 pydirectinput.press('q')
                 print("No valid contour found.")
 
@@ -447,7 +462,6 @@ class Metin:
         x1, y1 = 568, 1020  # z lava, z hore
         x2, y2 = 835, 1050  # z prava, z dola
         max_attempts = 10
-        went_down = False
         for skill_to_activate in self.skills_to_activate:
             for counter in range(max_attempts):
                 print(f'---{skill_to_activate} try {counter}---')
@@ -466,18 +480,20 @@ class Metin:
                 print(f'num_of_diff_pixels: {num_of_diff_pixels}')
                 if num_of_diff_pixels > 1:
                     print('skill active')
-                    if went_down:
-                        pydirectinput.keyDown('ctrl')
-                        pydirectinput.press('g')
-                        pydirectinput.keyUp('ctrl')
+                    # if went_down:
+                    self.metin_window.activate()
+                    pydirectinput.keyDown('ctrl')
+                    pydirectinput.press('g')
+                    pydirectinput.keyUp('ctrl')
                     break
                 else:
                     if counter > 1:
                         # couldnt activate skill because character is on horse, we go down from mount
+                        self.metin_window.activate()
                         pydirectinput.keyDown('ctrl')
                         pydirectinput.press('g')
                         pydirectinput.keyUp('ctrl')
-                        went_down = True
+                        # went_down = True
                     print('skill not active')
                     pydirectinput.press(skill_to_activate)
                     counter += 1
