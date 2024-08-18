@@ -440,17 +440,14 @@ class Metin:
     def activate_skills(self):
         x1, y1 = 568, 1020  # z lava, z hore
         x2, y2 = 835, 1050  # z prava, z dola
+        max_attempts = 10
         for skill_to_activate in self.skills_to_activate:
-            skill_activated = False
-            counter = 0
-            while not skill_activated:
+            for counter in range(max_attempts):
                 print(f'---{skill_to_activate} try {counter}---')
                 skill_pos = self.skill_positions[skill_to_activate]
                 pixels = []
-                if skill_pos < 5:
-                    skill_pixel_position = 32 * (skill_pos - 1) + 16
-                else:
-                    skill_pixel_position = 32 * (skill_pos - 1) + 30  # 14 pixels between nums and Fs
+                offset = 16 if skill_pos < 5 else 30  # 14 pixels between nums and Fs
+                skill_pixel_position = 32 * (skill_pos - 1) + offset
                 for _ in range(3):
                     np_image = np.array(get_window_screenshot(self.metin_window))
                     skills = np_image[y1: y2, x1: x2]
@@ -462,7 +459,7 @@ class Metin:
                 print(f'num_of_diff_pixels: {num_of_diff_pixels}')
                 if num_of_diff_pixels > 1:
                     print('skill active')
-                    skill_activated = True
+                    break
                 else:
                     if counter > 1:
                         # couldnt activate skill because character is on horse, we go down from mount
