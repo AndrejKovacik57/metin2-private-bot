@@ -129,7 +129,7 @@ class ApplicationWindow:
         self.dropdown_label = tk.Label(self.root, text="Choose metin stone:")
         self.dropdown_label.pack(pady=5)
         self.metin_options = ["Option 1", "Option 2", "Option 3", "Option 4"]  # Add your specific options here
-        self.dropdown = ttk.Combobox(self.root, values=self.metin_options)
+        self.dropdown = ttk.Combobox(self.root, values=self.metin_options, state="readonly")
         self.dropdown.pack(pady=5)
 
         # Create a button to start Metin location
@@ -307,14 +307,13 @@ class ApplicationWindow:
                             pydirectinput.press('a')
 
                     time.sleep(0.5)
-                if self.metin.solved_at is not None:
+                if self.metin.solved_at is not None and self.bot_solver():
                     time_diff = time.time() - self.metin.solved_at
                     if time_diff > 30:
-                        self.bot_solver()
                         self.metin.solved_at = time.time()
                 else:
-                    self.metin.solved_at = time.time()
-                    self.bot_solver()
+                    if self.bot_solver():
+                        self.metin.solved_at = time.time()
             else:
                 self.display_screenshot(np_image_crop)
                 pydirectinput.press('q')
@@ -335,10 +334,17 @@ class ApplicationWindow:
 
         if solved:
             print('solved')
+            return True
         else:
             print('no antibot')
+            return False
 
     def stop_metin_location(self):
+        self.metin.metin_destroying_time = 0
+        self.metin.god_buff_cd = 0
+        self.metin.skills_time = 0
+        self.metin.solved_at = 0
+        self.metin.solving_bot_check = False
         self.running = False
 
     def run(self):
@@ -354,7 +360,7 @@ class Metin:
         self.metin_window = None
         self.lower = None
         self.upper = None
-        self.solved_at = None
+        self.solved_at = 0
         self.solving_bot_check = False
         self.contour_low = 0
         self.contour_high = 0
