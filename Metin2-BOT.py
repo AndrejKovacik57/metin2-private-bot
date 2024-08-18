@@ -441,6 +441,7 @@ class Metin:
         x1, y1 = 568, 1020  # z lava, z hore
         x2, y2 = 835, 1050  # z prava, z dola
         max_attempts = 10
+        went_down = False
         for skill_to_activate in self.skills_to_activate:
             for counter in range(max_attempts):
                 print(f'---{skill_to_activate} try {counter}---')
@@ -459,6 +460,10 @@ class Metin:
                 print(f'num_of_diff_pixels: {num_of_diff_pixels}')
                 if num_of_diff_pixels > 1:
                     print('skill active')
+                    if went_down:
+                        pydirectinput.keyDown('ctrl')
+                        pydirectinput.press('g')
+                        pydirectinput.keyUp('ctrl')
                     break
                 else:
                     if counter > 1:
@@ -466,6 +471,7 @@ class Metin:
                         pydirectinput.keyDown('ctrl')
                         pydirectinput.press('g')
                         pydirectinput.keyUp('ctrl')
+                        went_down = True
                     print('skill not active')
                     pydirectinput.press(skill_to_activate)
                     counter += 1
