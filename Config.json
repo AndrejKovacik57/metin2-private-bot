@@ -7,12 +7,12 @@
         {
             "name": "Metin kralovske skeble",
             "mask": {
-                "hMin": 0,
+                "hMin": 66,
                 "sMin": 0,
                 "vMin": 0,
-                "hMax": 76,
-                "sMax": 117,
-                "vMax": 115
+                "hMax": 98,
+                "sMax": 255,
+                "vMax": 67
             },
             "contourLow": 2500,
             "contourHigh": 7000

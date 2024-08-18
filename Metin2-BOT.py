@@ -243,7 +243,7 @@ class ApplicationWindow:
                 self.metin.activate_skills()
             else:
                 skill_time = time.time() - self.metin.skills_time
-                if skill_time > 1860:
+                if skill_time > 300:
                     print('skill2')
                     self.metin.activate_skills()
             if self.metin.god_buff_cd == 0:
@@ -252,8 +252,8 @@ class ApplicationWindow:
                 self.metin.metin_window.activate()
                 pydirectinput.press('F9')
             else:
-                god_buff_timr_diff = time.time() - self.metin.god_buff_cd
-                if god_buff_timr_diff > 1860:
+                god_buff_timer_diff = time.time() - self.metin.god_buff_cd
+                if god_buff_timer_diff > 180:
                     print('god buff2')
                     self.metin.metin_window.activate()
                     pydirectinput.press('F9')
@@ -333,6 +333,8 @@ class ApplicationWindow:
                 self.metin.metin_window.activate()
                 pydirectinput.press('q')
                 print("No valid contour found.")
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
 
     def bot_solver(self):
         window_title = "EmtGen"
@@ -393,11 +395,10 @@ class Metin:
         self.solving_bot_check = True
 
     def locate_metin(self, np_image, x_middle, y_middle):
-        # Convert the image from RGB (PIL format) to BGR (OpenCV format)
-        np_image = cv2.cvtColor(np_image, cv2.COLOR_RGB2BGR)
         # Convert the image to HSV
         hsv = cv2.cvtColor(np_image, cv2.COLOR_BGR2HSV)
         mask = cv2.inRange(hsv, self.lower, self.upper)
+        np_image_masked = cv2.bitwise_and(np_image, np_image, mask=mask)
         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         selected_contour = None
@@ -409,13 +410,13 @@ class Metin:
             for contour in contours:
                 if self.contour_high > cv2.contourArea(contour) > self.contour_low:  # 900
                     x, y, w, h = cv2.boundingRect(contour)
-                    cv2.rectangle(np_image, (x, y), (x + w, y + h), (0, 255, 0), 2)  # Draw rectangle
+                    cv2.rectangle(np_image_masked, (x, y), (x + w, y + h), (0, 255, 0), 2)  # Draw rectangle
 
                     contour_center_x = x + w // 2
                     contour_center_y = y + h // 2
 
                     # Draw a line from the middle of the screenshot to the center of the contour
-                    cv2.line(np_image, (x_middle, y_middle), (contour_center_x, contour_center_y), (255, 190, 200), 2)
+                    cv2.line(np_image_masked, (x_middle, y_middle), (contour_center_x, contour_center_y), (255, 190, 200), 2)
                     # Optionally, you can calculate the distance between the middle of the screenshot and the contour center
                     cur_distance = abs(x_middle - contour_center_x) + abs(y_middle - contour_center_y)
                     if cur_distance < min_distance:
@@ -425,10 +426,12 @@ class Metin:
         if selected_contour is not None:
             x, y, w, h = cv2.boundingRect(selected_contour)
             selected_contour_pos = (x + w / 2, y + h / 2)
-            cv2.rectangle(np_image, (x, y), (x + w, y + h), (255, 0, 0), 2)  # Draw rectangle
+            cv2.rectangle(np_image_masked, (x, y), (x + w, y + h), (255, 0, 0), 2)  # Draw rectangle
+
+        cv2.imshow('image', np_image_masked)
         if selected_contour_pos is None:
             return None
-        return selected_contour_pos, np_image
+        return selected_contour_pos, np_image_masked
 
     def look_for_bot_check(self, image):
         np_image = np.array(image)
