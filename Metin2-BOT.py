@@ -237,15 +237,15 @@ class ApplicationWindow:
             x_middle = (x2 - x1) // 2
             y_middle = (y2 - y1) // 2
 
-            # if self.metin.skills_time == 0:
-            #     print('skill1')
-            #     self.metin.skills_time = time.time()
-            #     self.metin.activate_skills()
-            # else:
-            #     skill_time = time.time() - self.metin.skills_time
-            #     if skill_time > 1860:
-            #         print('skill2')
-            #         self.metin.activate_skills()
+            if self.metin.skills_time == 0:
+                print('skill1')
+                self.metin.skills_time = time.time()
+                self.metin.activate_skills()
+            else:
+                skill_time = time.time() - self.metin.skills_time
+                if skill_time > 1860:
+                    print('skill2')
+                    self.metin.activate_skills()
             if self.metin.god_buff_cd == 0:
                 print('god buff1')
                 self.metin.god_buff_cd = time.time()
