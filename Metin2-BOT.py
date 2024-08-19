@@ -10,7 +10,10 @@ from tkinter import ttk
 import threading
 import pytesseract
 import pydirectinput
+import keyboard
 
+
+window_title = "EmtGen"
 custom_config = r'--oem 3 --psm 6 outputbase digits'
 
 
@@ -206,7 +209,7 @@ class ApplicationWindow:
             threading.Thread(target=self.start_metin_location, daemon=True).start()
 
     def start_metin_location(self):
-        window_title = "EmtGen"
+
         selected_value = self.dropdown.get()
         metin_mask = {}
         for metin_config in self.metin_stones:
@@ -217,13 +220,11 @@ class ApplicationWindow:
         self.metin.lower, self.metin.upper = create_low_upp(metin_mask)
 
         target_pixel_value = np.array([187, 19, 19])
-
         while self.running:
             metin_window = gw.getWindowsWithTitle(window_title)[0]
             screenshot = get_window_screenshot(metin_window)
-
-            self.metin.window_top = metin_window.left
-            self.metin.window_left = metin_window.top
+            self.metin.window_left = metin_window.left
+            self.metin.window_top = metin_window.top
             self.metin.window_right = metin_window.right
             self.metin.window_bottom = metin_window.bottom
             self.metin.metin_window = metin_window
@@ -236,7 +237,6 @@ class ApplicationWindow:
             np_image_crop = np_image[y1: y2, x1: x2]
             x_middle = (x2 - x1) // 2
             y_middle = (y2 - y1) // 2
-
             if self.metin.skills_time == 0:
                 print('skill1')
                 self.metin.skills_time = time.time()
@@ -244,28 +244,32 @@ class ApplicationWindow:
             else:
                 skill_time = time.time() - self.metin.skills_time
                 if skill_time > 300:
-                    print('skill2')
+                    print(f'skill2 {skill_time}')
                     self.metin.activate_skills()
+                    self.metin.skills_time = time.time()
             if self.metin.god_buff_cd == 0:
                 print('god buff1')
                 self.metin.god_buff_cd = time.time()
-                self.metin.metin_window.activate()
-                pydirectinput.press('F9')
+                press_button('F9')
+
             else:
                 god_buff_timer_diff = time.time() - self.metin.god_buff_cd
-                if god_buff_timer_diff > 180:
-                    print('god buff2')
-                    self.metin.metin_window.activate()
-                    pydirectinput.press('F9')
+                if god_buff_timer_diff > 300:
+                    print(f'god buff2 {god_buff_timer_diff }')
+                    press_button('F9')
+                    self.metin.god_buff_cd = time.time()
 
-            self.metin.metin_window.activate()
-            pydirectinput.press('F4')
+            if self.metin.solved_at is not None:
+                time_diff = time.time() - self.metin.solved_at
+                if time_diff > 180:
+                    self.bot_solver()
+                    self.metin.solved_at = time.time()
+            else:
+                if self.bot_solver():
+                    self.metin.solved_at = time.time()
 
-            values = self.metin.locate_metin(np_image_crop, x_middle, y_middle)
-            if values is not None:
-                selected_contour_pos, output_image = values
-                # Convert the OpenCV image (output_image) to a PIL image before displaying it
-                output_image = Image.fromarray(cv2.cvtColor(output_image, cv2.COLOR_BGR2RGB))
+            selected_contour_pos, output_image = self.metin.locate_metin(np_image_crop, x_middle, y_middle)
+            if selected_contour_pos is not None:
                 # Display the screenshot using the main thread
                 self.display_screenshot(output_image)
                 metin_pos_x, metin_pos_y = selected_contour_pos
@@ -274,12 +278,10 @@ class ApplicationWindow:
                 metin_pos_y += self.metin.window_top + y1
 
                 if not self.metin.destroying_metin:
-                    self.metin.metin_window.activate()
-                    pydirectinput.press('z')
+                    press_button('z')
                     print('nenici sa metin')
 
-                    pyautogui.moveTo(metin_pos_x, metin_pos_y)
-                    pyautogui.click()
+                    mouse_click(metin_pos_x, metin_pos_y)
 
                     self.metin.destroying_metin = True
                     self.metin.metin_destroying_time = time.time()
@@ -292,9 +294,11 @@ class ApplicationWindow:
                     metin_is_alive = self.metin.locate_metin_hp(hp_bar, 0.7)
                     self.metin.destroying_metin = metin_is_alive
                     print(f'nici sa metin {metin_is_alive}')
+                    if not metin_is_alive:
+                        continue
 
-                    self.metin.metin_window.activate()
-                    pydirectinput.press('e')
+                    press_button('q')
+                    press_button('F4')
 
                     metin_destroy_time_diff = time.time() - self.metin.metin_destroying_time
                     if metin_is_alive and metin_destroy_time_diff > 5 and not self.metin.metin_is_being_destroyed:
@@ -314,28 +318,17 @@ class ApplicationWindow:
                             x_to_cancel = self.metin.window_left + 850
                             y_to_cancel = self.metin.window_top + 60
 
-                            pyautogui.moveTo(x_to_cancel, y_to_cancel)
-                            pyautogui.click()
+                            mouse_click(x_to_cancel, y_to_cancel)
+                            press_button('a')
 
-                            self.metin.metin_window.activate()
-                            pydirectinput.press('a')
-
-                    time.sleep(0.5)
-                if self.metin.solved_at is not None and self.bot_solver():
-                    time_diff = time.time() - self.metin.solved_at
-                    if time_diff > 30:
-                        self.metin.solved_at = time.time()
-                else:
-                    if self.bot_solver():
-                        self.metin.solved_at = time.time()
             else:
-                self.display_screenshot(np_image_crop)
-                self.metin.metin_window.activate()
-                pydirectinput.press('q')
+                self.display_screenshot(output_image)
+                press_button('q')
+                press_button('z')
                 print("No valid contour found.")
 
+
     def bot_solver(self):
-        window_title = "EmtGen"
         metin_window = gw.getWindowsWithTitle(window_title)[0]
         screenshot = get_window_screenshot(metin_window)
 
@@ -396,7 +389,6 @@ class Metin:
         # Convert the image to HSV
         hsv = cv2.cvtColor(np_image, cv2.COLOR_BGR2HSV)
         mask = cv2.inRange(hsv, self.lower, self.upper)
-        np_image_masked = cv2.bitwise_and(np_image, np_image, mask=mask)
         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         selected_contour = None
@@ -427,7 +419,7 @@ class Metin:
             cv2.rectangle(np_image, (x, y), (x + w, y + h), (255, 0, 0), 2)  # Draw rectangle
 
         if selected_contour_pos is None:
-            return None
+            return None, np_image
         return selected_contour_pos, np_image
 
     def look_for_bot_check(self, image):
@@ -440,17 +432,15 @@ class Metin:
         print(f'result = {result}')
         if result is not None:
             pos_x, pos_y = result
-            to_click_x = pos_x + self.window_left
-            to_click_y = pos_y + self.window_top
-            pyautogui.moveTo(to_click_x, to_click_y)
-            pyautogui.click()
+            to_click_x = pos_x + self.window_top
+            to_click_y = pos_y + self.window_left
+            mouse_click(to_click_x, to_click_y)
 
             return True
 
         return False
 
     def locate_metin_hp(self, np_image, confidence=0.8):
-        location = None
         try:
             location = pyautogui.locate(self.metin_hp_img, np_image, confidence=confidence)
         except pyautogui.ImageNotFoundException:
@@ -462,6 +452,7 @@ class Metin:
         x1, y1 = 568, 1020  # z lava, z hore
         x2, y2 = 835, 1050  # z prava, z dola
         max_attempts = 10
+        went_down = False
         for skill_to_activate in self.skills_to_activate:
             for counter in range(max_attempts):
                 print(f'---{skill_to_activate} try {counter}---')
@@ -480,22 +471,17 @@ class Metin:
                 print(f'num_of_diff_pixels: {num_of_diff_pixels}')
                 if num_of_diff_pixels > 1:
                     print('skill active')
-                    # if went_down:
-                    self.metin_window.activate()
-                    pydirectinput.keyDown('ctrl')
-                    pydirectinput.press('g')
-                    pydirectinput.keyUp('ctrl')
+                    if went_down and self.metin_window and window_title in self.metin_window.title:
+                        press_button('ctrl+g')
                     break
                 else:
                     if counter > 1:
                         # couldnt activate skill because character is on horse, we go down from mount
-                        self.metin_window.activate()
-                        pydirectinput.keyDown('ctrl')
-                        pydirectinput.press('g')
-                        pydirectinput.keyUp('ctrl')
-                        # went_down = True
+                        if self.metin_window and window_title in self.metin_window.title:
+                            press_button('ctrl+g')
+                            went_down = True
                     print('skill not active')
-                    pydirectinput.press(skill_to_activate)
+                    press_button(skill_to_activate)
                     counter += 1
 
 
@@ -540,6 +526,17 @@ def create_low_upp(metin_mask):
 
     return lower, upper
 
+
+def press_button(button):
+    keyboard.press(button)
+    time.sleep(0.05)
+    keyboard.release(button)
+
+def mouse_click(metin_pos_x, metin_pos_y):
+    # active_window = gw.getActiveWindow()
+    # if active_window and window_title in active_window.title:
+    pyautogui.moveTo(metin_pos_x, metin_pos_y)
+    pyautogui.click()
 
 def main():
     app = ApplicationWindow()

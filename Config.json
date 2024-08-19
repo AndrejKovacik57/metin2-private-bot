@@ -7,15 +7,15 @@
         {
             "name": "Metin kralovske skeble",
             "mask": {
-                "hMin": 66,
+                "hMin": 60,
                 "sMin": 0,
                 "vMin": 0,
-                "hMax": 98,
+                "hMax": 110,
                 "sMax": 255,
-                "vMax": 67
+                "vMax": 50
             },
-            "contourLow": 2500,
-            "contourHigh": 7000
+            "contourLow": 1500,
+            "contourHigh": 7500
         },
         {
             "name": "Kamen lesu",
