@@ -243,7 +243,7 @@ class ApplicationWindow:
                 self.metin.activate_skills()
             else:
                 skill_time = time.time() - self.metin.skills_time
-                if skill_time > 300:
+                if skill_time > 150:
                     print(f'skill2 {skill_time}')
                     self.metin.activate_skills()
                     self.metin.skills_time = time.time()
@@ -472,13 +472,13 @@ class Metin:
                 if num_of_diff_pixels > 1:
                     print('skill active')
                     if went_down and self.metin_window and window_title in self.metin_window.title:
-                        press_button('ctrl+g')
+                        press_button_multiple('ctrl+g')
                     break
                 else:
                     if counter > 1:
                         # couldnt activate skill because character is on horse, we go down from mount
                         if self.metin_window and window_title in self.metin_window.title:
-                            press_button('ctrl+g')
+                            press_button_multiple('ctrl+g')
                             went_down = True
                     print('skill not active')
                     press_button(skill_to_activate)
@@ -529,8 +529,19 @@ def create_low_upp(metin_mask):
 
 def press_button(button):
     keyboard.press(button)
-    time.sleep(0.05)
+    time.sleep(0.15)
     keyboard.release(button)
+
+
+def press_button_multiple(button):
+    buttons = button.split('+')
+    for button in buttons:
+        keyboard.press(button)
+        time.sleep(0.15)
+    for button in buttons:
+        keyboard.release(button)
+        time.sleep(0.15)
+
 
 def mouse_click(metin_pos_x, metin_pos_y):
     # active_window = gw.getActiveWindow()
