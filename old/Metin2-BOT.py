@@ -6,14 +6,14 @@ import pygetwindow as gw
 from PIL import ImageGrab, Image, ImageTk
 import json
 import tkinter as tk
-from tkinter import ttk, Canvas
+from tkinter import ttk
 import threading
 import pytesseract
 import pydirectinput
 import keyboard
 
 
-
+window_title = "Merlis"
 custom_config = r'--oem 3 --psm 6 outputbase digits'
 
 
@@ -24,6 +24,67 @@ class Screenshot:
         self.right_down = right_down
         self.on_found_callback = on_found_callback
 
+    def find_anti_bot(self, needle):
+        # cropped_image = Image.fromarray(self.screenshot)
+        # Now use pyautogui to locate the template in the cropped screenshot
+        try:
+            location = pyautogui.locate(needle, self.screenshot, confidence=0.60)
+        except pyautogui.ImageNotFoundException:
+            print('not found')
+            return None
+        if location is not None:
+            print(f'Object found at location: {location}')
+            if self.on_found_callback:
+                self.on_found_callback()
+            # Bot check found, now defeat it
+            return self.__defeat_anti_bot()
+
+    def __defeat_anti_bot(self):
+        options = list()
+        x1, y1 = 90, 30  # Top-left corner
+        x2, y2 = 140, 60  # Bottom-right corner
+        code_to_find = Screenshot(self.screenshot[y1:y2, x1:x2], (x1, y1), (x2, y2))
+        x1, y1 = 25, 70  # z lava, z hora
+        x2, y2 = 80, 90  # z prava, z dola
+        options.append(Screenshot(self.screenshot[y1:y2, x1:x2], (x1, y1), (x2, y2)))
+
+        x1, y1 = 100, 70  # z lava, z hora
+        x2, y2 = 150, 90  # z prava, z dola
+        options.append(Screenshot(self.screenshot[y1:y2, x1:x2], (x1, y1), (x2, y2)))
+
+        x1, y1 = 25, 100  # z lava, z hora
+        x2, y2 = 80, 120  # z prava, z dola
+        options.append(Screenshot(self.screenshot[y1:y2, x1:x2], (x1, y1), (x2, y2)))
+
+        x1, y1 = 100, 100  # z lava, z hora
+        x2, y2 = 150, 120  # z prava, z dola
+        options.append(Screenshot(self.screenshot[y1:y2, x1:x2], (x1, y1), (x2, y2)))
+
+        x1, y1 = 70, 130  # z lava, z hora
+        x2, y2 = 120, 150  # z prava, z dola
+        resized_code_to_find = resize_image(code_to_find.screenshot)
+        options.append(Screenshot(self.screenshot[y1:y2, x1:x2], (x1, y1), (x2, y2)))
+        extracted_text_code_to_find = pytesseract.image_to_string(resized_code_to_find, config=custom_config)
+        code_to_find_number = extracted_text_code_to_find[:4]
+        print(f'code_to_find_number {code_to_find_number}')
+        for option in options:
+            resized_option = resize_image(option.screenshot)
+            extracted_text_option = pytesseract.image_to_string(resized_option, config=custom_config)
+            option_number = extracted_text_option[:4]
+            print(f'option_number {option_number}')
+            if option_number == code_to_find_number:
+                print('found matching option')
+                result_x1, result_y1 = option.left_up
+                result_x2, result_y2 = option.right_down
+
+                result_center_x = result_x1 + (result_x2 - result_x1) // 2
+                result_center_y = result_y1 + (result_y2 - result_y1) // 2
+
+                pos_x = result_center_x + 10
+                pos_y = result_center_y + 90
+
+                return pos_x, pos_y
+
 
 class ApplicationWindow:
     def __init__(self, title="Metin Bot", width=800, height=800, screenshot=None):
@@ -32,12 +93,6 @@ class ApplicationWindow:
 
         # Set window size
         self.root.geometry(f"{width}x{height}")
-
-        # Create a text entry field
-        self.entry_window_name = tk.Label(self.root, text="Window name:")
-        self.entry_window_name.pack(pady=5)
-        self.text_window_name = tk.Entry(self.root, width=50)
-        self.text_window_name.pack(pady=5)
 
         # Create a button to start Metin location
         self.start_metin_location_button = tk.Button(self.root, text="Start metin location",
@@ -84,38 +139,12 @@ class ApplicationWindow:
         self.apply = tk.Button(self.root, text="Apply", command=self.apply_fields)
         self.apply.pack(pady=10)
 
-        # Create a button to take a screenshot and allow rectangle selection
-        self.screenshot_button = tk.Button(self.root, text="Take Screenshot", command=self.take_screenshot)
-        self.screenshot_button.pack(pady=10)
-
-        self.set_metin_hp_bar_location = tk.Button(self.root, text="Set location for metin hp bar", command=self.apply_hp_bar_location)
-        self.set_metin_hp_bar_location.pack(pady=10)
-        self.set_metin_hp_full_location = tk.Button(self.root, text="Set location for metin full hp", command=self.apply_hp_full_location)
-        self.set_metin_hp_full_location.pack(pady=10)
-        self.set_scan_window = tk.Button(self.root, text="Set scan window", command=self.apply_scan_window_location)
-        self.set_scan_window.pack(pady=10)
-
         self.cfg = {}
-        self.information_locations = {}
 
         self.image_label = None
         self.screenshot_img = None
 
         self.metin = None
-
-        self.hp_bar_location = None
-        self.hp_full_location = None
-        self.hp_full_pixel_colour = None
-        self.scan_window_location = None
-
-        self.canvas = None
-        self.screenshot_image = None
-        self.rect = None
-        self.start_x = None
-        self.start_y = None
-        self.end_x = None
-        self.end_y = None
-        self.selected_area = None
 
         self.running = False
 
@@ -136,50 +165,23 @@ class ApplicationWindow:
         if self.metin_options:
             self.dropdown.set(self.metin_options[0])
 
-        self.metin.window_title = self.cfg['window_name']
-
-        self.hp_bar_location = cfg['information_locations']['hp_bar_location']
-        self.hp_full_location = cfg['information_locations']['hp_full_location']
-        self.hp_full_pixel_colour = cfg['information_locations']['hp_full_pixel_colour']
-        self.scan_window_location = cfg['information_locations']['scan_window_location']
-
         self.text_tesseract_path.insert(0, cfg['tesseract_path'])
         self.text_bot_check.insert(0, cfg['bot_test_img_path'])
         self.text_metin_hp_check.insert(0, cfg['metin_hp_img_path'])
         self.text_skills_check.insert(0, cfg['skills_to_activate'])
-        self.text_window_name.insert(0, cfg['window_name'])
 
     def apply_fields(self):
         pytesseract.pytesseract.tesseract_cmd = self.text_tesseract_path.get()
         self.metin.bot_img_path = self.text_bot_check.get()
-        self.metin.window_title = self.text_window_name.get()
 
         self.cfg['bot_test_img_path'] = self.text_bot_check.get()
         self.cfg['tesseract_path'] = self.text_tesseract_path.get()
         self.cfg['metin_hp_img_path'] = self.text_metin_hp_check.get()
         self.cfg['skills_to_activate'] = self.text_skills_check.get()
-        self.cfg['window_name'] = self.text_window_name.get()
 
         self.metin.skills_to_activate = self.cfg['skills_to_activate'].split()
 
         save_config(self.cfg, 'Config.json')
-
-    def apply_hp_bar_location(self):
-        if None not in [self.start_x, self.start_y, self.end_x, self.end_y]:
-            self.cfg['information_locations']['hp_bar_location'] = [self.start_x, self.start_y, self.end_x, self.end_y]
-
-    def apply_hp_full_location(self):
-        if None not in [self.start_x, self.start_y, self.end_x, self.end_y]:
-            np_img = np.array(self.screenshot_image)
-            pixel = np_img[self.start_x, self.start_y]
-            self.cfg['information_locations']['hp_full_pixel_colour'] = pixel.tolist()
-
-            self.cfg['information_locations']['hp_full_location'] = [self.start_x, self.start_y, self.end_x, self.end_y]
-
-    def apply_scan_window_location(self):
-        if None not in [self.start_x, self.start_y, self.end_x, self.end_y]:
-            self.cfg['information_locations']['scan_window_location'] = [self.start_x, self.start_y, self.end_x, self.end_y]
-
 
     def display_screenshot(self, screenshot):
         # This method should only be called from the main thread
@@ -219,7 +221,7 @@ class ApplicationWindow:
 
         target_pixel_value = np.array([187, 19, 19])
         while self.running:
-            metin_window = gw.getWindowsWithTitle(self.metin.window_title)[0]
+            metin_window = gw.getWindowsWithTitle(window_title)[0]
             screenshot = get_window_screenshot(metin_window)
             self.metin.window_left = metin_window.left
             self.metin.window_top = metin_window.top
@@ -235,6 +237,36 @@ class ApplicationWindow:
             np_image_crop = np_image[y1: y2, x1: x2]
             x_middle = (x2 - x1) // 2
             y_middle = (y2 - y1) // 2
+            if self.metin.skills_time == 0:
+                print('skill1')
+                self.metin.skills_time = time.time()
+                self.metin.activate_skills()
+            else:
+                skill_time = time.time() - self.metin.skills_time
+                if skill_time > 150:
+                    print(f'skill2 {skill_time}')
+                    self.metin.activate_skills()
+                    self.metin.skills_time = time.time()
+            if self.metin.god_buff_cd == 0:
+                print('god buff1')
+                self.metin.god_buff_cd = time.time()
+                press_button('F9')
+
+            else:
+                god_buff_timer_diff = time.time() - self.metin.god_buff_cd
+                if god_buff_timer_diff > 300:
+                    print(f'god buff2 {god_buff_timer_diff }')
+                    press_button('F9')
+                    self.metin.god_buff_cd = time.time()
+
+            if self.metin.solved_at is not None:
+                time_diff = time.time() - self.metin.solved_at
+                if time_diff > 180:
+                    self.bot_solver()
+                    self.metin.solved_at = time.time()
+            else:
+                if self.bot_solver():
+                    self.metin.solved_at = time.time()
 
             selected_contour_pos, output_image = self.metin.locate_metin(np_image_crop, x_middle, y_middle)
             if selected_contour_pos is not None:
@@ -295,69 +327,9 @@ class ApplicationWindow:
                 press_button('z')
                 print("No valid contour found.")
 
-    def take_screenshot(self):
-        # Capture the screenshot of the entire screen
-        screenshot = ImageGrab.grab()
-        self.screenshot_image = screenshot
-
-        # Create a new window to display the screenshot
-        new_window = tk.Toplevel(self.root)
-        new_window.title("Screenshot")
-        new_window.geometry(f"{screenshot.width}x{screenshot.height}")
-
-        # Convert the screenshot to ImageTk format for display
-        screenshot_tk = ImageTk.PhotoImage(screenshot)
-
-        # Create a canvas widget to display the screenshot
-        canvas = Canvas(new_window, width=screenshot.width, height=screenshot.height)
-        canvas.pack()
-        canvas.create_image(0, 0, anchor=tk.NW, image=screenshot_tk)
-
-        # Keep a reference to the image to avoid garbage collection
-        canvas.image = screenshot_tk
-
-        # Bind mouse events for drawing the rectangle
-        canvas.bind("<ButtonPress-1>", lambda event: self.on_button_press(event, canvas))
-        canvas.bind("<B1-Motion>", lambda event: self.on_mouse_drag(event, canvas))
-        canvas.bind("<ButtonRelease-1>", lambda event: self.on_button_release(event))
-        canvas.bind("<Button-3>", lambda event: self.on_right_click(canvas))
-
-        # Store the canvas in the instance for reference
-        self.canvas = canvas
-        self.rect = None
-        self.start_x = None
-        self.start_y = None
-
-    def on_button_press(self, event, canvas):
-        # Store the initial coordinates on mouse button press
-        self.start_x = event.x
-        self.start_y = event.y
-        if self.rect:
-            canvas.delete(self.rect)
-        self.rect = canvas.create_rectangle(self.start_x, self.start_y, self.start_x, self.start_y, outline='red')
-
-    def on_mouse_drag(self, event, canvas):
-        # Update the rectangle as the user drags the mouse
-        cur_x, cur_y = (event.x, event.y)
-        canvas.coords(self.rect, self.start_x, self.start_y, cur_x, cur_y)
-
-    def on_button_release(self, event):
-        # Finalize the rectangle and print/save the coordinates
-        self.end_x, self.end_y = (event.x, event.y)
-        print(f"Rectangle coordinates: {self.start_x}, {self.start_y} -> {self.end_x}, {self.end_y}")
-
-        # Save the coordinates or use them in your logic as needed
-        self.selected_area = (self.start_x, self.start_y, self.end_x, self.end_y)
-
-    def on_right_click(self, canvas):
-        # Delete the rectangle if right-clicked
-        if self.rect:
-            canvas.delete(self.rect)
-            self.rect = None
-            print("Rectangle deleted")
 
     def bot_solver(self):
-        metin_window = gw.getWindowsWithTitle(self.metin.window_title)[0]
+        metin_window = gw.getWindowsWithTitle(window_title)[0]
         screenshot = get_window_screenshot(metin_window)
 
         self.metin.window_top = metin_window.left
@@ -405,7 +377,6 @@ class Metin:
         self.destroying_metin = False
         self.metin_destroying_time = 0
         self.metin_is_being_destroyed = False
-        self.window_title = None
         self.god_buff_cd = 0
         self.skills_to_activate = skills_to_activate
         self.skill_positions = {'1': 1, '2': 2, '3': 3, '4': 4, 'F1': 5, 'F2': 6, 'F3': 7, 'F4': 8}
@@ -500,13 +471,13 @@ class Metin:
                 print(f'num_of_diff_pixels: {num_of_diff_pixels}')
                 if num_of_diff_pixels > 1:
                     print('skill active')
-                    if went_down and self.metin_window and self.window_title in self.metin_window.title:
+                    if went_down and self.metin_window and window_title in self.metin_window.title:
                         press_button_multiple('ctrl+g')
                     break
                 else:
                     if counter > 1:
                         # couldnt activate skill because character is on horse, we go down from mount
-                        if self.metin_window and self.window_title in self.metin_window.title:
+                        if self.metin_window and window_title in self.metin_window.title:
                             press_button_multiple('ctrl+g')
                             went_down = True
                     print('skill not active')
