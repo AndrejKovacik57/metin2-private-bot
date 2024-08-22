@@ -1,3 +1,4 @@
+from random import random
 import pyautogui
 import cv2
 import numpy as np
@@ -9,9 +10,7 @@ import tkinter as tk
 from tkinter import ttk, Canvas
 import threading
 import pytesseract
-import pydirectinput
 import keyboard
-
 
 
 custom_config = r'--oem 3 --psm 6 outputbase digits'
@@ -92,6 +91,8 @@ class ApplicationWindow:
         self.set_metin_hp_bar_location.pack(pady=10)
         self.set_metin_hp_full_location = tk.Button(self.root, text="Set location for metin full hp", command=self.apply_hp_full_location)
         self.set_metin_hp_full_location.pack(pady=10)
+        self.set_cancel_location = tk.Button(self.root, text="Set location cancel button", command=self.apply_cancel_location)
+        self.set_cancel_location.pack(pady=10)
         self.set_scan_window = tk.Button(self.root, text="Set scan window", command=self.apply_scan_window_location)
         self.set_scan_window.pack(pady=10)
 
@@ -107,6 +108,7 @@ class ApplicationWindow:
         self.hp_full_location = None
         self.hp_full_pixel_colour = None
         self.scan_window_location = None
+        self.cancel_location = None
 
         self.canvas = None
         self.screenshot_image = None
@@ -116,6 +118,8 @@ class ApplicationWindow:
         self.end_x = None
         self.end_y = None
         self.selected_area = None
+        self.screenshot_image_left = None
+        self.screenshot_image_top = None
 
         self.running = False
 
@@ -142,6 +146,7 @@ class ApplicationWindow:
         self.hp_full_location = cfg['information_locations']['hp_full_location']
         self.hp_full_pixel_colour = cfg['information_locations']['hp_full_pixel_colour']
         self.scan_window_location = cfg['information_locations']['scan_window_location']
+        self.cancel_location = cfg['information_locations']['cancel_location']
 
         self.text_tesseract_path.insert(0, cfg['tesseract_path'])
         self.text_bot_check.insert(0, cfg['bot_test_img_path'])
@@ -166,19 +171,29 @@ class ApplicationWindow:
 
     def apply_hp_bar_location(self):
         if None not in [self.start_x, self.start_y, self.end_x, self.end_y]:
-            self.cfg['information_locations']['hp_bar_location'] = [self.start_x, self.start_y, self.end_x, self.end_y]
+            output = [min(self.start_x, self.end_x), min(self.end_y, self.start_y), max(self.start_x, self.end_x), max(self.end_y, self.start_y)]
+            self.cfg['information_locations']['hp_bar_location'] = output
 
     def apply_hp_full_location(self):
         if None not in [self.start_x, self.start_y, self.end_x, self.end_y]:
             np_img = np.array(self.screenshot_image)
-            pixel = np_img[self.start_x, self.start_y]
+            pixel = np_img[self.end_y + self.screenshot_image_top, self.end_x + self.screenshot_image_left]
             self.cfg['information_locations']['hp_full_pixel_colour'] = pixel.tolist()
 
-            self.cfg['information_locations']['hp_full_location'] = [self.start_x, self.start_y, self.end_x, self.end_y]
+            self.cfg['information_locations']['hp_full_location'] = [self.end_x, self.end_y, self.start_x, self.start_y]
 
     def apply_scan_window_location(self):
+        # z lava, z hora, z prava, z dola
         if None not in [self.start_x, self.start_y, self.end_x, self.end_y]:
-            self.cfg['information_locations']['scan_window_location'] = [self.start_x, self.start_y, self.end_x, self.end_y]
+            output = [min(self.start_x, self.end_x), min(self.end_y, self.start_y), max(self.start_x, self.end_x), max(self.end_y, self.start_y)]
+
+            self.cfg['information_locations']['scan_window_location'] = output
+
+    def apply_cancel_location(self):
+        if None not in [self.start_x, self.start_y, self.end_x, self.end_y]:
+            output = [min(self.start_x, self.end_x), min(self.end_y, self.start_y), max(self.start_x, self.end_x), max(self.end_y, self.start_y)]
+
+            self.cfg['information_locations']['cancel_location'] = output
 
 
     def display_screenshot(self, screenshot):
@@ -217,8 +232,13 @@ class ApplicationWindow:
                 self.metin.contour_high = metin_config['contourHigh']
         self.metin.lower, self.metin.upper = create_low_upp(metin_mask)
 
-        target_pixel_value = np.array([187, 19, 19])
+        target_pixel_value = np.array(self.hp_full_pixel_colour)
+        upper_limit = 0.1
+        lower_limit = 0.5
+
         while self.running:
+            sleep_time = random() * (upper_limit - lower_limit) + lower_limit
+            time.sleep(sleep_time)
             metin_window = gw.getWindowsWithTitle(self.metin.window_title)[0]
             screenshot = get_window_screenshot(metin_window)
             self.metin.window_left = metin_window.left
@@ -227,10 +247,8 @@ class ApplicationWindow:
             self.metin.window_bottom = metin_window.bottom
             self.metin.metin_window = metin_window
 
-            # original: width: 1296, height: 1063
-            x1, y1 = 259, 212  # z lava, z hora
-            x2, y2 = 1036, 744  # z prava, z dola
-
+            x1, y1, x2, y2 = self.scan_window_location   # z lava, z hora, z prava, z dola
+            print(f'x1:{x1} y1:{y1} x2:{x2} y2:{y2}')
             np_image = np.array(screenshot)
             np_image_crop = np_image[y1: y2, x1: x2]
             x_middle = (x2 - x1) // 2
@@ -248,17 +266,27 @@ class ApplicationWindow:
                 if not self.metin.destroying_metin:
                     press_button('z')
                     print('nenici sa metin')
+                    mouse_right_click(metin_pos_x, metin_pos_y)
+                    screenshot_hp_check = get_window_screenshot(self.metin.metin_window)
+                    np_image_hp_check = np.array(screenshot_hp_check)
+                    # check for hp missing
+                    pixel_x, pixel_y = self.hp_full_location[:2]
+                    print(f'pred pixel_y {pixel_y} pixel_x {pixel_x}')
+                    pixel_x += self.metin.window_left
+                    pixel_y += self.metin.window_top
+                    pixel_to_check = np_image_hp_check[pixel_y, pixel_x]
+                    print(f'po pixel_y {pixel_y} pixel_x {pixel_x}')
+                    print(f'pc {pixel_to_check} tp {target_pixel_value}')
+                    if np.array_equal(pixel_to_check, target_pixel_value):
+                        mouse_left_click(metin_pos_x, metin_pos_y)
 
-                    mouse_click(metin_pos_x, metin_pos_y)
-
-                    self.metin.destroying_metin = True
-                    self.metin.metin_destroying_time = time.time()
-                    self.metin.metin_is_being_destroyed = False
+                        self.metin.destroying_metin = True
+                        self.metin.metin_destroying_time = time.time()
+                        self.metin.metin_is_being_destroyed = False
                 else:
 
-                    x1, y1 = 432, 70  # z lava, z hore
-                    x2, y2 = 450, 90  # z prava, z dola
-                    hp_bar = np_image[y1: y2, x1: x2]
+                    hp_bar_x1, hp_bar_y1, hp_bar_x2, hp_bar_y2 = self.hp_bar_location
+                    hp_bar = np_image[hp_bar_y1: hp_bar_y2, hp_bar_x1: hp_bar_x2]
                     metin_is_alive = self.metin.locate_metin_hp(hp_bar, 0.7)
                     self.metin.destroying_metin = metin_is_alive
                     print(f'nici sa metin {metin_is_alive}')
@@ -266,39 +294,41 @@ class ApplicationWindow:
                         continue
 
                     press_button('q')
-                    press_button('F4')
 
                     metin_destroy_time_diff = time.time() - self.metin.metin_destroying_time
-                    if metin_is_alive and metin_destroy_time_diff > 5 and not self.metin.metin_is_being_destroyed:
-                        x1, y1 = 832, 75  # z lava, z hore
-                        x2, y2 = 850, 85  # z prava, z dola
-                        red_hp = np_image[y1: y2, x1: x2]
-                        height, width, _ = red_hp.shape
+                    if metin_is_alive and metin_destroy_time_diff > 10 and not self.metin.metin_is_being_destroyed:
+                        print('AAAAA')
+                        print('AAAAA')
+                        print('AAAAA')
+                        print('AAAAA')
+                        pixel_x, pixel_y = self.hp_full_location[:2]
+                        pixel_x += self.metin.window_left
+                        pixel_y += self.metin.window_top
 
-                        center_y = height // 2
-                        center_x = width // 2
+                        pixel_to_check = np_image[pixel_y, pixel_x]
+                        if np.array_equal(pixel_to_check, target_pixel_value):
+                            cancel_x, cancel_y = self.cancel_location[:2]
+                            x_to_cancel = (self.metin.window_left + cancel_x) / 2
+                            y_to_cancel = (self.metin.window_top + cancel_y) / 2
 
-                        center_pixel = red_hp[center_y, center_x]
-
-                        if np.array_equal(center_pixel, target_pixel_value):
-                            print("The pixel value matches [187, 19, 19].")
-                            # 850, 60
-                            x_to_cancel = self.metin.window_left + 850
-                            y_to_cancel = self.metin.window_top + 60
-
-                            mouse_click(x_to_cancel, y_to_cancel)
+                            mouse_left_click(x_to_cancel, y_to_cancel)
                             press_button('a')
+                        else:
+                            self.metin.metin_is_being_destroyed = True
+
 
             else:
                 self.display_screenshot(output_image)
                 press_button('q')
-                press_button('z')
                 print("No valid contour found.")
 
     def take_screenshot(self):
         # Capture the screenshot of the entire screen
-        screenshot = ImageGrab.grab()
+        metin_window = gw.getWindowsWithTitle(self.metin.window_title)[0]
+        screenshot = get_window_screenshot(metin_window)
         self.screenshot_image = screenshot
+        self.screenshot_image_left = metin_window.left
+        self.screenshot_image_top = metin_window.top
 
         # Create a new window to display the screenshot
         new_window = tk.Toplevel(self.root)
@@ -463,7 +493,7 @@ class Metin:
             pos_x, pos_y = result
             to_click_x = pos_x + self.window_top
             to_click_y = pos_y + self.window_left
-            mouse_click(to_click_x, to_click_y)
+            mouse_left_click(to_click_x, to_click_y)
 
             return True
 
@@ -572,11 +602,19 @@ def press_button_multiple(button):
         time.sleep(0.15)
 
 
-def mouse_click(metin_pos_x, metin_pos_y):
+def mouse_left_click(metin_pos_x, metin_pos_y):
     # active_window = gw.getActiveWindow()
     # if active_window and window_title in active_window.title:
     pyautogui.moveTo(metin_pos_x, metin_pos_y)
     pyautogui.click()
+
+
+def mouse_right_click(metin_pos_x, metin_pos_y):
+    # active_window = gw.getActiveWindow()
+    # if active_window and window_title in active_window.title:
+    pyautogui.moveTo(metin_pos_x, metin_pos_y)
+    pyautogui.rightClick()
+
 
 def main():
     app = ApplicationWindow()

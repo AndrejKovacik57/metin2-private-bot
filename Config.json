@@ -3,30 +3,36 @@
     "bot_test_img_path": "bot_ochrana2.png",
     "metin_hp_img_path": "metin_hp.png",
     "skills_to_activate": "4",
-    "window_name": "",
+    "window_name": "Merlis",
     "information_locations": {
         "hp_bar_location": [
-            1325,
+            1320,
             54,
-            1312,
+            1335,
             67
         ],
         "hp_full_location": [
-            1430,
+            1432,
             60,
-            1430,
+            1432,
             60
         ],
+        "cancel_location": [
+            1470,
+            50,
+            1487,
+            70
+        ],
         "scan_window_location": [
-            2286,
-            1194,
             240,
-            167
+            167,
+            2286,
+            1194
         ],
         "hp_full_pixel_colour": [
-            28,
-            40,
-            52
+            204,
+            102,
+            100
         ]
     },
     "metin_stones": [
@@ -40,7 +46,7 @@
                 "sMax": 255,
                 "vMax": 156
             },
-            "contourLow": 1907,
+            "contourLow": 2500,
             "contourHigh": 7544
         }
     ]
