@@ -13,7 +13,7 @@ import pydirectinput
 import keyboard
 
 
-window_title = "Merlis"
+window_title = ""
 custom_config = r'--oem 3 --psm 6 outputbase digits'
 
 

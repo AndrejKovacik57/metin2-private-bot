@@ -236,7 +236,7 @@ class ApplicationWindow:
         target_pixel_value = np.array(self.hp_full_pixel_colour)
         upper_limit = 0.5
         lower_limit = 0.1
-
+        skill_timer = 0
         while self.running:
             sleep_time = random() * (upper_limit - lower_limit) + lower_limit
             time.sleep(sleep_time)
@@ -254,15 +254,30 @@ class ApplicationWindow:
             np_image_crop = np_image[y1: y2, x1: x2]
             x_middle = (x2 - x1) // 2
             y_middle = (y2 - y1) // 2
-
+            skill_timer_diff = time.time() - skill_timer
             location = None
             try:
                 location = pyautogui.locate('bot data/bot_check_bar2.png', np_image, confidence=0.7)
             except pyautogui.ImageNotFoundException:
                 print('nic')
             if location is not None:
+                print('BOT OCHRANA')
+                print('BOT OCHRANA')
+                print('BOT OCHRANA')
                 time.sleep(15)
                 continue
+
+            if skill_timer == 0 or skill_timer != 0 and skill_timer_diff >= 690:
+                skill_timer = time.time()
+                press_button_multiple('ctrl+g')
+                time.sleep(0.15)
+                press_button('F1')
+                time.sleep(2)
+                press_button('F4')
+                time.sleep(2)
+                press_button_multiple('ctrl+g')
+
+
 
             selected_contour_pos, output_image = self.metin.locate_metin(np_image_crop, x_middle, y_middle)
             if selected_contour_pos is not None:
@@ -606,10 +621,10 @@ def press_button_multiple(button):
     buttons = button.split('+')
     for button in buttons:
         keyboard.press(button)
-        time.sleep(0.15)
+        time.sleep(0.3)
     for button in buttons:
         keyboard.release(button)
-        time.sleep(0.15)
+        time.sleep(0.3)
 
 
 def mouse_left_click(metin_pos_x, metin_pos_y):
