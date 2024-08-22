@@ -13,6 +13,7 @@ import pytesseract
 import keyboard
 
 
+
 custom_config = r'--oem 3 --psm 6 outputbase digits'
 
 
@@ -233,8 +234,8 @@ class ApplicationWindow:
         self.metin.lower, self.metin.upper = create_low_upp(metin_mask)
 
         target_pixel_value = np.array(self.hp_full_pixel_colour)
-        upper_limit = 0.1
-        lower_limit = 0.5
+        upper_limit = 0.5
+        lower_limit = 0.1
 
         while self.running:
             sleep_time = random() * (upper_limit - lower_limit) + lower_limit
@@ -253,6 +254,15 @@ class ApplicationWindow:
             np_image_crop = np_image[y1: y2, x1: x2]
             x_middle = (x2 - x1) // 2
             y_middle = (y2 - y1) // 2
+
+            location = None
+            try:
+                location = pyautogui.locate('bot data/bot_check_bar2.png', np_image, confidence=0.7)
+            except pyautogui.ImageNotFoundException:
+                print('nic')
+            if location is not None:
+                time.sleep(15)
+                continue
 
             selected_contour_pos, output_image = self.metin.locate_metin(np_image_crop, x_middle, y_middle)
             if selected_contour_pos is not None:
@@ -277,7 +287,7 @@ class ApplicationWindow:
                     pixel_to_check = np_image_hp_check[pixel_y, pixel_x]
                     print(f'po pixel_y {pixel_y} pixel_x {pixel_x}')
                     print(f'pc {pixel_to_check} tp {target_pixel_value}')
-                    if np.array_equal(pixel_to_check, target_pixel_value):
+                    if np.all(np.abs(pixel_to_check - target_pixel_value) <= 5):
                         mouse_left_click(metin_pos_x, metin_pos_y)
 
                         self.metin.destroying_metin = True
@@ -605,6 +615,7 @@ def press_button_multiple(button):
 def mouse_left_click(metin_pos_x, metin_pos_y):
     # active_window = gw.getActiveWindow()
     # if active_window and window_title in active_window.title:
+    print('KLIIIK')
     pyautogui.moveTo(metin_pos_x, metin_pos_y)
     pyautogui.click()
 

@@ -64,26 +64,27 @@ def draw_random_elements(draw, width, height, total_elements=7):
             y2 = center_y + dot_size
             draw.ellipse((x1, y1, x2, y2), fill=color)
 
+
 # Create a single image with random characters, rotation, and anti-captcha elements
-def create_image():
-    # High-resolution dimensions (2x original size)
-    high_res_width, high_res_height = 200, 200  # Image size (2x of 100x100)
-    image = Image.new('RGB', (high_res_width, high_res_height), random_color())  # Random background color
+def create_image(combo_to_id):
+    high_res_width, high_res_height = 200, 200
+    image = Image.new('RGB', (high_res_width, high_res_height), random_color())
     draw = ImageDraw.Draw(image)
 
-    # Randomly place the characters
     font_paths = ["C:/Windows/Fonts/comic.ttf", "C:/Windows/Fonts/arial.ttf", "C:/Windows/Fonts/calibri.ttf",
                   "C:/Windows/Fonts/CascadiaCode.ttf", "C:/Windows/Fonts/CascadiaMono.ttf",
                   "C:/Windows/Fonts/constani.ttf"]
     font_path = random.choice(font_paths)
-    font = ImageFont.truetype(font_path, random.randint(80, 100))  # Use a larger font for high-res image
-    text = random_char()
+    font = ImageFont.truetype(font_path, random.randint(80, 100))
+    text = random_char()  # Generate two characters
 
-    # Calculate text size using textbbox
+    # Get the class ID for the character combination
+    class_id = combo_to_id[text]
+
+    # Calculate bounding box for the whole text
     bbox = draw.textbbox((0, 0), text, font=font)
     text_width, text_height = bbox[2] - bbox[0], bbox[3] - bbox[1]
 
-    # Create a larger canvas for the rotated text to avoid cutting off
     canvas_size = max(text_width, text_height) * 2
     text_image = Image.new('RGBA', (canvas_size, canvas_size), (255, 0, 0, 0))
     text_draw = ImageDraw.Draw(text_image)
@@ -95,42 +96,57 @@ def create_image():
 
     # Random rotation
     angle = random.uniform(-30, 30)
-    rotated_text = text_image.rotate(angle, expand=1, resample=Image.BICUBIC)
+    rotated_text = text_image.rotate(angle, expand=1, resample=Image.Resampling.BICUBIC)
 
     # Randomly decide if elements should be drawn in front of or behind the text
     if random.choice(["behind", "in_front"]) == "behind":
-        # Draw elements first, then paste the rotated text on top
-        total_elements = random.randint(1, 7)
-        draw_random_elements(draw, high_res_width, high_res_height, total_elements)
-        # Paste the rotated text at the center of the original image
+        draw_random_elements(draw, high_res_width, high_res_height, random.randint(1, 7))
         paste_x = (high_res_width - rotated_text.width) // 2
         paste_y = (high_res_height - rotated_text.height) // 2
         image.paste(rotated_text, (paste_x, paste_y), rotated_text)
     else:
-        # Paste the rotated text first, then draw elements on top
         paste_x = (high_res_width - rotated_text.width) // 2
         paste_y = (high_res_height - rotated_text.height) // 2
         image.paste(rotated_text, (paste_x, paste_y), rotated_text)
-        total_elements = random.randint(1, 7)
-        draw_random_elements(draw, high_res_width, high_res_height, total_elements)
+        draw_random_elements(draw, high_res_width, high_res_height, random.randint(1, 7))
 
-    # Downscale to original size for smoothness
-    final_image = image.resize((100, 100), Image.LANCZOS)
+    final_image = image.resize((100, 100), Image.Resampling.LANCZOS)
 
-    return final_image, text
+    # Calculate bounding box in original high-res dimensions
+    bbox_x1 = paste_x + text_x
+    bbox_y1 = paste_y + text_y
+    bbox_x2 = bbox_x1 + text_width
+    bbox_y2 = bbox_y1 + text_height
+
+    # Normalize bounding box coordinates
+    x_center = ((bbox_x1 + bbox_x2) / 2) / high_res_width
+    y_center = ((bbox_y1 + bbox_y2) / 2) / high_res_height
+    bbox_width = (bbox_x2 - bbox_x1) / high_res_width
+    bbox_height = (bbox_y2 - bbox_y1) / high_res_height
+
+    return final_image, text, x_center, y_center, bbox_width, bbox_height, class_id
 
 
 # Generate and save images
 def create_images():
+    characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    combinations = [a + b for a in characters for b in characters]
+    combo_to_id = {combo: idx for idx, combo in enumerate(combinations)}
+
     start_time = time.time()
     if not os.path.exists('training_images'):
         os.makedirs('training_images')
 
     for i in range(100000):
-        img, text = create_image()
-        file_name = f"{text}_{i}.png"  # Save images with their text label and a unique index
+        img, text, x_center, y_center, bbox_width, bbox_height, class_id = create_image(combo_to_id)
+        file_name = f"{text}_{i}.png"
         img.save(os.path.join('training_images', file_name))
         print(f"Saved {file_name}")
+
+        # Save the corresponding .txt file for YOLOv8
+        txt_file_name = f"{text}_{i}.txt"
+        with open(os.path.join('training_images', txt_file_name), 'w') as f:
+            f.write(f"{class_id} {x_center} {y_center} {bbox_width} {bbox_height}\n")
 
     print(f'Done, {time.time() - start_time}')
 
