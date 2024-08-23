@@ -12,3 +12,4 @@
 /yolov8n.pt
 /runs.zip
 /models.zip
+/models_yolov8/best.onnx
