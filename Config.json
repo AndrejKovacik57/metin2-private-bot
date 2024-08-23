@@ -3,6 +3,7 @@
     "bot_test_img_path": "bot_ochrana2.png",
     "metin_hp_img_path": "metin_hp.png",
     "skills_to_activate": "4",
+    "skills_cd": 0,
     "window_name": "",
     "information_locations": {
         "hp_bar_location": [
@@ -18,10 +19,10 @@
             60
         ],
         "cancel_location": [
-            1471,
-            52,
-            1484,
-            68
+            1469,
+            51,
+            1487,
+            70
         ],
         "scan_window_location": [
             240,
