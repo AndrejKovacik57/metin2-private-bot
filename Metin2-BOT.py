@@ -11,10 +11,18 @@ from tkinter import ttk, Canvas
 import threading
 import pytesseract
 import keyboard
-
+from rapidfuzz import process, fuzz
+import torch
+from ultralytics import YOLO
 
 
 custom_config = r'--oem 3 --psm 6 outputbase digits'
+custom_config_text = r'--oem 3 --psm 6'
+
+
+class NoCudaOrCPUModuleFound(ValueError):
+    def __init__(self, message):
+        super().__init__(message)
 
 
 class Screenshot:
@@ -73,6 +81,12 @@ class ApplicationWindow:
         self.text_skills_check = tk.Entry(self.root, width=50)
         self.text_skills_check.pack(pady=5)
 
+        # Create a text entry field
+        self.entry_skills_cd = tk.Label(self.root, text="Skills cd:")
+        self.entry_skills_cd.pack(pady=5)
+        self.text_skills_cd = tk.Entry(self.root, width=50)
+        self.text_skills_cd.pack(pady=5)
+
         # Create a dropdown (Combobox) to choose from specific values
         self.dropdown_label = tk.Label(self.root, text="Choose metin stone:")
         self.dropdown_label.pack(pady=5)
@@ -121,7 +135,7 @@ class ApplicationWindow:
         self.selected_area = None
         self.screenshot_image_left = None
         self.screenshot_image_top = None
-
+        self.skills_cd = 0
         self.running = False
 
         self.tesseract_path = ''
@@ -136,7 +150,7 @@ class ApplicationWindow:
         self.metin = Metin(cfg['bot_test_img_path'], cfg['metin_hp_img_path'], cfg['skills_to_activate'].split())
         self.metin_stones = cfg['metin_stones']
         self.metin_options = [item['name'] for item in self.metin_stones]
-
+        self.skills_cd = int(cfg['skills_cd']) if cfg['skills_cd'].isdigit() else 0
         self.dropdown['values'] = self.metin_options
         if self.metin_options:
             self.dropdown.set(self.metin_options[0])
@@ -154,6 +168,7 @@ class ApplicationWindow:
         self.text_metin_hp_check.insert(0, cfg['metin_hp_img_path'])
         self.text_skills_check.insert(0, cfg['skills_to_activate'])
         self.text_window_name.insert(0, cfg['window_name'])
+        self.text_skills_cd.insert(0, cfg['skills_cd'])
 
     def apply_fields(self):
         pytesseract.pytesseract.tesseract_cmd = self.text_tesseract_path.get()
@@ -165,6 +180,8 @@ class ApplicationWindow:
         self.cfg['metin_hp_img_path'] = self.text_metin_hp_check.get()
         self.cfg['skills_to_activate'] = self.text_skills_check.get()
         self.cfg['window_name'] = self.text_window_name.get()
+        self.cfg['skills_cd'] = self.text_skills_cd.get()
+        self.skills_cd = int(self.text_skills_cd.get()) if self.text_skills_cd.get().isdigit() else 0
 
         self.metin.skills_to_activate = self.cfg['skills_to_activate'].split()
 
@@ -196,7 +213,6 @@ class ApplicationWindow:
 
             self.cfg['information_locations']['cancel_location'] = output
 
-
     def display_screenshot(self, screenshot):
         # This method should only be called from the main thread
         def update_image(screenshot=screenshot):
@@ -223,7 +239,6 @@ class ApplicationWindow:
             threading.Thread(target=self.start_metin_location, daemon=True).start()
 
     def start_metin_location(self):
-
         selected_value = self.dropdown.get()
         metin_mask = {}
         for metin_config in self.metin_stones:
@@ -237,6 +252,9 @@ class ApplicationWindow:
         upper_limit = 0.5
         lower_limit = 0.1
         skill_timer = 0
+        # 433 x 280
+        box = 64
+        space = 15
         while self.running:
             sleep_time = random() * (upper_limit - lower_limit) + lower_limit
             time.sleep(sleep_time)
@@ -261,23 +279,53 @@ class ApplicationWindow:
             except pyautogui.ImageNotFoundException:
                 print('nic')
             if location is not None:
-                print('BOT OCHRANA')
-                print('BOT OCHRANA')
-                print('BOT OCHRANA')
-                time.sleep(15)
+                x1 = self.metin.window_left + location.left + 6
+                x2 = x1 + 222
+                y1 = self.metin.window_top + location.top + 28
+                y2 = y1 + 143
+                np_image_captcha = np_image[y1: y2, x1: x2]
+
+                x1 = self.metin.window_left + location.left
+                x2 = x1 + 245
+                y1 = self.metin.window_top + location.top + 180
+                y2 = y1 + 40
+                np_image_text = resize_image(np_image[y1: y2, x1: x2])
+
+                extracted_text_code_to_find = pytesseract.image_to_string(np_image_text, config=custom_config_text)
+                print(f'extracted_text_code_to_find {extracted_text_code_to_find}')
+                if '?' in extracted_text_code_to_find:
+                    extracted_text_code_to_find = extracted_text_code_to_find.replace('?', '7')
+                result = extract_between_words_fuzzy(extracted_text_code_to_find, "pictures", "Select")
+                print(f'bot result {result}')
+                for row in range(2):
+                    for column in range(3):
+                        x1, y1 = box * column + space * column, box * row + space * row  # z lava, z hore
+                        x2, y2 = box * (column + 1) + space * column, box * (row + 1) + space * row  # z prava, z dola
+                        np_img_captcha_option = np_image_captcha[y1: y2, x1: x2]
+                        # Extract text using pytesseract
+                        np_img_captcha_option_resized = resize_image(np_img_captcha_option)
+                        # self.metin.solve_captcha
+                        output = self.metin.bot_detection_solver(np_img_captcha_option_resized)
+                        if output == result:
+                            print('BOT OCHRANA PRELOMENA')
+                            print('BOT OCHRANA PRELOMENA')
+                            print('BOT OCHRANA PRELOMENA')
+                            x_to_click = self.metin.window_left + location.left + 6 + x1 + (x2 - x1) / 2
+                            y_to_click = self.metin.window_top + location.top + 28 + y1 + (y2 - y1) / 2
+                            pyautogui.moveTo(x_to_click, y_to_click)
+                            mouse_left_click(x_to_click, y_to_click)
+                            break
+
                 continue
 
-            if skill_timer == 0 or skill_timer != 0 and skill_timer_diff >= 690:
+            if skill_timer == 0 or skill_timer != 0 and skill_timer_diff >= self.skills_cd:
                 skill_timer = time.time()
                 press_button_multiple('ctrl+g')
                 time.sleep(0.15)
-                press_button('F1')
-                time.sleep(2)
-                press_button('F4')
-                time.sleep(2)
+                for skill in self.metin.skills_to_activate:
+                    press_button(skill)
+                    time.sleep(2)
                 press_button_multiple('ctrl+g')
-
-
 
             selected_contour_pos, output_image = self.metin.locate_metin(np_image_crop, x_middle, y_middle)
             if selected_contour_pos is not None:
@@ -290,24 +338,32 @@ class ApplicationWindow:
 
                 if not self.metin.destroying_metin:
                     press_button('z')
+                    time.sleep(0.2)
+                    press_button('y')
                     print('nenici sa metin')
                     mouse_right_click(metin_pos_x, metin_pos_y)
                     screenshot_hp_check = get_window_screenshot(self.metin.metin_window)
                     np_image_hp_check = np.array(screenshot_hp_check)
                     # check for hp missing
                     pixel_x, pixel_y = self.hp_full_location[:2]
-                    print(f'pred pixel_y {pixel_y} pixel_x {pixel_x}')
                     pixel_x += self.metin.window_left
                     pixel_y += self.metin.window_top
                     pixel_to_check = np_image_hp_check[pixel_y, pixel_x]
-                    print(f'po pixel_y {pixel_y} pixel_x {pixel_x}')
-                    print(f'pc {pixel_to_check} tp {target_pixel_value}')
+
                     if np.all(np.abs(pixel_to_check - target_pixel_value) <= 5):
                         mouse_left_click(metin_pos_x, metin_pos_y)
 
                         self.metin.destroying_metin = True
                         self.metin.metin_destroying_time = time.time()
                         self.metin.metin_is_being_destroyed = False
+                    else:
+                        press_button('q')
+                        time.sleep(0.2)
+                        press_button('q')
+                        time.sleep(0.2)
+                        press_button('q')
+                        time.sleep(0.2)
+
                 else:
 
                     hp_bar_x1, hp_bar_y1, hp_bar_x2, hp_bar_y2 = self.hp_bar_location
@@ -321,6 +377,7 @@ class ApplicationWindow:
                     press_button('q')
 
                     metin_destroy_time_diff = time.time() - self.metin.metin_destroying_time
+                    print(f'metin_destroy_time_diff {metin_destroy_time_diff}  self.metin.metin_is_being_destroyed {self.metin.metin_is_being_destroyed}')
                     if metin_is_alive and metin_destroy_time_diff > 10 and not self.metin.metin_is_being_destroyed:
                         print('AAAAA')
                         print('AAAAA')
@@ -331,16 +388,16 @@ class ApplicationWindow:
                         pixel_y += self.metin.window_top
 
                         pixel_to_check = np_image[pixel_y, pixel_x]
-                        if np.array_equal(pixel_to_check, target_pixel_value):
-                            cancel_x, cancel_y = self.cancel_location[:2]
-                            x_to_cancel = (self.metin.window_left + cancel_x) / 2
-                            y_to_cancel = (self.metin.window_top + cancel_y) / 2
+                        if np.all(np.abs(pixel_to_check - target_pixel_value) <= 5):
+                            cancel_x1, cancel_y1, cancel_x2, cancel_y2 = self.cancel_location
+
+                            x_to_cancel = (self.metin.window_left + cancel_x1 + (cancel_x2 - cancel_x1) / 2)
+                            y_to_cancel = (self.metin.window_top + cancel_y1 + (cancel_y2 - cancel_y1) / 2)
 
                             mouse_left_click(x_to_cancel, y_to_cancel)
                             press_button('a')
                         else:
                             self.metin.metin_is_being_destroyed = True
-
 
             else:
                 self.display_screenshot(output_image)
@@ -411,25 +468,6 @@ class ApplicationWindow:
             self.rect = None
             print("Rectangle deleted")
 
-    def bot_solver(self):
-        metin_window = gw.getWindowsWithTitle(self.metin.window_title)[0]
-        screenshot = get_window_screenshot(metin_window)
-
-        self.metin.window_top = metin_window.left
-        self.metin.window_left = metin_window.top
-        self.metin.window_right = metin_window.right
-        self.metin.window_bottom = metin_window.bottom
-        self.metin.metin_window = metin_window
-
-        solved = self.metin.look_for_bot_check(screenshot)
-
-        if solved:
-            print('solved')
-            return True
-        else:
-            print('no antibot')
-            return False
-
     def stop_metin_location(self):
         self.metin.metin_destroying_time = 0
         self.metin.god_buff_cd = 0
@@ -443,7 +481,7 @@ class ApplicationWindow:
 
 
 class Metin:
-    def __init__(self, bot_img_path, metin_hp_img, skills_to_activate):
+    def __init__(self, bot_img_path, metin_hp_img, skills_to_activateq):
         self.window_top = None
         self.window_left = None
         self.window_right = None
@@ -460,11 +498,29 @@ class Metin:
         self.destroying_metin = False
         self.metin_destroying_time = 0
         self.metin_is_being_destroyed = False
+        self.model_cuda = None
+        self.model_cpu = None
         self.window_title = None
-        self.god_buff_cd = 0
-        self.skills_to_activate = skills_to_activate
-        self.skill_positions = {'1': 1, '2': 2, '3': 3, '4': 4, 'F1': 5, 'F2': 6, 'F3': 7, 'F4': 8}
         self.skills_time = 0
+        self.label_keys = []
+
+        self.model_initialize()
+    
+    def model_initialize(self):
+        path = 'models/'
+        characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+        if 'cu' in torch.__version__:
+            print("CUDA-enabled version of PyTorch is installed.")
+            self.model_cuda = YOLO(f'{path}best.pt')
+        else:
+            print("CPU-only version of PyTorch is installed.")
+            self.model_cpu = YOLO(f'{path}best.onnx')
+
+        combinations = [a + b for a in characters for b in characters]
+        combo_to_id = {combo: idx for idx, combo in enumerate(combinations)}
+        self.label_keys = list(combo_to_id.keys())
+
 
     def on_found(self):
         self.solving_bot_check = True
@@ -506,24 +562,6 @@ class Metin:
             return None, np_image
         return selected_contour_pos, np_image
 
-    def look_for_bot_check(self, image):
-        np_image = np.array(image)
-        x1, y1 = 10, 80  # Top-left corner
-        x2, y2 = 190, 240  # Bottom-right corner
-        cropped_image = np_image[y1:y2, x1:x2]
-        screenshot = Screenshot(cropped_image, (10, 80), (190, 240), on_found_callback=self.on_found())
-        result = screenshot.find_anti_bot(self.bot_img_path)
-        print(f'result = {result}')
-        if result is not None:
-            pos_x, pos_y = result
-            to_click_x = pos_x + self.window_top
-            to_click_y = pos_y + self.window_left
-            mouse_left_click(to_click_x, to_click_y)
-
-            return True
-
-        return False
-
     def locate_metin_hp(self, np_image, confidence=0.8):
         try:
             location = pyautogui.locate(self.metin_hp_img, np_image, confidence=confidence)
@@ -532,41 +570,44 @@ class Metin:
         if location is not None:
             return True
 
-    def activate_skills(self):
-        x1, y1 = 568, 1020  # z lava, z hore
-        x2, y2 = 835, 1050  # z prava, z dola
-        max_attempts = 10
-        went_down = False
-        for skill_to_activate in self.skills_to_activate:
-            for counter in range(max_attempts):
-                print(f'---{skill_to_activate} try {counter}---')
-                skill_pos = self.skill_positions[skill_to_activate]
-                pixels = []
-                offset = 16 if skill_pos < 5 else 30  # 14 pixels between nums and Fs
-                skill_pixel_position = 32 * (skill_pos - 1) + offset
-                for _ in range(3):
-                    np_image = np.array(get_window_screenshot(self.metin_window))
-                    skills = np_image[y1: y2, x1: x2]
-                    pixel = skills[0, skill_pixel_position].tolist()
-                    if pixel not in pixels:
-                        pixels.append(pixel)
-                    time.sleep(0.1)
-                num_of_diff_pixels = len(pixels)
-                print(f'num_of_diff_pixels: {num_of_diff_pixels}')
-                if num_of_diff_pixels > 1:
-                    print('skill active')
-                    if went_down and self.metin_window and self.window_title in self.metin_window.title:
-                        press_button_multiple('ctrl+g')
-                    break
-                else:
-                    if counter > 1:
-                        # couldnt activate skill because character is on horse, we go down from mount
-                        if self.metin_window and self.window_title in self.metin_window.title:
-                            press_button_multiple('ctrl+g')
-                            went_down = True
-                    print('skill not active')
-                    press_button(skill_to_activate)
-                    counter += 1
+    def bot_detection_solver(self, np_image):
+        image = Image.fromarray(np_image)
+
+        if self.model_cpu is not None:
+            results = self.model_cpu.predict(image, imgsz=(128, 128))
+            if len(results) > 0:
+                boxes = results[0].boxes
+                if boxes is not None and len(boxes) > 0:
+                    class_ids = boxes.cls.cpu().numpy()  # Get class IDs
+                    confidences = boxes.conf.cpu().numpy()  # Get confidence scores
+                    max_confidence = 0
+                    output = None
+                    # Print class IDs and their corresponding confidence scores
+                    for i, class_id in enumerate(class_ids):
+                        confidence = confidences[i]
+                        if confidence > max_confidence:
+                            max_confidence = confidence
+                            output = self.label_keys[int(class_id)]
+                    return output
+            return None
+
+        elif self.model_cuda is not None:
+            results = self.model_cuda.predict(image)
+            for result in results:
+                boxes = result.boxes
+                max_confidence = 0
+                output = None
+                for box in boxes:
+                    confidence = box.conf
+                    if confidence > max_confidence:
+                        max_confidence = confidence
+                        output = self.label_keys[int(box.cls[0])]
+                return output
+            return None
+        else:
+            raise NoCudaOrCPUModuleFound
+
+
 
 
 def resize_image(image):
@@ -640,6 +681,33 @@ def mouse_right_click(metin_pos_x, metin_pos_y):
     # if active_window and window_title in active_window.title:
     pyautogui.moveTo(metin_pos_x, metin_pos_y)
     pyautogui.rightClick()
+
+
+def extract_between_words_fuzzy(text, start_word, end_word, threshold=80):
+    # Find fuzzy matches for start_word and end_word
+    fuzzy_start = find_fuzzy_word(text, start_word, threshold)
+    fuzzy_end = find_fuzzy_word(text, end_word, threshold)
+
+    if fuzzy_start and fuzzy_end:
+        # Find the start and end indexes of the matched words
+        start_index = text.index(fuzzy_start) + len(fuzzy_start)
+        end_index = text.index(fuzzy_end, start_index)
+        # Extract and return the text between the two fuzzy-matched words
+        return text[start_index:end_index].strip()
+
+    return None  # Return None if matches are not found
+
+
+def find_fuzzy_word(text, word_to_match, threshold=80):
+    # Find the closest match in the text using fuzzy matching
+    words = text.split()
+    result = process.extractOne(word_to_match, words, scorer=fuzz.ratio)
+
+    if result:  # Ensure that a match was found
+        match, score = result[0], result[1]
+        if score >= threshold:
+            return match
+    return None
 
 
 def main():
