@@ -4,7 +4,7 @@
     "metin_hp_img_path": "metin_hp.png",
     "skills_to_activate": "F1 F4",
     "skills_cd": "690",
-    "window_name": "",
+    "window_name": " ",
     "information_locations": {
         "hp_bar_location": [
             1319,

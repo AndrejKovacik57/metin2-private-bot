@@ -267,7 +267,7 @@ class ApplicationWindow:
             self.metin.metin_window = metin_window
 
             x1, y1, x2, y2 = self.scan_window_location   # z lava, z hora, z prava, z dola
-            print(f'x1:{x1} y1:{y1} x2:{x2} y2:{y2}')
+
             np_image = np.array(screenshot)
             np_image = cv2.cvtColor(np_image, cv2.COLOR_RGB2BGR)
             np_image_crop = np_image[y1: y2, x1: x2]
@@ -308,8 +308,6 @@ class ApplicationWindow:
                         # self.metin.solve_captcha
                         output = self.metin.bot_detection_solver(np_img_captcha_option_resized)
                         if output == result:
-                            print('BOT OCHRANA PRELOMENA')
-                            print('BOT OCHRANA PRELOMENA')
                             print('BOT OCHRANA PRELOMENA')
                             x_to_click = self.metin.window_left + location.left + 6 + x1 + (x2 - x1) / 2
                             y_to_click = self.metin.window_top + location.top + 28 + y1 + (y2 - y1) / 2
@@ -378,12 +376,7 @@ class ApplicationWindow:
                     press_button('q')
 
                     metin_destroy_time_diff = time.time() - self.metin.metin_destroying_time
-                    print(f'metin_destroy_time_diff {metin_destroy_time_diff}  self.metin.metin_is_being_destroyed {self.metin.metin_is_being_destroyed}')
                     if metin_is_alive and metin_destroy_time_diff > 10 and not self.metin.metin_is_being_destroyed:
-                        print('AAAAA')
-                        print('AAAAA')
-                        print('AAAAA')
-                        print('AAAAA')
                         pixel_x, pixel_y = self.hp_full_location[:2]
                         pixel_x += self.metin.window_left
                         pixel_y += self.metin.window_top
