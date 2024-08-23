@@ -251,7 +251,6 @@ class ApplicationWindow:
         target_pixel_value = np.array(self.hp_full_pixel_colour)
         upper_limit = 0.5
         lower_limit = 0.1
-        skill_timer = 0
         # 433 x 280
         box = 64
         space = 15
@@ -273,7 +272,7 @@ class ApplicationWindow:
             np_image_crop = np_image[y1: y2, x1: x2]
             x_middle = (x2 - x1) // 2
             y_middle = (y2 - y1) // 2
-            skill_timer_diff = time.time() - skill_timer
+            skill_timer_diff = time.time() - self.metin.skill_timer
             location = None
             try:
                 location = pyautogui.locate('bot data/bot_check_bar2.png', np_image, confidence=0.7)
@@ -317,8 +316,8 @@ class ApplicationWindow:
 
                 continue
 
-            if skill_timer == 0 or skill_timer != 0 and skill_timer_diff >= self.skills_cd:
-                skill_timer = time.time()
+            if self.metin.skill_timer == 0 or self.metin.skill_timer != 0 and skill_timer_diff >= self.skills_cd:
+                self.metin.skill_timer = time.time()
                 press_button_multiple('ctrl+g')
                 time.sleep(0.15)
                 for skill in self.metin.skills_to_activate:
@@ -494,6 +493,7 @@ class Metin:
         self.model_cpu = None
         self.window_title = None
         self.skills_time = 0
+        self.skill_timer = 0
         self.label_keys = []
         self.skills_to_activate = skills_to_activate
 
