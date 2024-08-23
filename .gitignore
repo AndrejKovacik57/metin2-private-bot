@@ -4,3 +4,11 @@
 /bot-test.py
 /test.py
 /training_images.zip
+/Config.json
+/venv/
+/venv_test/
+/runs/
+/yolov8m.pt
+/yolov8n.pt
+/runs.zip
+/models.zip
