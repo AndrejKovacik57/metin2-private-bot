@@ -1,8 +1,8 @@
 
 # YOLOv8 configuration for training
 
-train: dataset/images/train
-val: dataset/images/val
+train: C:/Users/abdre/PycharmProjects/metin2-private-bot/dataset/images/train
+val: C:/Users/abdre/PycharmProjects/metin2-private-bot/dataset/images/val
 
 # Number of classes
 nc: 3844
