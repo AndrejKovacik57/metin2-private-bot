@@ -3,8 +3,8 @@
     "bot_test_img_path": "bot_ochrana2.png",
     "metin_hp_img_path": "metin_hp.png",
     "skills_to_activate": "4",
-    "skills_cd": "0",
-    "window_name": "",
+    "skills_cd": "690",
+    "window_name": "Merlis",
     "information_locations": {
         "hp_bar_location": [
             1319,
@@ -49,6 +49,19 @@
             },
             "contourLow": 2500,
             "contourHigh": 7544
+        },
+        {
+            "name": "Metin of murder",
+            "mask": {
+                "hMin": 124,
+                "sMin": 100,
+                "vMin": 0,
+                "hMax": 140,
+                "sMax": 255,
+                "vMax": 255
+            },
+            "contourLow": 1010,
+            "contourHigh": 5200
         }
     ]
 }
