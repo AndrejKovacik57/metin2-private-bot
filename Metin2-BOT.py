@@ -507,6 +507,7 @@ class Metin:
         self.model_initialize()
     
     def model_initialize(self):
+
         path = 'models_yolov8/'
         characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
