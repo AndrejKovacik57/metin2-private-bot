@@ -507,7 +507,7 @@ class Metin:
         self.model_initialize()
     
     def model_initialize(self):
-        path = 'models/'
+        path = 'models_yolov8/'
         characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
         if 'cu' in torch.__version__:
