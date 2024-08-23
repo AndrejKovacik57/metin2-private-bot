@@ -269,6 +269,7 @@ class ApplicationWindow:
             x1, y1, x2, y2 = self.scan_window_location   # z lava, z hora, z prava, z dola
             print(f'x1:{x1} y1:{y1} x2:{x2} y2:{y2}')
             np_image = np.array(screenshot)
+            np_image = cv2.cvtColor(np_image, cv2.COLOR_RGB2BGR)
             np_image_crop = np_image[y1: y2, x1: x2]
             x_middle = (x2 - x1) // 2
             y_middle = (y2 - y1) // 2
@@ -470,8 +471,6 @@ class ApplicationWindow:
 
     def stop_metin_location(self):
         self.metin.metin_destroying_time = 0
-        self.metin.god_buff_cd = 0
-        self.metin.skills_time = 0
         self.metin.solved_at = 0
         self.metin.solving_bot_check = False
         self.running = False
@@ -481,7 +480,7 @@ class ApplicationWindow:
 
 
 class Metin:
-    def __init__(self, bot_img_path, metin_hp_img, skills_to_activateq):
+    def __init__(self, bot_img_path, metin_hp_img, skills_to_activate):
         self.window_top = None
         self.window_left = None
         self.window_right = None
@@ -503,6 +502,7 @@ class Metin:
         self.window_title = None
         self.skills_time = 0
         self.label_keys = []
+        self.skills_to_activate = skills_to_activate
 
         self.model_initialize()
     

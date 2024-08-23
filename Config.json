@@ -2,7 +2,7 @@
     "tesseract_path": "C:\\Program Files\\Tesseract-OCR\\tesseract.exe",
     "bot_test_img_path": "bot_ochrana2.png",
     "metin_hp_img_path": "metin_hp.png",
-    "skills_to_activate": "4",
+    "skills_to_activate": "F1 F4",
     "skills_cd": "690",
     "window_name": "",
     "information_locations": {
@@ -40,12 +40,12 @@
         {
             "name": "Metin of shadow",
             "mask": {
-                "hMin": 0,
+                "hMin": 91,
                 "sMin": 0,
                 "vMin": 0,
-                "hMax": 41,
+                "hMax": 255,
                 "sMax": 255,
-                "vMax": 156
+                "vMax": 252
             },
             "contourLow": 2500,
             "contourHigh": 7544
@@ -53,15 +53,15 @@
         {
             "name": "Metin of murder",
             "mask": {
-                "hMin": 124,
-                "sMin": 100,
+                "hMin": 117,
+                "sMin": 0,
                 "vMin": 0,
-                "hMax": 140,
+                "hMax": 174,
                 "sMax": 255,
-                "vMax": 255
+                "vMax": 123
             },
-            "contourLow": 1010,
-            "contourHigh": 5200
+            "contourLow": 1155,
+            "contourHigh": 6698
         }
     ]
 }
