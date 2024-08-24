@@ -13,9 +13,9 @@
             67
         ],
         "hp_full_location": [
-            1434,
+            1422,
             60,
-            1434,
+            1422,
             60
         ],
         "cancel_location": [
@@ -31,9 +31,9 @@
             1194
         ],
         "hp_full_pixel_colour": [
-            204,
+            100,
             102,
-            100
+            204
         ]
     },
     "metin_stones": [
@@ -88,6 +88,32 @@
             },
             "contourLow": 1155,
             "contourHigh": 6698
+        },
+        {
+            "name": "Metin Tu-Young",
+            "mask": {
+                "hMin": 0,
+                "sMin": 151,
+                "vMin": 15,
+                "hMax": 255,
+                "sMax": 255,
+                "vMax": 255
+            },
+            "contourLow": 789,
+            "contourHigh": 61698
+        },
+        {
+            "name": "Metin Jeon-Un",
+            "mask": {
+                "hMin": 0,
+                "sMin": 0,
+                "vMin": 98,
+                "hMax": 10,
+                "sMax": 255,
+                "vMax": 255
+            },
+            "contourLow": 1000,
+            "contourHigh": 5600
         }
     ]
 }
