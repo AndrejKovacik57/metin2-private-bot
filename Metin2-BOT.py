@@ -26,88 +26,99 @@ class NoCudaOrCPUModuleFound(ValueError):
 
 
 class ApplicationWindow:
-    def __init__(self, title="Metin Bot", width=800, height=800):
+    def __init__(self, title="Metin Bot", width=600, height=400):
         self.root = tk.Tk()
         self.root.title(title)
 
         # Set window size
         self.root.geometry(f"{width}x{height}")
 
-        # Create a text entry field
+        # Create a grid layout for better organization
+        self.root.grid_columnconfigure(0, weight=1)
+        self.root.grid_columnconfigure(1, weight=1)
+        self.root.grid_columnconfigure(2, weight=1)
+        self.root.grid_columnconfigure(3, weight=1)
+
+        # Create a text entry field for window name
         self.entry_window_name = tk.Label(self.root, text="Window name:")
-        self.entry_window_name.pack(pady=5)
-        self.text_window_name = tk.Entry(self.root, width=50)
-        self.text_window_name.pack(pady=5)
+        self.entry_window_name.grid(row=0, column=0, columnspan=4, pady=5)
+        self.text_window_name = tk.Entry(self.root, width=15)
+        self.text_window_name.grid(row=1, column=0, columnspan=4, pady=5)
 
-        # Create a button to start Metin location
-        self.start_metin_location_button = tk.Button(self.root, text="Start metin location",
+        # Create buttons for start/stop Metin location and label on top for choose metin stone
+        self.start_metin_location_button = tk.Button(self.root, text="Start Metin Location",
                                                      command=self.start_metin_location_thread)
-        self.start_metin_location_button.pack(pady=10)
+        self.start_metin_location_button.grid(row=2, column=0, pady=10, padx=10)
 
-        # Create a button to stop Metin location
         self.stop_metin_location_button = tk.Button(self.root, text="Stop Metin Location",
                                                     command=self.stop_metin_location)
-        self.stop_metin_location_button.pack(pady=10)
+        self.stop_metin_location_button.grid(row=2, column=1, pady=10, padx=10)
 
-        # Create a text entry field
-        self.entry_tesseract_path = tk.Label(self.root, text="tesseract path:")
-        self.entry_tesseract_path.pack(pady=5)
-        self.text_tesseract_path = tk.Entry(self.root, width=50)
-        self.text_tesseract_path.pack(pady=5)
+        self.dropdown_label = tk.Label(self.root, text="Choose Metin Stone:")
+        self.dropdown_label.grid(row=1, column=2, columnspan=2, pady=5)
 
-        # Create a text entry field
-        self.entry_bot_check = tk.Label(self.root, text="bot check img:")
-        self.entry_bot_check.pack(pady=5)
-        self.text_bot_check = tk.Entry(self.root, width=50)
-        self.text_bot_check.pack(pady=5)
-
-        # Create a text entry field
-        self.entry_metin_hp_check = tk.Label(self.root, text="metin hp img:")
-        self.entry_metin_hp_check.pack(pady=5)
-        self.text_metin_hp_check = tk.Entry(self.root, width=50)
-        self.text_metin_hp_check.pack(pady=5)
-
-        # Create a text entry field
-        self.entry_skills_check = tk.Label(self.root, text="Skills to activate:")
-        self.entry_skills_check.pack(pady=5)
-        self.text_skills_check = tk.Entry(self.root, width=50)
-        self.text_skills_check.pack(pady=5)
-
-        # Create a text entry field
-        self.entry_skills_cd = tk.Label(self.root, text="Skills cd:")
-        self.entry_skills_cd.pack(pady=5)
-        self.text_skills_cd = tk.Entry(self.root, width=50)
-        self.text_skills_cd.pack(pady=5)
-
-        # Create a dropdown (Combobox) to choose from specific values
-        self.dropdown_label = tk.Label(self.root, text="Choose metin stone:")
-        self.dropdown_label.pack(pady=5)
-        self.metin_options = ["Option 1", "Option 2", "Option 3", "Option 4"]  # Add your specific options here
+        self.metin_options = ["Option 1", "Option 2", "Option 3", "Option 4"]
         self.dropdown = ttk.Combobox(self.root, values=self.metin_options, state="readonly")
-        self.dropdown.pack(pady=5)
+        self.dropdown.grid(row=2, column=2, columnspan=2, pady=5)
 
-        # Create a button to start Metin location
-        self.apply = tk.Button(self.root, text="Apply", command=self.apply_fields)
-        self.apply.pack(pady=10)
+        # Create a 2x3 grid for the text entry fields with labels on top
+        self.entry_tesseract_path = tk.Label(self.root, text="Tesseract Path:")
+        self.entry_tesseract_path.grid(row=4, column=0, pady=5)
+        self.text_tesseract_path = tk.Entry(self.root, width=30)
+        self.text_tesseract_path.grid(row=5, column=0, pady=5)
 
-        # Create a button to take a screenshot and allow rectangle selection
+        self.entry_bot_check = tk.Label(self.root, text="Bot Check Img:")
+        self.entry_bot_check.grid(row=4, column=1, pady=5)
+        self.text_bot_check = tk.Entry(self.root, width=30)
+        self.text_bot_check.grid(row=5, column=1, pady=5)
+
+        self.entry_metin_hp_check = tk.Label(self.root, text="Metin HP Img:")
+        self.entry_metin_hp_check.grid(row=4, column=2, pady=5)
+        self.text_metin_hp_check = tk.Entry(self.root, width=30)
+        self.text_metin_hp_check.grid(row=5, column=2, pady=5)
+
+        self.entry_skills_check = tk.Label(self.root, text="Skills to Activate:")
+        self.entry_skills_check.grid(row=6, column=0, pady=5)
+        self.text_skills_check = tk.Entry(self.root, width=30)
+        self.text_skills_check.grid(row=7, column=0, pady=5)
+
+        self.entry_skills_cd = tk.Label(self.root, text="Skills Cooldown:")
+        self.entry_skills_cd.grid(row=6, column=1, pady=5)
+        self.text_skills_cd = tk.Entry(self.root, width=30)
+        self.text_skills_cd.grid(row=7, column=1, pady=5)
+
+        # Create a button to take a screenshot and center it
         self.screenshot_button = tk.Button(self.root, text="Take Screenshot", command=self.take_screenshot)
-        self.screenshot_button.pack(pady=10)
+        self.screenshot_button.grid(row=8, column=0, columnspan=4, pady=10)
 
-        self.set_metin_hp_bar_location = tk.Button(self.root, text="Set location for metin hp bar", command=self.apply_hp_bar_location)
-        self.set_metin_hp_bar_location.pack(pady=10)
-        self.set_metin_hp_full_location = tk.Button(self.root, text="Set location for metin full hp", command=self.apply_hp_full_location)
-        self.set_metin_hp_full_location.pack(pady=10)
-        self.set_cancel_location = tk.Button(self.root, text="Set location cancel button", command=self.apply_cancel_location)
-        self.set_cancel_location.pack(pady=10)
-        self.set_scan_window = tk.Button(self.root, text="Set scan window", command=self.apply_scan_window_location)
-        self.set_scan_window.pack(pady=10)
+        # Create a 2x2 grid for location setting buttons and center it
+        button_frame = tk.Frame(self.root)
+        button_frame.grid(row=9, column=0, columnspan=4, pady=10)
+        button_frame.grid_columnconfigure(0, weight=1)
+        button_frame.grid_columnconfigure(1, weight=1)
+
+        self.set_metin_hp_bar_location = tk.Button(button_frame, text="Set location for Metin HP bar",
+                                                   command=self.apply_hp_bar_location)
+        self.set_metin_hp_bar_location.grid(row=0, column=0, pady=10, padx=10)
+
+        self.set_metin_hp_full_location = tk.Button(button_frame, text="Set location for Metin full HP",
+                                                    command=self.apply_hp_full_location)
+        self.set_metin_hp_full_location.grid(row=0, column=1, pady=10, padx=10)
+
+        self.set_cancel_location = tk.Button(button_frame, text="Set location cancel button",
+                                             command=self.apply_cancel_location)
+        self.set_cancel_location.grid(row=1, column=0, pady=10, padx=10)
+
+        self.set_scan_window = tk.Button(button_frame, text="Set scan window",
+                                         command=self.apply_scan_window_location)
+        self.set_scan_window.grid(row=1, column=1, pady=10, padx=10)
+
+        # Create the Apply button and center it
+        self.apply = tk.Button(self.root, text="Apply", command=self.apply_fields)
+        self.apply.grid(row=10, column=0, columnspan=4, pady=10)
 
         self.cfg = {}
         self.information_locations = {}
-
-        self.image_label = None
-        self.screenshot_img = None
 
         self.metin = None
 
@@ -342,7 +353,7 @@ class ApplicationWindow:
             selected_contour_pos, output_image = self.metin.locate_metin(np_image_crop, x_middle, y_middle)
             if selected_contour_pos is not None:
                 # Display the screenshot using the main thread
-                self.display_screenshot(output_image)
+                # self.display_screenshot(output_image)
                 metin_pos_x, metin_pos_y = selected_contour_pos
 
                 metin_pos_x += self.metin.window_left + x1
@@ -414,7 +425,7 @@ class ApplicationWindow:
                             press_button('d', self.metin.window_title)
 
             else:
-                self.display_screenshot(output_image)
+                # self.display_screenshot(output_image)
                 press_button('q', self.metin.window_title)
                 print("No valid contour found.")
 
