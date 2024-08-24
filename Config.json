@@ -4,7 +4,7 @@
     "metin_hp_img_path": "metin_hp.png",
     "skills_to_activate": "F1 F4",
     "skills_cd": "690",
-    "window_name": " ",
+    "window_name": "Merlis",
     "information_locations": {
         "hp_bar_location": [
             1319,
@@ -49,6 +49,19 @@
             },
             "contourLow": 2500,
             "contourHigh": 7544
+        },
+        {
+            "name": "Metin of fall",
+            "mask": {
+                "hMin": 2,
+                "sMin": 91,
+                "vMin": 0,
+                "hMax": 11,
+                "sMax": 176,
+                "vMax": 255
+            },
+            "contourLow": 1155,
+            "contourHigh": 8037
         },
         {
             "name": "Metin of murder",
