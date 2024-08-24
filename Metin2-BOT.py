@@ -573,7 +573,7 @@ class Metin:
 
                     cur_distance = abs(x_middle - contour_center_x) + abs(y_middle - contour_center_y)
 
-                    if cur_distance <= 150:
+                    if cur_distance <= 200:
                         continue
 
                     if cur_distance < min_distance:
