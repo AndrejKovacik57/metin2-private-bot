@@ -26,7 +26,7 @@ class NoCudaOrCPUModuleFound(ValueError):
 
 
 class ApplicationWindow:
-    def __init__(self, title="Metin Bot", width=600, height=400):
+    def __init__(self, title="Metin Bot", width=600, height=450):
         self.root = tk.Tk()
         self.root.title(title)
 
