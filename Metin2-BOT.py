@@ -297,6 +297,7 @@ class ApplicationWindow:
                     extracted_text_code_to_find = extracted_text_code_to_find.replace('?', '7')
                 result = extract_between_words_fuzzy(extracted_text_code_to_find, "pictures", "Select")
                 print(f'bot result {result}')
+                no_outputs = []
                 for row in range(2):
                     for column in range(3):
                         x1, y1 = box * column + space * column, box * row + space * row  # z lava, z hore
@@ -314,6 +315,14 @@ class ApplicationWindow:
                             self.metin.bot_timer = 0
                             time.sleep(0.3)
                             break
+                        if output is None:
+                            no_outputs.append((x1, x2, y1, y2))
+
+                    if len(no_outputs) > 0:
+                        print('**********************************')
+                        print('***********ADO KUKAJ**************')
+                        print('**********************************')
+                        print(f'no_outputs: {no_outputs}')
 
                     if bot_time_diff > 10:
                         print('BOT OCHRANA ZATVORENA')
@@ -356,7 +365,7 @@ class ApplicationWindow:
                     print(f'pixel_to_check {pixel_to_check}, target_pixel_value {target_pixel_value}')
                     if np.all(np.abs(pixel_to_check - target_pixel_value) <= 5):
                         mouse_left_click(metin_pos_x, metin_pos_y, self.metin.window_title)
-
+                        print('KLIK NA METIN')
                         self.metin.destroying_metin = True
                         self.metin.metin_destroying_time = time.time()
                     else:
@@ -371,6 +380,7 @@ class ApplicationWindow:
 
                     hp_bar_x1, hp_bar_y1, hp_bar_x2, hp_bar_y2 = self.hp_bar_location
                     hp_bar = np_image[hp_bar_y1: hp_bar_y2, hp_bar_x1: hp_bar_x2]
+
                     metin_is_alive = self.metin.locate_metin_hp(hp_bar, 0.7)
                     self.metin.destroying_metin = metin_is_alive
                     print(f'nici sa metin {metin_is_alive}')
@@ -521,10 +531,6 @@ class Metin:
         combo_to_id = {combo: idx for idx, combo in enumerate(combinations)}
         self.label_keys = list(combo_to_id.keys())
 
-
-    def on_found(self):
-        self.solving_bot_check = True
-
     def locate_metin(self, np_image, x_middle, y_middle):
         # Convert the image to HSV
         hsv = cv2.cvtColor(np_image, cv2.COLOR_BGR2HSV)
@@ -548,7 +554,12 @@ class Metin:
                     # Draw a line from the middle of the screenshot to the center of the contour
                     cv2.line(np_image, (x_middle, y_middle), (contour_center_x, contour_center_y), (255, 190, 200), 2)
                     # Optionally, you can calculate the distance between the middle of the screenshot and the contour center
+
                     cur_distance = abs(x_middle - contour_center_x) + abs(y_middle - contour_center_y)
+
+                    if cur_distance <= 150:
+                        continue
+
                     if cur_distance < min_distance:
                         min_distance = cur_distance
                         selected_contour = contour
@@ -675,7 +686,6 @@ def press_button_multiple(button, window_title):
 def mouse_left_click(metin_pos_x, metin_pos_y, window_title):
     active_window = gw.getActiveWindow()
     if active_window and window_title in active_window.title:
-        print('KLIIIK')
         pyautogui.moveTo(metin_pos_x, metin_pos_y)
         pyautogui.click()
 
