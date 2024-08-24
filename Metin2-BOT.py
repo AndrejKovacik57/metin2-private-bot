@@ -284,8 +284,8 @@ class ApplicationWindow:
                 print('nic')
             if location is not None:
 
-                cancel_x = self.metin.window_left + location.left + location.width+ 13
-                cancel_y = self.metin.window_top + location.top + 13 + location.height / 2
+                cancel_x = self.metin.window_left + location.left + location.width + 13
+                cancel_y = self.metin.window_top + location.top + location.height / 2
 
                 self.metin.bot_timer = self.metin.bot_timer if self.metin.bot_timer != 0 else time.time()
                 bot_time_diff = time.time() - self.metin.bot_timer
