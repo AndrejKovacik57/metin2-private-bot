@@ -195,6 +195,7 @@ class ApplicationWindow:
     def apply_hp_full_location(self):
         if None not in [self.start_x, self.start_y, self.end_x, self.end_y]:
             np_img = np.array(self.screenshot_image)
+            np_img = cv2.cvtColor(np_img, cv2.COLOR_RGB2BGR)
             pixel = np_img[self.end_y + self.screenshot_image_top, self.end_x + self.screenshot_image_left]
             self.cfg['information_locations']['hp_full_pixel_colour'] = pixel.tolist()
 
@@ -279,6 +280,8 @@ class ApplicationWindow:
             except pyautogui.ImageNotFoundException:
                 print('nic')
             if location is not None:
+
+                self.metin.bot_timer = self.metin.bot_timer if self.metin.bot_timer != 0 else time.time()
                 x1 = self.metin.window_left + location.left + 6
                 x2 = x1 + 222
                 y1 = self.metin.window_top + location.top + 28
@@ -310,8 +313,8 @@ class ApplicationWindow:
                             print('BOT OCHRANA PRELOMENA')
                             x_to_click = self.metin.window_left + location.left + 6 + x1 + (x2 - x1) / 2
                             y_to_click = self.metin.window_top + location.top + 28 + y1 + (y2 - y1) / 2
-                            pyautogui.moveTo(x_to_click, y_to_click)
                             mouse_left_click(x_to_click, y_to_click)
+                            self.metin.bot_timer = 0
                             break
 
                 continue
@@ -336,7 +339,7 @@ class ApplicationWindow:
 
                 if not self.metin.destroying_metin:
                     press_button('z')
-                    time.sleep(0.2)
+                    time.sleep(0.15)
                     press_button('y')
                     print('nenici sa metin')
                     mouse_right_click(metin_pos_x, metin_pos_y)
@@ -353,7 +356,6 @@ class ApplicationWindow:
 
                         self.metin.destroying_metin = True
                         self.metin.metin_destroying_time = time.time()
-                        self.metin.metin_is_being_destroyed = False
                     else:
                         press_button('q')
                         time.sleep(0.2)
@@ -375,13 +377,16 @@ class ApplicationWindow:
                     press_button('q')
 
                     metin_destroy_time_diff = time.time() - self.metin.metin_destroying_time
-                    if metin_is_alive and metin_destroy_time_diff > 10 and not self.metin.metin_is_being_destroyed:
+                    if metin_is_alive and metin_destroy_time_diff > 10:
+                        print(f'nenici sa menit {metin_destroy_time_diff}')
                         pixel_x, pixel_y = self.hp_full_location[:2]
                         pixel_x += self.metin.window_left
                         pixel_y += self.metin.window_top
 
                         pixel_to_check = np_image[pixel_y, pixel_x]
+                        print(f'pixel_to_check {pixel_to_check} | target_pixel_value {target_pixel_value}')
                         if np.all(np.abs(pixel_to_check - target_pixel_value) <= 5):
+                            print('zatvaram metin okno')
                             cancel_x1, cancel_y1, cancel_x2, cancel_y2 = self.cancel_location
 
                             x_to_cancel = (self.metin.window_left + cancel_x1 + (cancel_x2 - cancel_x1) / 2)
@@ -389,8 +394,6 @@ class ApplicationWindow:
 
                             mouse_left_click(x_to_cancel, y_to_cancel)
                             press_button('a')
-                        else:
-                            self.metin.metin_is_being_destroyed = True
 
             else:
                 self.display_screenshot(output_image)
@@ -488,7 +491,6 @@ class Metin:
         self.bot_img_path = bot_img_path
         self.destroying_metin = False
         self.metin_destroying_time = 0
-        self.metin_is_being_destroyed = False
         self.model_cuda = None
         self.model_cpu = None
         self.window_title = None
@@ -496,6 +498,7 @@ class Metin:
         self.skill_timer = 0
         self.label_keys = []
         self.skills_to_activate = skills_to_activate
+        self.bot_timer = 0
 
         self.model_initialize()
     
