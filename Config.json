@@ -64,6 +64,19 @@
             "contourHigh": 8037
         },
         {
+            "name": "Metin of death",
+            "mask": {
+                "hMin": 0,
+                "sMin": 53,
+                "vMin": 0,
+                "hMax": 10,
+                "sMax": 473,
+                "vMax": 10000
+            },
+            "contourLow": 1155,
+            "contourHigh": 8037
+        },
+        {
             "name": "Metin of murder",
             "mask": {
                 "hMin": 117,
