@@ -273,7 +273,7 @@ class ApplicationWindow:
                 print('nic')
             if location is not None:
 
-                cancel_x = self.metin.left + location.left + 13
+                cancel_x = self.metin.window_left + location.left + location.width+ 13
                 cancel_y = self.metin.window_top + location.top + 13 + location.height / 2
 
                 self.metin.bot_timer = self.metin.bot_timer if self.metin.bot_timer != 0 else time.time()
@@ -297,7 +297,6 @@ class ApplicationWindow:
                     extracted_text_code_to_find = extracted_text_code_to_find.replace('?', '7')
                 result = extract_between_words_fuzzy(extracted_text_code_to_find, "pictures", "Select")
                 print(f'bot result {result}')
-                not_detected = []
                 for row in range(2):
                     for column in range(3):
                         x1, y1 = box * column + space * column, box * row + space * row  # z lava, z hore
@@ -313,13 +312,14 @@ class ApplicationWindow:
                             y_to_click = self.metin.window_top + location.top + 28 + y1 + (y2 - y1) / 2
                             mouse_left_click(x_to_click, y_to_click, self.metin.window_title)
                             self.metin.bot_timer = 0
+                            time.sleep(0.3)
                             break
-                        if output is None:
-                            not_detected.append((x1, x2, y1, y2))
 
                     if bot_time_diff > 10:
+                        print('BOT OCHRANA ZATVORENA')
                         mouse_left_click(cancel_x, cancel_y, self.metin.window_title)
                         self.metin.bot_timer = 0
+                        time.sleep(0.3)
 
             if self.metin.skill_timer == 0 or self.metin.skill_timer != 0 and skill_timer_diff >= self.skills_cd:
                 self.metin.skill_timer = time.time()
@@ -347,12 +347,13 @@ class ApplicationWindow:
                     mouse_right_click(metin_pos_x, metin_pos_y, self.metin.window_title)
                     screenshot_hp_check = get_window_screenshot(self.metin.metin_window)
                     np_image_hp_check = np.array(screenshot_hp_check)
+                    np_image_hp_check = cv2.cvtColor(np_image_hp_check, cv2.COLOR_RGB2BGR)
                     # check for hp missing
                     pixel_x, pixel_y = self.hp_full_location[:2]
                     pixel_x += self.metin.window_left
                     pixel_y += self.metin.window_top
                     pixel_to_check = np_image_hp_check[pixel_y, pixel_x]
-
+                    print(f'pixel_to_check {pixel_to_check}, target_pixel_value {target_pixel_value}')
                     if np.all(np.abs(pixel_to_check - target_pixel_value) <= 5):
                         mouse_left_click(metin_pos_x, metin_pos_y, self.metin.window_title)
 
