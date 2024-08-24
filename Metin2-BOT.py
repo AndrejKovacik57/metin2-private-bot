@@ -273,7 +273,12 @@ class ApplicationWindow:
                 print('nic')
             if location is not None:
 
+                cancel_x = self.metin.left + location.left + 13
+                cancel_y = self.metin.window_top + location.top + 13 + location.height / 2
+
                 self.metin.bot_timer = self.metin.bot_timer if self.metin.bot_timer != 0 else time.time()
+                bot_time_diff = time.time() - self.metin.bot_timer
+
                 x1 = self.metin.window_left + location.left + 6
                 x2 = x1 + 222
                 y1 = self.metin.window_top + location.top + 28
@@ -292,6 +297,7 @@ class ApplicationWindow:
                     extracted_text_code_to_find = extracted_text_code_to_find.replace('?', '7')
                 result = extract_between_words_fuzzy(extracted_text_code_to_find, "pictures", "Select")
                 print(f'bot result {result}')
+                not_detected = []
                 for row in range(2):
                     for column in range(3):
                         x1, y1 = box * column + space * column, box * row + space * row  # z lava, z hore
@@ -308,15 +314,19 @@ class ApplicationWindow:
                             mouse_left_click(x_to_click, y_to_click, self.metin.window_title)
                             self.metin.bot_timer = 0
                             break
+                        if output is None:
+                            not_detected.append((x1, x2, y1, y2))
 
-                continue
+                    if bot_time_diff > 10:
+                        mouse_left_click(cancel_x, cancel_y, self.metin.window_title)
+                        self.metin.bot_timer = 0
 
             if self.metin.skill_timer == 0 or self.metin.skill_timer != 0 and skill_timer_diff >= self.skills_cd:
                 self.metin.skill_timer = time.time()
                 press_button_multiple('ctrl+g', self.metin.window_title)
                 time.sleep(0.15)
                 for skill in self.metin.skills_to_activate:
-                    press_button(skill)
+                    press_button(skill, self.metin.window_title)
                     time.sleep(2)
                 press_button_multiple('ctrl+g', self.metin.window_title)
 
@@ -330,9 +340,9 @@ class ApplicationWindow:
                 metin_pos_y += self.metin.window_top + y1
 
                 if not self.metin.destroying_metin:
-                    press_button('z')
+                    press_button('z', self.metin.window_title)
                     time.sleep(0.15)
-                    press_button('y')
+                    press_button('y', self.metin.window_title)
                     print('nenici sa metin')
                     mouse_right_click(metin_pos_x, metin_pos_y, self.metin.window_title)
                     screenshot_hp_check = get_window_screenshot(self.metin.metin_window)
@@ -349,11 +359,11 @@ class ApplicationWindow:
                         self.metin.destroying_metin = True
                         self.metin.metin_destroying_time = time.time()
                     else:
-                        press_button('q')
+                        press_button('q', self.metin.window_title)
                         time.sleep(0.2)
-                        press_button('q')
+                        press_button('q', self.metin.window_title)
                         time.sleep(0.2)
-                        press_button('q')
+                        press_button('q', self.metin.window_title)
                         time.sleep(0.2)
 
                 else:
@@ -366,7 +376,7 @@ class ApplicationWindow:
                     if not metin_is_alive:
                         continue
 
-                    press_button('q')
+                    press_button('q', self.metin.window_title)
 
                     metin_destroy_time_diff = time.time() - self.metin.metin_destroying_time
                     if metin_is_alive and metin_destroy_time_diff > 10:
@@ -385,11 +395,11 @@ class ApplicationWindow:
                             y_to_cancel = (self.metin.window_top + cancel_y1 + (cancel_y2 - cancel_y1) / 2)
 
                             mouse_left_click(x_to_cancel, y_to_cancel, self.metin.window_title)
-                            press_button('a')
+                            press_button('a', self.metin.window_title)
 
             else:
                 self.display_screenshot(output_image)
-                press_button('q')
+                press_button('q', self.metin.window_title)
                 print("No valid contour found.")
 
     def take_screenshot(self):
@@ -641,10 +651,12 @@ def create_low_upp(metin_mask):
     return lower, upper
 
 
-def press_button(button):
-    keyboard.press(button)
-    time.sleep(0.15)
-    keyboard.release(button)
+def press_button(button, window_title):
+    active_window = gw.getActiveWindow()
+    if active_window and window_title in active_window.title:
+        keyboard.press(button)
+        time.sleep(0.15)
+        keyboard.release(button)
 
 
 def press_button_multiple(button, window_title):
