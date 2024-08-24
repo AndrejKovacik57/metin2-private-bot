@@ -352,8 +352,10 @@ class ApplicationWindow:
                     press_button('z', self.metin.window_title)
                     time.sleep(0.15)
                     press_button('y', self.metin.window_title)
-                    print('nenici sa metin')
+                    print('nenici sa metin RIGHT CLICK')
+
                     mouse_right_click(metin_pos_x, metin_pos_y, self.metin.window_title)
+                    time.sleep(0.1)
                     screenshot_hp_check = get_window_screenshot(self.metin.metin_window)
                     np_image_hp_check = np.array(screenshot_hp_check)
                     np_image_hp_check = cv2.cvtColor(np_image_hp_check, cv2.COLOR_RGB2BGR)
@@ -369,6 +371,7 @@ class ApplicationWindow:
                         self.metin.destroying_metin = True
                         self.metin.metin_destroying_time = time.time()
                     else:
+                        print('METIN SA UZ NICI')
                         press_button('q', self.metin.window_title)
                         time.sleep(0.2)
                         press_button('q', self.metin.window_title)
@@ -402,11 +405,13 @@ class ApplicationWindow:
                             print('zatvaram metin okno')
                             cancel_x1, cancel_y1, cancel_x2, cancel_y2 = self.cancel_location
 
-                            x_to_cancel = (self.metin.window_left + cancel_x1 + (cancel_x2 - cancel_x1) / 2)
-                            y_to_cancel = (self.metin.window_top + cancel_y1 + (cancel_y2 - cancel_y1) / 2)
+                            # x_to_cancel = (self.metin.window_left + cancel_x1 + (cancel_x2 - cancel_x1) / 2)
+                            # y_to_cancel = (self.metin.window_top + cancel_y1 + (cancel_y2 - cancel_y1) / 2)
 
-                            mouse_left_click(x_to_cancel, y_to_cancel, self.metin.window_title)
+                            # mouse_left_click(x_to_cancel, y_to_cancel, self.metin.window_title)
                             press_button('a', self.metin.window_title)
+                            time.sleep(0.2)
+                            press_button('d', self.metin.window_title)
 
             else:
                 self.display_screenshot(output_image)
@@ -683,17 +688,17 @@ def press_button_multiple(button, window_title):
             time.sleep(0.3)
 
 
-def mouse_left_click(metin_pos_x, metin_pos_y, window_title):
+def mouse_left_click(pos_x, pos_y, window_title):
     active_window = gw.getActiveWindow()
     if active_window and window_title in active_window.title:
-        pyautogui.moveTo(metin_pos_x, metin_pos_y)
+        pyautogui.moveTo(pos_x, pos_y)
         pyautogui.click()
 
 
-def mouse_right_click(metin_pos_x, metin_pos_y, window_title):
+def mouse_right_click(pos_x, pos_y, window_title):
     active_window = gw.getActiveWindow()
     if active_window and window_title in active_window.title:
-        pyautogui.moveTo(metin_pos_x, metin_pos_y)
+        pyautogui.moveTo(pos_x, pos_y)
         pyautogui.rightClick()
 
 
