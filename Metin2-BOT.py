@@ -25,16 +25,8 @@ class NoCudaOrCPUModuleFound(ValueError):
         super().__init__(message)
 
 
-class Screenshot:
-    def __init__(self, screenshot, left_up, right_down, on_found_callback=None):
-        self.screenshot = screenshot
-        self.left_up = left_up
-        self.right_down = right_down
-        self.on_found_callback = on_found_callback
-
-
 class ApplicationWindow:
-    def __init__(self, title="Metin Bot", width=800, height=800, screenshot=None):
+    def __init__(self, title="Metin Bot", width=800, height=800):
         self.root = tk.Tk()
         self.root.title(title)
 
@@ -313,7 +305,7 @@ class ApplicationWindow:
                             print('BOT OCHRANA PRELOMENA')
                             x_to_click = self.metin.window_left + location.left + 6 + x1 + (x2 - x1) / 2
                             y_to_click = self.metin.window_top + location.top + 28 + y1 + (y2 - y1) / 2
-                            mouse_left_click(x_to_click, y_to_click)
+                            mouse_left_click(x_to_click, y_to_click, self.metin.window_title)
                             self.metin.bot_timer = 0
                             break
 
@@ -321,12 +313,12 @@ class ApplicationWindow:
 
             if self.metin.skill_timer == 0 or self.metin.skill_timer != 0 and skill_timer_diff >= self.skills_cd:
                 self.metin.skill_timer = time.time()
-                press_button_multiple('ctrl+g')
+                press_button_multiple('ctrl+g', self.metin.window_title)
                 time.sleep(0.15)
                 for skill in self.metin.skills_to_activate:
                     press_button(skill)
                     time.sleep(2)
-                press_button_multiple('ctrl+g')
+                press_button_multiple('ctrl+g', self.metin.window_title)
 
             selected_contour_pos, output_image = self.metin.locate_metin(np_image_crop, x_middle, y_middle)
             if selected_contour_pos is not None:
@@ -342,7 +334,7 @@ class ApplicationWindow:
                     time.sleep(0.15)
                     press_button('y')
                     print('nenici sa metin')
-                    mouse_right_click(metin_pos_x, metin_pos_y)
+                    mouse_right_click(metin_pos_x, metin_pos_y, self.metin.window_title)
                     screenshot_hp_check = get_window_screenshot(self.metin.metin_window)
                     np_image_hp_check = np.array(screenshot_hp_check)
                     # check for hp missing
@@ -352,7 +344,7 @@ class ApplicationWindow:
                     pixel_to_check = np_image_hp_check[pixel_y, pixel_x]
 
                     if np.all(np.abs(pixel_to_check - target_pixel_value) <= 5):
-                        mouse_left_click(metin_pos_x, metin_pos_y)
+                        mouse_left_click(metin_pos_x, metin_pos_y, self.metin.window_title)
 
                         self.metin.destroying_metin = True
                         self.metin.metin_destroying_time = time.time()
@@ -392,7 +384,7 @@ class ApplicationWindow:
                             x_to_cancel = (self.metin.window_left + cancel_x1 + (cancel_x2 - cancel_x1) / 2)
                             y_to_cancel = (self.metin.window_top + cancel_y1 + (cancel_y2 - cancel_y1) / 2)
 
-                            mouse_left_click(x_to_cancel, y_to_cancel)
+                            mouse_left_click(x_to_cancel, y_to_cancel, self.metin.window_title)
                             press_button('a')
 
             else:
@@ -655,29 +647,31 @@ def press_button(button):
     keyboard.release(button)
 
 
-def press_button_multiple(button):
-    buttons = button.split('+')
-    for button in buttons:
-        keyboard.press(button)
-        time.sleep(0.3)
-    for button in buttons:
-        keyboard.release(button)
-        time.sleep(0.3)
+def press_button_multiple(button, window_title):
+    active_window = gw.getActiveWindow()
+    if active_window and window_title in active_window.title:
+        buttons = button.split('+')
+        for button in buttons:
+            keyboard.press(button)
+            time.sleep(0.3)
+        for button in buttons:
+            keyboard.release(button)
+            time.sleep(0.3)
 
 
-def mouse_left_click(metin_pos_x, metin_pos_y):
-    # active_window = gw.getActiveWindow()
-    # if active_window and window_title in active_window.title:
-    print('KLIIIK')
-    pyautogui.moveTo(metin_pos_x, metin_pos_y)
-    pyautogui.click()
+def mouse_left_click(metin_pos_x, metin_pos_y, window_title):
+    active_window = gw.getActiveWindow()
+    if active_window and window_title in active_window.title:
+        print('KLIIIK')
+        pyautogui.moveTo(metin_pos_x, metin_pos_y)
+        pyautogui.click()
 
 
-def mouse_right_click(metin_pos_x, metin_pos_y):
-    # active_window = gw.getActiveWindow()
-    # if active_window and window_title in active_window.title:
-    pyautogui.moveTo(metin_pos_x, metin_pos_y)
-    pyautogui.rightClick()
+def mouse_right_click(metin_pos_x, metin_pos_y, window_title):
+    active_window = gw.getActiveWindow()
+    if active_window and window_title in active_window.title:
+        pyautogui.moveTo(metin_pos_x, metin_pos_y)
+        pyautogui.rightClick()
 
 
 def extract_between_words_fuzzy(text, start_word, end_word, threshold=80):
