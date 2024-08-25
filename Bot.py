@@ -660,6 +660,8 @@ class Metin:
             else:
                 print(f'np_image {np_image}')
                 hp_bar_x1, hp_bar_y1, hp_bar_x2, hp_bar_y2 = self.hp_bar_location
+
+                print(f'hp_bar_y1 {hp_bar_y1} hp_bar_y2 {hp_bar_y2} hp_bar_x1 {hp_bar_x1} hp_bar_x2 {hp_bar_x2}')
                 hp_bar = np_image[hp_bar_y1: hp_bar_y2, hp_bar_x1: hp_bar_x2]
 
                 print(f'hp_bar {hp_bar}')
