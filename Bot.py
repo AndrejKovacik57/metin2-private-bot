@@ -650,8 +650,7 @@ class Metin:
                     print('METIN SA UZ NICI')
                     press_button('q', self.window_title)
 
-                del check_hp_np_image
-                gc.collect()
+
 
                 # HERE I WANT TO display_screenshot(output_image)
                 if self.show_img:
@@ -659,9 +658,11 @@ class Metin:
                     self.display_screenshot()
 
             else:
+                print(f'np_image {np_image}')
                 hp_bar_x1, hp_bar_y1, hp_bar_x2, hp_bar_y2 = self.hp_bar_location
                 hp_bar = np_image[hp_bar_y1: hp_bar_y2, hp_bar_x1: hp_bar_x2]
 
+                print(f'hp_bar {hp_bar}')
                 # check if metin was destroyed
                 metin_is_alive = self.locate_metin_hp(hp_bar, 0.7)
                 self.destroying_metin = metin_is_alive
@@ -724,6 +725,10 @@ class Metin:
         if 'output_image' in locals():
             del output_image
         if 'np_image_crop' in locals():
+            del np_image_crop
+        if 'check_hp_np_image' in locals():
+            del np_image_crop
+        if 'hp_barhp_bar' in locals():
             del np_image_crop
         gc.collect()
 
