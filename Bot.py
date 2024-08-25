@@ -235,7 +235,6 @@ class ApplicationWindow:
             np_img = cv2.cvtColor(np_img, cv2.COLOR_RGB2BGR)
             pixel = np_img[self.end_y + self.screenshot_image_top, self.end_x + self.screenshot_image_left]
             self.cfg['information_locations']['hp_full_pixel_colour'] = pixel.tolist()
-            print(f'pixel {pixel}')
 
             self.cfg['information_locations']['hp_full_location'] = [self.end_x, self.end_y, self.start_x, self.start_y]
 
@@ -339,7 +338,6 @@ class ApplicationWindow:
         # Finalize the rectangle and print/save the coordinates
         self.end_x, self.end_y = (event.x, event.y)
         print(f"Rectangle coordinates: {self.start_x}, {self.start_y} -> {self.end_x}, {self.end_y}")
-
 
         # Save the coordinates or use them in your logic as needed
         self.selected_area = (self.start_x, self.start_y, self.end_x, self.end_y)
@@ -448,7 +446,8 @@ class Metin:
                 np_image = self.get_np_image()
                 self.bot_solver(np_image)
                 self.death_check(np_image)
-                # self.delivewd)
+                self.deliver_bio()
+                self.activate_skills()
                 self.destroy_metin(np_image)
 
     def bot_solver(self, np_image):
