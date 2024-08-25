@@ -2,15 +2,15 @@
     "tesseract_path": "C:\\Program Files\\Tesseract-OCR\\tesseract.exe",
     "bot_test_img_path": "bot_ochrana2.png",
     "metin_hp_img_path": "metin_hp.png",
-    "skills_to_activate": "F1 F4",
-    "skills_cd": "690",
+    "skills_to_activate": "F1 F3 F4",
+    "skills_cd": "1610",
     "window_name": "",
     "information_locations": {
         "hp_bar_location": [
-            1319,
-            53,
-            1334,
-            67
+            1245,
+            42,
+            1504,
+            82
         ],
         "hp_full_location": [
             1422,
@@ -34,6 +34,18 @@
             100,
             102,
             204
+        ],
+        "respawn_button_location": [
+            69,
+            99,
+            246,
+            122
+        ],
+        "bio_location": [
+            2439,
+            108,
+            2439,
+            108
         ]
     },
     "metin_stones": [
@@ -93,9 +105,9 @@
             "name": "Metin Tu-Young",
             "mask": {
                 "hMin": 0,
-                "sMin": 151,
-                "vMin": 15,
-                "hMax": 255,
+                "sMin": 0,
+                "vMin": 98,
+                "hMax": 10,
                 "sMax": 255,
                 "vMax": 255
             },

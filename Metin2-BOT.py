@@ -61,7 +61,6 @@ class ApplicationWindow:
         self.dropdown = ttk.Combobox(self.root, values=self.metin_options, state="readonly")
         self.dropdown.grid(row=2, column=2, columnspan=2, pady=5)
 
-        # Create a 2x3 grid for the text entry fields with labels on top
         self.entry_tesseract_path = tk.Label(self.root, text="Tesseract Path:")
         self.entry_tesseract_path.grid(row=4, column=0, pady=5)
         self.text_tesseract_path = tk.Entry(self.root, width=30)
@@ -88,7 +87,7 @@ class ApplicationWindow:
         self.text_skills_cd.grid(row=7, column=1, pady=5)
 
         # Create a button to take a screenshot and center it
-        self.screenshot_button = tk.Button(self.root, text="Take Screenshot", command=self.take_screenshot)
+        self.screenshot_button = tk.Button(self.root, text="Take Screenshot", command=self.take_screenshot_thread)
         self.screenshot_button.grid(row=8, column=0, columnspan=4, pady=10)
 
         # Create a 2x2 grid for location setting buttons and center it
@@ -105,6 +104,10 @@ class ApplicationWindow:
                                                     command=self.apply_hp_full_location)
         self.set_metin_hp_full_location.grid(row=0, column=1, pady=10, padx=10)
 
+        self.set_respawn_button_location = tk.Button(button_frame, text="Set location for respawn button",
+                                                     command=self.apply_respawn_button_location)
+        self.set_respawn_button_location.grid(row=0, column=2, pady=10, padx=10)
+
         self.set_cancel_location = tk.Button(button_frame, text="Set location cancel button",
                                              command=self.apply_cancel_location)
         self.set_cancel_location.grid(row=1, column=0, pady=10, padx=10)
@@ -112,6 +115,10 @@ class ApplicationWindow:
         self.set_scan_window = tk.Button(button_frame, text="Set scan window",
                                          command=self.apply_scan_window_location)
         self.set_scan_window.grid(row=1, column=1, pady=10, padx=10)
+
+        self.set_bio_button = tk.Button(button_frame, text="Set bio button",
+                                        command=self.apply_bio_button_location)
+        self.set_bio_button.grid(row=1, column=2, pady=10, padx=10)
 
         # Create the Apply button and center it
         self.apply = tk.Button(self.root, text="Apply", command=self.apply_fields)
@@ -126,7 +133,9 @@ class ApplicationWindow:
         self.hp_full_location = None
         self.hp_full_pixel_colour = None
         self.scan_window_location = None
+        self.bio_location = None
         self.cancel_location = None
+        self.respawn_location = None
 
         self.canvas = None
         self.screenshot_image = None
@@ -164,7 +173,9 @@ class ApplicationWindow:
         self.hp_full_location = cfg['information_locations']['hp_full_location']
         self.hp_full_pixel_colour = cfg['information_locations']['hp_full_pixel_colour']
         self.scan_window_location = cfg['information_locations']['scan_window_location']
+        self.bio_location = cfg['information_locations']['bio_location']
         self.cancel_location = cfg['information_locations']['cancel_location']
+        self.respawn_location = cfg['information_locations']['respawn_button_location']
 
         self.text_tesseract_path.insert(0, cfg['tesseract_path'])
         self.text_bot_check.insert(0, cfg['bot_test_img_path'])
@@ -187,13 +198,18 @@ class ApplicationWindow:
         self.skills_cd = int(self.text_skills_cd.get()) if self.text_skills_cd.get().isdigit() else 0
 
         self.metin.skills_to_activate = self.cfg['skills_to_activate'].split()
-
+        print(f'apply config {self.cfg['information_locations']['bio_location']}')
         save_config(self.cfg, 'Config.json')
 
     def apply_hp_bar_location(self):
         if None not in [self.start_x, self.start_y, self.end_x, self.end_y]:
             output = [min(self.start_x, self.end_x), min(self.end_y, self.start_y), max(self.start_x, self.end_x), max(self.end_y, self.start_y)]
             self.cfg['information_locations']['hp_bar_location'] = output
+
+    def apply_respawn_button_location(self):
+        if None not in [self.start_x, self.start_y, self.end_x, self.end_y]:
+            output = [min(self.start_x, self.end_x), min(self.end_y, self.start_y), max(self.start_x, self.end_x), max(self.end_y, self.start_y)]
+            self.cfg['information_locations']['respawn_button_location'] = output
 
     def apply_hp_full_location(self):
         if None not in [self.start_x, self.start_y, self.end_x, self.end_y]:
@@ -203,6 +219,12 @@ class ApplicationWindow:
             self.cfg['information_locations']['hp_full_pixel_colour'] = pixel.tolist()
 
             self.cfg['information_locations']['hp_full_location'] = [self.end_x, self.end_y, self.start_x, self.start_y]
+
+    def apply_bio_button_location(self):
+        print('biooo')
+        if None not in [self.start_x, self.start_y, self.end_x, self.end_y]:
+            self.cfg['information_locations']['bio_location'] = [self.end_x, self.end_y, self.start_x, self.start_y]
+
 
     def apply_scan_window_location(self):
         # z lava, z hora, z prava, z dola
@@ -258,6 +280,7 @@ class ApplicationWindow:
         # 433 x 280
         box = 64
         space = 15
+        time.sleep(2)
         while self.running:
             sleep_time = random() * (upper_limit - lower_limit) + lower_limit
             time.sleep(sleep_time)
@@ -277,9 +300,28 @@ class ApplicationWindow:
             x_middle = (x2 - x1) // 2
             y_middle = (y2 - y1) // 2
             skill_timer_diff = time.time() - self.metin.skill_timer
+            respawn_timer_diff = time.time() - self.metin.respawn_timer
+
+            # bio_x, bio_y = self.bio_location[:2]
+            # bio_x += self.metin.window_left
+            # bio_y += self.metin.window_top
+            # mouse_left_click(bio_x, bio_y, self.metin.window_title)
+            # time.sleep(1)
+            # location = None
+            # try:
+            #     location = pyautogui.locate('bio_deliver.png', np_image, confidence=0.7)
+            # except pyautogui.ImageNotFoundException:
+            #     print('nic')
+            # if location is not None:
+            #     deliver_x = self.metin.window_left + location.left + location.width / 2
+            #     deliver_y = self.metin.window_top + location.top + location.height / 2
+            #     mouse_left_click(deliver_x, deliver_y, self.metin.window_title)
+            #     time.sleep(1)
+            # time.sleep(5)
+
             location = None
             try:
-                location = pyautogui.locate('bot data/bot_check_bar2.png', np_image, confidence=0.7)
+                location = pyautogui.locate('bot_check_bar2.png', np_image, confidence=0.7)
             except pyautogui.ImageNotFoundException:
                 print('nic')
             if location is not None:
@@ -335,13 +377,29 @@ class ApplicationWindow:
                         print('**********************************')
                         print(f'no_outputs: {no_outputs}')
 
-                    if bot_time_diff > 10:
+                    if bot_time_diff > 5:
                         print('BOT OCHRANA ZATVORENA')
                         mouse_left_click(cancel_x, cancel_y, self.metin.window_title)
                         self.metin.bot_timer = 0
                         time.sleep(0.3)
 
+            if self.metin.respawn_timer == 0 or self.metin.respawn_timer != 0 and respawn_timer_diff >= 10:
+                respawn_location = None
+                self.metin.respawn_timer = time.time()
+                try:
+                    respawn_location = pyautogui.locate('restart_img.png', np_image, confidence=0.7)
+                except pyautogui.ImageNotFoundException:
+                    pass
+
+                if respawn_location is not None:
+                    respawn_x = self.metin.window_left + respawn_location.left + respawn_location.width / 2
+                    respawn_y = self.metin.window_top + respawn_location.top + respawn_location.height / 2
+                    mouse_left_click(respawn_x, respawn_y, self.metin.window_title)
+                    time.sleep(0.5)
+                    press_button_multiple('ctrl+g', self.metin.window_title)
+
             if self.metin.skill_timer == 0 or self.metin.skill_timer != 0 and skill_timer_diff >= self.skills_cd:
+                print('HALO SKILLS')
                 self.metin.skill_timer = time.time()
                 press_button_multiple('ctrl+g', self.metin.window_title)
                 time.sleep(0.15)
@@ -416,10 +474,10 @@ class ApplicationWindow:
                             print('zatvaram metin okno')
                             cancel_x1, cancel_y1, cancel_x2, cancel_y2 = self.cancel_location
 
-                            # x_to_cancel = (self.metin.window_left + cancel_x1 + (cancel_x2 - cancel_x1) / 2)
-                            # y_to_cancel = (self.metin.window_top + cancel_y1 + (cancel_y2 - cancel_y1) / 2)
+                            x_to_cancel = (self.metin.window_left + cancel_x1 + (cancel_x2 - cancel_x1) / 2)
+                            y_to_cancel = (self.metin.window_top + cancel_y1 + (cancel_y2 - cancel_y1) / 2)
 
-                            # mouse_left_click(x_to_cancel, y_to_cancel, self.metin.window_title)
+                            mouse_left_click(x_to_cancel, y_to_cancel, self.metin.window_title)
                             press_button('a', self.metin.window_title)
                             time.sleep(0.2)
                             press_button('d', self.metin.window_title)
@@ -428,6 +486,11 @@ class ApplicationWindow:
                 # self.display_screenshot(output_image)
                 press_button('q', self.metin.window_title)
                 print("No valid contour found.")
+
+    def take_screenshot_thread(self):
+        if not self.running:  # Prevent starting multiple threads
+            self.running = True
+            threading.Thread(target=self.take_screenshot, daemon=True).start()
 
     def take_screenshot(self):
         # Capture the screenshot of the entire screen
@@ -528,6 +591,7 @@ class Metin:
         self.label_keys = []
         self.skills_to_activate = skills_to_activate
         self.bot_timer = 0
+        self.respawn_timer = 0
 
         self.model_initialize()
     
