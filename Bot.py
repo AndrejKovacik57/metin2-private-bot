@@ -167,6 +167,7 @@ class ApplicationWindow:
         self.metin.window_title = self.cfg['window_name']
 
         self.metin.hp_bar_location = cfg['information_locations']['hp_bar_location']
+        print(f'self.metin.hp_bar_location {self.metin.hp_bar_location}')
         self.metin.hp_full_location = cfg['information_locations']['hp_full_location']
         self.metin.hp_full_pixel_colour = cfg['information_locations']['hp_full_pixel_colour']
         self.metin.scan_window_location = cfg['information_locations']['scan_window_location']
@@ -222,7 +223,9 @@ class ApplicationWindow:
     def apply_hp_bar_location(self):
         if None not in [self.start_x, self.start_y, self.end_x, self.end_y]:
             output = [min(self.start_x, self.end_x), min(self.end_y, self.start_y), max(self.start_x, self.end_x), max(self.end_y, self.start_y)]
+            print(f'apphpbar output {output}')
             self.cfg['information_locations']['hp_bar_location'] = output
+            print(f'apphpbar  self.cfg {self.cfg['information_locations']['hp_bar_location']}')
 
     def apply_respawn_button_location(self):
         if None not in [self.start_x, self.start_y, self.end_x, self.end_y]:
