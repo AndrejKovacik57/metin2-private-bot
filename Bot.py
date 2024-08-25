@@ -36,7 +36,6 @@ class ApplicationWindow:
         self.root.grid_columnconfigure(0, weight=1)
         self.root.grid_columnconfigure(1, weight=1)
         self.root.grid_columnconfigure(2, weight=1)
-        self.root.grid_columnconfigure(3, weight=1)
 
         self.display_images_var = tk.BooleanVar()
 
@@ -78,6 +77,11 @@ class ApplicationWindow:
         self.text_metin_hp_check = tk.Entry(self.root, width=30)
         self.text_metin_hp_check.grid(row=5, column=1, pady=5)
 
+        self.entry_bio_item_num = tk.Label(self.root, text="Bio item num:")
+        self.entry_bio_item_num.grid(row=4, column=1, pady=5)
+        self.text_bio_item_num = tk.Entry(self.root, width=30)
+        self.text_bio_item_num.grid(row=5, column=1, pady=5)
+
         self.entry_skills_check = tk.Label(self.root, text="Skills to Activate:")
         self.entry_skills_check.grid(row=6, column=0, pady=5)
         self.text_skills_check = tk.Entry(self.root, width=30)
@@ -97,29 +101,29 @@ class ApplicationWindow:
         self.screenshot_button = tk.Button(self.root, text="Take Screenshot", command=self.take_screenshot)
         self.screenshot_button.grid(row=8, column=0, columnspan=4, pady=10)
 
-        self.set_metin_hp_bar_location = tk.Button(text="Set location for Metin HP bar",
+        self.set_metin_hp_bar_location = tk.Button(text="Set HP bar location",
                                                    command=self.apply_hp_bar_location)
-        self.set_metin_hp_bar_location.grid(row=9, column=0, pady=10, padx=10)
+        self.set_metin_hp_bar_location.grid(row=9, column=0, pady=10)
 
-        self.set_metin_hp_full_location = tk.Button(text="Set location for Metin full HP",
+        self.set_metin_hp_full_location = tk.Button(text="Set full HP location",
                                                     command=self.apply_hp_full_location)
-        self.set_metin_hp_full_location.grid(row=9, column=1, pady=10, padx=10)
+        self.set_metin_hp_full_location.grid(row=9, column=1, pady=10)
 
-        self.set_respawn_button_location = tk.Button(text="Set location for respawn button",
+        self.set_respawn_button_location = tk.Button(text="Set respawn location",
                                                      command=self.apply_respawn_button_location)
-        self.set_respawn_button_location.grid(row=10, column=0,  pady=9, padx=10)
+        self.set_respawn_button_location.grid(row=9, column=2,  pady=9)
 
-        self.set_cancel_location = tk.Button(text="Set location cancel button",
+        self.set_cancel_location = tk.Button(text="Set cancel location",
                                              command=self.apply_cancel_location)
-        self.set_cancel_location.grid(row=10, column=1, pady=10, padx=10)
+        self.set_cancel_location.grid(row=10, column=0, pady=10)
 
         self.set_scan_window = tk.Button(text="Set scan window",
                                          command=self.apply_scan_window_location)
-        self.set_scan_window.grid(row=11, column=0, pady=10, padx=10)
+        self.set_scan_window.grid(row=10, column=1, pady=10)
 
-        self.set_bio_button = tk.Button(text="Set bio button",
+        self.set_bio_button = tk.Button(text="Set bio wait time",
                                         command=self.apply_bio_button_location)
-        self.set_bio_button.grid(row=11, column=1, pady=10, padx=10)
+        self.set_bio_button.grid(row=10, column=2, pady=10)
 
         # Create the Apply button and center it
         self.apply = tk.Button(self.root, text="Apply", command=self.apply_fields)
@@ -154,6 +158,7 @@ class ApplicationWindow:
         self.metin_options = [item['name'] for item in self.metin.metin_stones]
         self.metin.skills_cd = int(cfg['skills_cd']) if cfg['skills_cd'].isdigit() else 0
         self.metin.bio_cd = (int(cfg['bio_cd']) if cfg['bio_cd'].isdigit() else 0) * 60
+        self.metin.bio_item_num = int(cfg['bio_item_num']) if cfg['bio_item_num'].isdigit() else 0
         self.dropdown['values'] = self.metin_options
         if self.metin_options:
             self.dropdown.set(self.metin_options[0])
@@ -175,6 +180,7 @@ class ApplicationWindow:
         self.text_window_name.insert(0, cfg['window_name'])
         self.text_skills_cd.insert(0, cfg['skills_cd'])
         self.text_bio_cd.insert(0, cfg['bio_cd'])
+        self.text_bio_item_num.insert(0, cfg['bio_item_num'])
 
     def apply_fields(self):
         pytesseract.pytesseract.tesseract_cmd = self.text_tesseract_path.get()
@@ -186,9 +192,11 @@ class ApplicationWindow:
         self.cfg['window_name'] = self.text_window_name.get()
         self.cfg['skills_cd'] = self.text_skills_cd.get()
         self.cfg['bio_cd'] = self.text_bio_cd.get()
+        self.cfg['bio_item_num'] = self.text_bio_item_num.get()
+
         self.metin.skills_cd = int(self.text_skills_cd.get()) if self.text_skills_cd.get().isdigit() else 0
         self.metin.bio_cd = (int(self.text_bio_cd.get()) if self.text_bio_cd.get().isdigit() else 0) * 60 + 15
-
+        self.metin.bio_item_num = int(self.text_bio_item_num.get()) if self.text_bio_item_num.get().isdigit() else 0
         self.metin.hp_bar_location = self.cfg['information_locations']['hp_bar_location']
         self.metin.hp_full_location = self.cfg['information_locations']['hp_full_location']
         self.metin.hp_full_pixel_colour = self.cfg['information_locations']['hp_full_pixel_colour']
@@ -396,6 +404,7 @@ class Metin:
         self.respawn_timer_diff = 0
         self.show_img = False
         self.image_to_display = None
+        self.bio_item_num = 0
         self.display_screenshot = display_screenshot
         self.lock = threading.Lock()
         self.model_initialize()
@@ -553,10 +562,12 @@ class Metin:
 
     def deliver_bio(self):
         self.bio_timer_diff = time.time() - self.bio_timer
-        if self.bio_timer == 0 or self.bio_timer != 0 and self.bio_timer_diff >= self.bio_cd + self.bio_cd_random:
+        if (self.bio_timer == 0 and self.bio_item_num > 0 or self.bio_timer != 0 and self.bio_timer_diff >= self.bio_cd
+                + self.bio_cd_random and self.bio_item_num > 0):
             print('deliver_bio')
             self.bio_cd_random = random.randint(10, 70)
             self.bio_timer = time.time()
+            self.bio_item_num -= 1
             bio_x, bio_y = self.bio_location[:2]
             bio_x += self.window_left
             bio_y += self.window_top
