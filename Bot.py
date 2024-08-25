@@ -257,6 +257,8 @@ class ApplicationWindow:
         metin_window = gw.getWindowsWithTitle(self.metin.window_title)[0]
         screenshot = get_window_screenshot(metin_window)
         self.screenshot_image = screenshot
+        self.screenshot_image_left = metin_window.left
+        self.screenshot_image_top = metin_window.top
 
         # Create a new window to display the screenshot
         new_window = tk.Toplevel(self.root)
@@ -292,7 +294,7 @@ class ApplicationWindow:
         self.start_y = event.y
         if self.rect:
             canvas.delete(self.rect)
-        self.rect = canvas.create_rectangle(self.start_x, self.start_y, self.start_x, self.start_y, outline='red')
+        self.rect = canvas.create_rectangle(self.start_x, self.start_y, self.start_x, self.start_y, outline='green')
 
     def on_mouse_drag(self, event, canvas):
         # Update the rectangle as the user drags the mouse
