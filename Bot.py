@@ -37,6 +37,14 @@ class ApplicationWindow:
         self.root.grid_columnconfigure(2, weight=1)
         self.root.grid_columnconfigure(3, weight=1)
 
+        self.display_images_var = tk.BooleanVar()
+
+        # Add the "Display" checkbox on the left side of the input field for "Window name"
+        self.display_checkbox = tk.Checkbutton(self.root, text="Display", variable=self.display_images_var)
+        self.display_checkbox.grid(row=0, column=0, padx=5, pady=5)
+
+        self.display_images_var.trace_add("write", self.toggle_display_images)
+
         # Create a text entry field for window name
         self.entry_window_name = tk.Label(self.root, text="Window name:")
         self.entry_window_name.grid(row=0, column=0, columnspan=4, pady=5)
@@ -194,6 +202,14 @@ class ApplicationWindow:
     def save_selected_option(self, event):
         self.metin.selected_metin = self.dropdown.get()
 
+    def toggle_display_images(self, *args):
+        if self.display_images_var.get() == 1:
+            print("Image display is enabled.")
+            self.metin.show_img = True
+        else:
+            print("Image display is disabled.")
+            self.metin.show_img = False
+
     def apply_hp_bar_location(self):
         if None not in [self.start_x, self.start_y, self.end_x, self.end_y]:
             output = [min(self.start_x, self.end_x), min(self.end_y, self.start_y), max(self.start_x, self.end_x), max(self.end_y, self.start_y)]
@@ -241,8 +257,6 @@ class ApplicationWindow:
         metin_window = gw.getWindowsWithTitle(self.metin.window_title)[0]
         screenshot = get_window_screenshot(metin_window)
         self.screenshot_image = screenshot
-        self.screenshot_image_left = metin_window.left
-        self.screenshot_image_top = metin_window.top
 
         # Create a new window to display the screenshot
         new_window = tk.Toplevel(self.root)
@@ -352,6 +366,7 @@ class Metin:
         self.metin_destroy_time_diff = 0
         self.bot_time_diff = 0
         self.respawn_timer_diff = 0
+        self.show_img = False
         self.lock = threading.Lock()
         self.model_initialize()
 
@@ -388,35 +403,31 @@ class Metin:
             with self.lock:
                 sleep_time = random.random() * (upper_limit - lower_limit) + lower_limit
                 time.sleep(sleep_time)
-                metin_window = gw.getWindowsWithTitle(self.window_title)[0]
-                screenshot = get_window_screenshot(metin_window)
-                self.window_left = metin_window.left
-                self.window_top = metin_window.top
-                self.window_right = metin_window.right
-                self.window_bottom = metin_window.bottom
-                self.metin_window = metin_window
 
-                np_image = np.array(screenshot)
-                np_image = cv2.cvtColor(np_image, cv2.COLOR_RGB2BGR)
-
+                np_image = self.get_np_image()
                 self.bot_solver(np_image)
                 self.death_check(np_image)
                 self.deliver_bio()
                 self.activate_skills()
                 self.destroy_metin(np_image)
 
+                # Ensure the window updates rather than creating a new one
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
+
+        cv2.destroyAllWindows()
+
     def bot_solver(self, np_image):
-        print('bot_solver')
-        location = None
         # 433 x 280
         box = 64
         space = 15
-
         try:
             location = pyautogui.locate('bot_images\\bot_check_bar2.png', np_image, confidence=0.7)
         except pyautogui.ImageNotFoundException:
-            print('no bot test to solve')
+            location = None
+
         if location is not None:
+            print('bot_solver')
 
             cancel_x = self.window_left + location.left + location.width + 13
             cancel_y = self.window_top + location.top + location.height / 2
@@ -445,7 +456,10 @@ class Metin:
             print(f'text to find {result}')
 
             no_outputs = []
+            found = False
             for row in range(2):
+                if found:
+                    break
                 for column in range(3):
                     x1, y1 = box * column + space * column, box * row + space * row  # z lava, z hore
                     x2, y2 = box * (column + 1) + space * column, box * (row + 1) + space * row  # z prava, z dola
@@ -454,7 +468,13 @@ class Metin:
                     np_img_captcha_option_resized = resize_image(np_img_captcha_option)
                     # self.metin.solve_captcha
                     output = self.bot_detection_solver(np_img_captcha_option_resized)
+                    if output is None:
+                        no_outputs.append((x1, x2, y1, y2))
+                    else:
+                        output = output.strip()
                     print(f'output = {output}')
+                    print(f'{output} == {result} -> {output == result}')
+
                     if output == result:
                         print('BOT OCHRANA PRELOMENA')
                         x_to_click = self.window_left + location.left + 6 + x1 + (x2 - x1) / 2
@@ -462,10 +482,9 @@ class Metin:
                         mouse_left_click(x_to_click, y_to_click, self.window_title)
                         self.bot_timer = 0
                         self.bot_time_diff = time.time() - self.bot_timer
+                        found = True
                         time.sleep(2)
                         break
-                    if output is None:
-                        no_outputs.append((x1, x2, y1, y2))
 
                 if len(no_outputs) > 0:
                     print('**********************************')
@@ -480,7 +499,7 @@ class Metin:
                     self.bot_time_diff = time.time() - self.bot_timer
                     time.sleep(2)
 
-                if self.bot_time_diff > 5:
+                if self.bot_time_diff > 5 and self.bot_timer != 0:
                     print('BOT OCHRANA ZATVORENA')
                     mouse_left_click(cancel_x, cancel_y, self.window_title)
                     self.bot_timer = 0
@@ -489,12 +508,12 @@ class Metin:
     def death_check(self, np_image):
         self.respawn_timer_diff = time.time() - self.respawn_timer
         if self.respawn_timer == 0 or self.respawn_timer != 0 and self.respawn_timer_diff >= 10:
-            respawn_location = None
+            print('death_check')
             self.respawn_timer = time.time()
             try:
                 respawn_location = pyautogui.locate('bot_images\\restart_img.png', np_image, confidence=0.7)
             except pyautogui.ImageNotFoundException:
-                pass
+                respawn_location = None
 
             if respawn_location is not None:
                 respawn_x = self.window_left + respawn_location.left + respawn_location.width / 2
@@ -506,21 +525,22 @@ class Metin:
     def deliver_bio(self):
         self.bio_timer_diff = time.time() - self.bio_timer
         if self.bio_timer == 0 or self.bio_timer != 0 and self.bio_timer_diff >= self.bio_cd:
+            print('deliver_bio')
             self.bio_timer = time.time()
             bio_x, bio_y = self.bio_location[:2]
             bio_x += self.window_left
             bio_y += self.window_top
             mouse_left_click(bio_x, bio_y, self.window_title)
             time.sleep(1)
-            screenshot_bio = get_window_screenshot(self.metin_window)
+            screenshot_bio = self.get_np_image()
             np_image_bio = np.array(screenshot_bio)
             np_image_bio = cv2.cvtColor(np_image_bio, cv2.COLOR_RGB2BGR)
-            location = None
 
             try:
                 location = pyautogui.locate('bot_images\\bio_deliver.png', np_image_bio, confidence=0.7)
             except pyautogui.ImageNotFoundException:
-                print('nic')
+                location = None
+
             if location is not None:
                 deliver_x = self.window_left + location.left + location.width / 2
                 deliver_y = self.window_top + location.top + location.height / 4
@@ -532,6 +552,7 @@ class Metin:
     def activate_skills(self):
         self.skill_timer_diff = time.time() - self.skill_timer
         if self.skill_timer == 0 or self.skill_timer != 0 and self.skill_timer_diff >= self.skills_cd:
+            print('activate_skills')
             self.skill_timer = time.time()
             press_button_multiple('ctrl+g', self.window_title)
             time.sleep(0.15)
@@ -550,7 +571,7 @@ class Metin:
         selected_contour_pos, output_image = self.locate_metin(np_image_crop, x_middle, y_middle)
         # there are metins on screen
         if selected_contour_pos is not None:
-
+            print('destroy_metin')
             metin_pos_x, metin_pos_y = selected_contour_pos
 
             metin_pos_x += self.window_left + x1
@@ -561,13 +582,35 @@ class Metin:
                 press_button('z', self.window_title)
                 time.sleep(0.15)
                 press_button('y', self.window_title)
-                print('klik na metin')
-                mouse_left_click(metin_pos_x, metin_pos_y, self.window_title)
-                self.destroying_metin = True
-                self.metin_destroying_time = time.time()
 
-                time.sleep(2)
+                # click at metin to show hp to see if its being destroyed already
+                a = time.time()
+                mouse_right_click(metin_pos_x, metin_pos_y, self.window_title)
+
+                pixel_x, pixel_y = self.hp_full_location[:2]
+                pixel_x += self.window_left
+                pixel_y += self.window_top
+
+                # pyautogui.moveTo(pixel_x, pixel_y)
+                time.sleep(0.5)
+                check_hp_np_image = self.get_np_image()
+                pixel_to_check = check_hp_np_image[pixel_y, pixel_x]
+
+                print(f'pixel_to_check {pixel_to_check} | target_pixel_value {target_pixel_value}| click delay {a - time.time()}s')
+
+                press_button('esc', self.window_title)
+                if np.all(np.abs(pixel_to_check - target_pixel_value) <= 5):
+                    print('klik na metin')
+                    mouse_left_click(metin_pos_x, metin_pos_y, self.window_title)
+                    self.destroying_metin = True
+                    self.metin_destroying_time = time.time()
+                else:
+                    print('METIN SA UZ NICI')
+                    press_button('q', self.window_title)
+
                 # HERE I WANT TO display_screenshot(output_image)
+                if self.show_img:
+                    cv2.imshow('Display', output_image)
 
             else:
                 hp_bar_x1, hp_bar_y1, hp_bar_x2, hp_bar_y2 = self.hp_bar_location
@@ -580,6 +623,8 @@ class Metin:
 
                 if not metin_is_alive:
                     # HERE I WANT TO display_screenshot(output_image)
+                    if self.show_img:
+                        cv2.imshow('Display', output_image)
                     return
 
                 press_button('q', self.window_title)
@@ -595,6 +640,9 @@ class Metin:
                     pixel_to_check = np_image[pixel_y, pixel_x]
                     print(f'pixel_to_check {pixel_to_check} | target_pixel_value {target_pixel_value}| self.metin_destroy_time_diff {self.metin_destroy_time_diff}s')
                     # HERE I WANT TO display_screenshot(output_image)
+                    if self.show_img:
+                        cv2.imshow('Display', output_image)
+
                     # check if after 10s metin is being destroyed or player is stuck
                     if np.all(np.abs(pixel_to_check - target_pixel_value) <= 5):
                         print('zatvaram metin okno')
@@ -610,8 +658,11 @@ class Metin:
 
         else:
             # HERE I WANT TO display_screenshot(np_image_crop)
+            if self.show_img:
+                cv2.imshow('Display', np_image_crop)
+
             press_button('q', self.window_title)
-            print("No valid contour found.")
+            print("Searching for metin")
 
     def locate_metin(self, np_image, x_middle, y_middle):
         # Convert the image to HSV
@@ -634,8 +685,11 @@ class Metin:
                     contour_center_y = y + h // 2
 
                     # Draw a line from the middle of the screenshot to the center of the contour
-                    cv2.line(np_image, (x_middle, y_middle), (contour_center_x, contour_center_y), (255, 190, 200), 2)
+                    cv2.line(np_image, (x_middle, y_middle), (contour_center_x, contour_center_y),
+                             (255, 190, 200), 2)
                     # Optionally, you can calculate the distance between the middle of the screenshot and the contour center
+                    # Draw a circle around the point (x_middle, y_middle) with a radius of 300px
+                    cv2.circle(np_image, (x_middle, y_middle), 300, (255, 190, 200),2)  # The color is (255, 190, 200) and the thickness is 2
 
                     cur_distance = abs(x_middle - contour_center_x) + abs(y_middle - contour_center_y)
 
@@ -659,10 +713,12 @@ class Metin:
         try:
             location = pyautogui.locate(self.metin_hp_img, np_image, confidence=confidence)
         except pyautogui.ImageNotFoundException:
-            return False
+            location = None
+
         if location is not None:
             return True
-
+        else:
+            return False
     def bot_detection_solver(self, np_image):
         image = Image.fromarray(np_image)
 
@@ -699,6 +755,18 @@ class Metin:
             return None
         else:
             raise NoCudaOrCPUModuleFound
+
+    def get_np_image(self):
+        metin_window = gw.getWindowsWithTitle(self.window_title)[0]
+        screenshot = get_window_screenshot(metin_window)
+        self.window_left = metin_window.left
+        self.window_top = metin_window.top
+        self.window_right = metin_window.right
+        self.window_bottom = metin_window.bottom
+        self.metin_window = metin_window
+
+        np_image = np.array(screenshot)
+        return cv2.cvtColor(np_image, cv2.COLOR_RGB2BGR)
 
 
 def resize_image(image):
