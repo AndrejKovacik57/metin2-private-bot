@@ -91,38 +91,38 @@ class ApplicationWindow:
         self.screenshot_button.grid(row=8, column=0, columnspan=4, pady=10)
 
         # Create a 2x2 grid for location setting buttons and center it
-        button_frame = tk.Frame(self.root)
-        button_frame.grid(row=9, column=0, columnspan=4, pady=10)
-        button_frame.grid_columnconfigure(0, weight=1)
-        button_frame.grid_columnconfigure(1, weight=1)
+        # button_frame = tk.Frame(self.root)
+        # button_frame.grid(row=9, column=0, columnspan=4, pady=10)
+        # button_frame.grid_columnconfigure(0, weight=1)
+        # button_frame.grid_columnconfigure(1, weight=1)
 
-        self.set_metin_hp_bar_location = tk.Button(button_frame, text="Set location for Metin HP bar",
+        self.set_metin_hp_bar_location = tk.Button(text="Set location for Metin HP bar",
                                                    command=self.apply_hp_bar_location)
-        self.set_metin_hp_bar_location.grid(row=0, column=0, pady=10, padx=10)
+        self.set_metin_hp_bar_location.grid(row=9, column=0, pady=10, padx=10)
 
-        self.set_metin_hp_full_location = tk.Button(button_frame, text="Set location for Metin full HP",
+        self.set_metin_hp_full_location = tk.Button(text="Set location for Metin full HP",
                                                     command=self.apply_hp_full_location)
-        self.set_metin_hp_full_location.grid(row=0, column=1, pady=10, padx=10)
+        self.set_metin_hp_full_location.grid(row=9, column=1, pady=10, padx=10)
 
-        self.set_respawn_button_location = tk.Button(button_frame, text="Set location for respawn button",
+        self.set_respawn_button_location = tk.Button(text="Set location for respawn button",
                                                      command=self.apply_respawn_button_location)
-        self.set_respawn_button_location.grid(row=0, column=2, pady=10, padx=10)
+        self.set_respawn_button_location.grid(row=10, column=0,  pady=9, padx=10)
 
-        self.set_cancel_location = tk.Button(button_frame, text="Set location cancel button",
+        self.set_cancel_location = tk.Button(text="Set location cancel button",
                                              command=self.apply_cancel_location)
-        self.set_cancel_location.grid(row=1, column=0, pady=10, padx=10)
+        self.set_cancel_location.grid(row=10, column=1, pady=10, padx=10)
 
-        self.set_scan_window = tk.Button(button_frame, text="Set scan window",
+        self.set_scan_window = tk.Button(text="Set scan window",
                                          command=self.apply_scan_window_location)
-        self.set_scan_window.grid(row=1, column=1, pady=10, padx=10)
+        self.set_scan_window.grid(row=11, column=0, pady=10, padx=10)
 
-        self.set_bio_button = tk.Button(button_frame, text="Set bio button",
+        self.set_bio_button = tk.Button(text="Set bio button",
                                         command=self.apply_bio_button_location)
-        self.set_bio_button.grid(row=1, column=2, pady=10, padx=10)
+        self.set_bio_button.grid(row=11, column=1, pady=10, padx=10)
 
         # Create the Apply button and center it
         self.apply = tk.Button(self.root, text="Apply", command=self.apply_fields)
-        self.apply.grid(row=10, column=0, columnspan=4, pady=10)
+        self.apply.grid(row=12, column=0, columnspan=4, pady=10)
 
         self.cfg = {}
         self.information_locations = {}
