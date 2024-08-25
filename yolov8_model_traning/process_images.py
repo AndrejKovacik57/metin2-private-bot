@@ -16,7 +16,7 @@ def move_files(data, split, existing_images_dir, images_dir, labels_dir):
 
 def create_dataset_structure():
     # Define paths
-    base_dir = 'dataset'
+    base_dir = '../dataset'
     images_dir = os.path.join(base_dir, 'images')
     labels_dir = os.path.join(base_dir, 'labels')
 
@@ -29,7 +29,7 @@ def create_dataset_structure():
     os.makedirs(os.path.join(labels_dir, 'test'), exist_ok=True)
 
     # Path to your existing images and labels
-    existing_images_dir = 'training_images'
+    existing_images_dir = '../training_images'
 
     # Get all images and label files
     image_files = [f for f in os.listdir(existing_images_dir) if f.endswith('.png')]

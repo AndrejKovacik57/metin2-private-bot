@@ -134,18 +134,18 @@ def create_images():
     combo_to_id = {combo: idx for idx, combo in enumerate(combinations)}
 
     start_time = time.time()
-    if not os.path.exists('training_images'):
-        os.makedirs('training_images')
+    if not os.path.exists('../training_images'):
+        os.makedirs('../training_images')
 
     for i in range(100000):
         img, text, x_center, y_center, bbox_width, bbox_height, class_id = create_image(combo_to_id)
         file_name = f"{text}_{i}.png"
-        img.save(os.path.join('training_images', file_name))
+        img.save(os.path.join('../training_images', file_name))
         print(f"Saved {file_name}")
 
         # Save the corresponding .txt file for YOLOv8
         txt_file_name = f"{text}_{i}.txt"
-        with open(os.path.join('training_images', txt_file_name), 'w') as f:
+        with open(os.path.join('../training_images', txt_file_name), 'w') as f:
             f.write(f"{class_id} {x_center} {y_center} {bbox_width} {bbox_height}\n")
 
     print(f'Done, {time.time() - start_time}')

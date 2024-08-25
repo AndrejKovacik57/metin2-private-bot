@@ -9,8 +9,8 @@ combo_to_id = {combo: idx for idx, combo in enumerate(combinations)}
 num_classes = len(combo_to_id)
 
 # Define paths to your dataset
-train_images_path = 'dataset/images/train'
-val_images_path = 'dataset/images/val'
+train_images_path = '../dataset/images/train'
+val_images_path = '../dataset/images/val'
 
 # Create YAML content
 yaml_content = f"""
