@@ -31,7 +31,7 @@ class ApplicationWindow:
         self.root.title(title)
 
         # Set window size
-        self.root.geometry(f"{width}x{height}")
+        # self.root.geometry(f"{width}x{height}")
 
         # Create a grid layout for better organization
         self.root.grid_columnconfigure(0, weight=1)
