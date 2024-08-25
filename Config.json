@@ -1,10 +1,10 @@
 {
     "tesseract_path": "C:\\Program Files\\Tesseract-OCR\\tesseract.exe",
-    "bot_test_img_path": "bot_ochrana2.png",
-    "metin_hp_img_path": "metin_hp.png",
+    "metin_hp_img_path": "bot_images\\metin_hp.png",
     "skills_to_activate": "F1 F3 F4",
     "skills_cd": "1610",
-    "window_name": "Merlis",
+    "bio_cd": "15",
+    "window_name": "",
     "information_locations": {
         "hp_bar_location": [
             1245,
