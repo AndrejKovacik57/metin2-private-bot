@@ -121,8 +121,8 @@ class ApplicationWindow:
         self.set_bio_button.grid(row=11, column=1, pady=10, padx=10)
 
         # Create the Apply button and center it
-        # self.apply = tk.Button(self.root, text="Apply", command=self.apply_fields)
-        # self.apply.grid(row=12, column=0, columnspan=4, pady=10)
+        self.apply = tk.Button(self.root, text="Apply", command=self.apply_fields)
+        self.apply.grid(row=12, column=0, columnspan=4, pady=10)
 
         self.cfg = {}
         self.information_locations = {}
@@ -198,7 +198,6 @@ class ApplicationWindow:
         self.skills_cd = int(self.text_skills_cd.get()) if self.text_skills_cd.get().isdigit() else 0
 
         self.metin.skills_to_activate = self.cfg['skills_to_activate'].split()
-        print(f'apply config {self.cfg['information_locations']['bio_location']}')
         save_config(self.cfg, 'Config.json')
 
     def apply_hp_bar_location(self):
