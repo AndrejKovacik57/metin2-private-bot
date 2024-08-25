@@ -4,6 +4,7 @@
     "skills_to_activate": "F1 F3 F4",
     "skills_cd": "1610",
     "bio_cd": "15",
+    "bio_item_num": "30",
     "window_name": "",
     "information_locations": {
         "hp_bar_location": [
@@ -13,10 +14,10 @@
             82
         ],
         "hp_full_location": [
-            1422,
-            60,
-            1422,
-            60
+            1430,
+            61,
+            1430,
+            61
         ],
         "cancel_location": [
             1469,
@@ -31,9 +32,9 @@
             1194
         ],
         "hp_full_pixel_colour": [
-            100,
-            102,
-            204
+            39,
+            39,
+            99
         ],
         "respawn_button_location": [
             69,
