@@ -727,9 +727,9 @@ class Metin:
         if 'np_image_crop' in locals():
             del np_image_crop
         if 'check_hp_np_image' in locals():
-            del np_image_crop
-        if 'hp_barhp_bar' in locals():
-            del np_image_crop
+            del check_hp_np_image
+        if 'hp_bar' in locals():
+            del hp_bar
         gc.collect()
 
     def locate_metin(self, np_image, x_middle, y_middle):
