@@ -234,8 +234,6 @@ class ApplicationWindow:
             np_img = np.array(self.screenshot_image)
             np_img = cv2.cvtColor(np_img, cv2.COLOR_RGB2BGR)
             pixel = np_img[self.end_y + self.screenshot_image_top, self.end_x + self.screenshot_image_left]
-            cv2.imshow('KDE KLIKAM', np_img[self.end_y + self.screenshot_image_top-20:self.end_y + self.screenshot_image_top+20, self.end_x + self.screenshot_image_left-20:self.end_x + self.screenshot_image_left+20])
-            cv2.waitKey(0)
             self.cfg['information_locations']['hp_full_pixel_colour'] = pixel.tolist()
             print(f'pixel {pixel}')
 
