@@ -78,9 +78,9 @@ class ApplicationWindow:
         self.text_metin_hp_check.grid(row=5, column=1, pady=5)
 
         self.entry_bio_item_num = tk.Label(self.root, text="Bio item num:")
-        self.entry_bio_item_num.grid(row=4, column=1, pady=5)
+        self.entry_bio_item_num.grid(row=4, column=2, pady=5)
         self.text_bio_item_num = tk.Entry(self.root, width=30)
-        self.text_bio_item_num.grid(row=5, column=1, pady=5)
+        self.text_bio_item_num.grid(row=5, column=2, pady=5)
 
         self.entry_skills_check = tk.Label(self.root, text="Skills to Activate:")
         self.entry_skills_check.grid(row=6, column=0, pady=5)
