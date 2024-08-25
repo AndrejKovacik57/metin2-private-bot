@@ -488,9 +488,7 @@ class ApplicationWindow:
                 print("No valid contour found.")
 
     def take_screenshot_thread(self):
-        if not self.running:  # Prevent starting multiple threads
-            self.running = True
-            threading.Thread(target=self.take_screenshot, daemon=True).start()
+        threading.Thread(target=self.take_screenshot, daemon=True).start()
 
     def take_screenshot(self):
         # Capture the screenshot of the entire screen
