@@ -13,6 +13,7 @@ import pytesseract
 import keyboard
 import torch
 from ultralytics import YOLO
+import gc
 
 
 custom_config_text = r'--oem 3 --psm 6 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
@@ -29,7 +30,7 @@ class ApplicationWindow:
         self.root.title(title)
 
         # Set window size
-        # self.root.geometry(f"{width}x{height}")
+        self.root.geometry(f"{450}x{600}")
 
         # Create a grid layout for better organization
         self.root.grid_columnconfigure(0, weight=1)
@@ -129,7 +130,6 @@ class ApplicationWindow:
 
         self.metin = None
         self.tesseract_path = ''
-
         self.canvas = None
         self.screenshot_image = None
         self.rect = None
@@ -140,6 +140,7 @@ class ApplicationWindow:
         self.selected_area = None
         self.screenshot_image_left = None
         self.screenshot_image_top = None
+        self.image_label = None
 
         self.load_config_values()
 
@@ -148,11 +149,11 @@ class ApplicationWindow:
         self.cfg = cfg
 
         pytesseract.pytesseract.tesseract_cmd = cfg['tesseract_path']
-        self.metin = Metin(cfg['metin_hp_img_path'], cfg['skills_to_activate'].split())
+        self.metin = Metin(cfg['metin_hp_img_path'], cfg['skills_to_activate'].split(), self.display_screenshot)
         self.metin.metin_stones = cfg['metin_stones']
         self.metin_options = [item['name'] for item in self.metin.metin_stones]
         self.metin.skills_cd = int(cfg['skills_cd']) if cfg['skills_cd'].isdigit() else 0
-        self.metin.bio_cd = (int(cfg['bio_cd']) if cfg['bio_cd'].isdigit() else 0) * 60 + 15
+        self.metin.bio_cd = (int(cfg['bio_cd']) if cfg['bio_cd'].isdigit() else 0) * 60
         self.dropdown['values'] = self.metin_options
         if self.metin_options:
             self.dropdown.set(self.metin_options[0])
@@ -288,6 +289,30 @@ class ApplicationWindow:
         self.start_x = None
         self.start_y = None
 
+    def display_screenshot(self):
+        screenshot = self.metin.image_to_display
+        def update_image(screenshot=screenshot):
+            # If the screenshot is not a PIL image, convert it
+            if not isinstance(screenshot, Image.Image):
+                screenshot = Image.fromarray(screenshot)
+
+            # Resize the image to fit the width of the window and half the height
+            img = screenshot.resize((self.root.winfo_width(), int(self.root.winfo_height() / 2)))
+
+            # Convert the image to a format that can be displayed in Tkinter
+            self.screenshot_img = ImageTk.PhotoImage(img)
+
+            # Update or create the label to display the image at the bottom of the grid
+            if self.image_label:
+                self.image_label.config(image=self.screenshot_img)
+            else:
+                # Create the label and place it at the bottom of the grid
+                self.image_label = tk.Label(self.root, image=self.screenshot_img)
+                self.image_label.grid(row=13, column=0, columnspan=4, pady=10)
+
+        # Use `after` to safely update the GUI from the main thread
+        self.root.after(0, update_image)
+
     def on_button_press(self, event, canvas):
         # Store the initial coordinates on mouse button press
         self.start_x = event.x
@@ -327,7 +352,7 @@ class ApplicationWindow:
 
 
 class Metin:
-    def __init__(self, metin_hp_img, skills_to_activate):
+    def __init__(self, metin_hp_img, skills_to_activate, display_screenshot):
         self.window_top = None
         self.window_left = None
         self.window_right = None
@@ -365,10 +390,13 @@ class Metin:
         self.selected_metin = None
         self.skill_timer_diff = 0
         self.bio_timer_diff = 0
+        self.bio_cd_random = random.randint(10, 70)
         self.metin_destroy_time_diff = 0
         self.bot_time_diff = 0
         self.respawn_timer_diff = 0
         self.show_img = False
+        self.image_to_display = None
+        self.display_screenshot = display_screenshot
         self.lock = threading.Lock()
         self.model_initialize()
 
@@ -413,12 +441,6 @@ class Metin:
                 self.activate_skills()
                 self.destroy_metin(np_image)
 
-                # Ensure the window updates rather than creating a new one
-                if cv2.waitKey(1) & 0xFF == ord('q'):
-                    break
-
-        cv2.destroyAllWindows()
-
     def bot_solver(self, np_image):
         # 433 x 280
         box = 64
@@ -454,6 +476,7 @@ class Metin:
             np_image_text = np_image_text[20:60, 230:270]
             # cv2.imshow('np_image_text2',np_image_text)
             result = pytesseract.image_to_string(np_image_text, config=custom_config_text)
+
             result = result.strip()
             print(f'text to find {result}')
 
@@ -465,9 +488,8 @@ class Metin:
                 for column in range(3):
                     x1, y1 = box * column + space * column, box * row + space * row  # z lava, z hore
                     x2, y2 = box * (column + 1) + space * column, box * (row + 1) + space * row  # z prava, z dola
-                    np_img_captcha_option = np_image_captcha[y1: y2, x1: x2]
                     # Extract text using pytesseract
-                    np_img_captcha_option_resized = resize_image(np_img_captcha_option)
+                    np_img_captcha_option_resized = resize_image(np_image_captcha[y1: y2, x1: x2])
                     # self.metin.solve_captcha
                     output = self.bot_detection_solver(np_img_captcha_option_resized)
                     if output is None:
@@ -487,7 +509,7 @@ class Metin:
                         found = True
                         time.sleep(2)
                         break
-
+                # lower check
                 if len(no_outputs) > 0:
                     print('**********************************')
                     print('***********ADO KUKAJ**************')
@@ -506,6 +528,11 @@ class Metin:
                     mouse_left_click(cancel_x, cancel_y, self.window_title)
                     self.bot_timer = 0
                     time.sleep(2)
+
+            del np_image_captcha
+            del np_img_captcha_option_resized
+            del np_image_text
+            gc.collect()
 
     def death_check(self, np_image):
         self.respawn_timer_diff = time.time() - self.respawn_timer
@@ -526,17 +553,16 @@ class Metin:
 
     def deliver_bio(self):
         self.bio_timer_diff = time.time() - self.bio_timer
-        if self.bio_timer == 0 or self.bio_timer != 0 and self.bio_timer_diff >= self.bio_cd:
+        if self.bio_timer == 0 or self.bio_timer != 0 and self.bio_timer_diff >= self.bio_cd + self.bio_cd_random:
             print('deliver_bio')
+            self.bio_cd_random = random.randint(10, 70)
             self.bio_timer = time.time()
             bio_x, bio_y = self.bio_location[:2]
             bio_x += self.window_left
             bio_y += self.window_top
             mouse_left_click(bio_x, bio_y, self.window_title)
             time.sleep(1)
-            screenshot_bio = self.get_np_image()
-            np_image_bio = np.array(screenshot_bio)
-            np_image_bio = cv2.cvtColor(np_image_bio, cv2.COLOR_RGB2BGR)
+            np_image_bio = self.get_np_image()
 
             try:
                 location = pyautogui.locate('bot_images\\bio_deliver.png', np_image_bio, confidence=0.7)
@@ -550,6 +576,9 @@ class Metin:
 
                 press_button('esc', self.window_title)
                 time.sleep(0.15)
+
+            del np_image_bio
+            gc.collect()
 
     def activate_skills(self):
         self.skill_timer_diff = time.time() - self.skill_timer
@@ -600,7 +629,7 @@ class Metin:
 
                 print(f'pixel_to_check {pixel_to_check} | target_pixel_value {target_pixel_value}| click delay {a - time.time()}s')
 
-                press_button('esc', self.window_title)
+                # press_button('esc', self.window_title)
                 if np.all(np.abs(pixel_to_check - target_pixel_value) <= 5):
                     print('klik na metin')
                     mouse_left_click(metin_pos_x, metin_pos_y, self.window_title)
@@ -610,9 +639,13 @@ class Metin:
                     print('METIN SA UZ NICI')
                     press_button('q', self.window_title)
 
+                del check_hp_np_image
+                gc.collect()
+
                 # HERE I WANT TO display_screenshot(output_image)
                 if self.show_img:
-                    cv2.imshow('Display', output_image)
+                    self.image_to_display = output_image
+                    self.display_screenshot()
 
             else:
                 hp_bar_x1, hp_bar_y1, hp_bar_x2, hp_bar_y2 = self.hp_bar_location
@@ -623,10 +656,18 @@ class Metin:
                 self.destroying_metin = metin_is_alive
                 print(f'nici sa metin {metin_is_alive}')
 
+                # HERE I WANT TO display_screenshot(output_image)
+                if self.show_img:
+                    self.image_to_display = output_image
+                    self.display_screenshot()
+
                 if not metin_is_alive:
-                    # HERE I WANT TO display_screenshot(output_image)
-                    if self.show_img:
-                        cv2.imshow('Display', output_image)
+                    # Cleanup
+                    if 'output_image' in locals():
+                        del output_image
+                    if 'np_image_crop' in locals():
+                        del np_image_crop
+                    gc.collect()
                     return
 
                 press_button('q', self.window_title)
@@ -643,7 +684,8 @@ class Metin:
                     print(f'pixel_to_check {pixel_to_check} | target_pixel_value {target_pixel_value}| self.metin_destroy_time_diff {self.metin_destroy_time_diff}s')
                     # HERE I WANT TO display_screenshot(output_image)
                     if self.show_img:
-                        cv2.imshow('Display', output_image)
+                        self.image_to_display = output_image
+                        self.display_screenshot()
 
                     # check if after 10s metin is being destroyed or player is stuck
                     if np.all(np.abs(pixel_to_check - target_pixel_value) <= 5):
@@ -661,10 +703,18 @@ class Metin:
         else:
             # HERE I WANT TO display_screenshot(np_image_crop)
             if self.show_img:
-                cv2.imshow('Display', np_image_crop)
+                self.image_to_display = np_image_crop
+                self.display_screenshot()
 
             press_button('q', self.window_title)
             print("Searching for metin")
+
+        # Cleanup
+        if 'output_image' in locals():
+            del output_image
+        if 'np_image_crop' in locals():
+            del np_image_crop
+        gc.collect()
 
     def locate_metin(self, np_image, x_middle, y_middle):
         # Convert the image to HSV
@@ -691,11 +741,11 @@ class Metin:
                              (255, 190, 200), 2)
                     # Optionally, you can calculate the distance between the middle of the screenshot and the contour center
                     # Draw a circle around the point (x_middle, y_middle) with a radius of 300px
-                    cv2.circle(np_image, (x_middle, y_middle), 300, (255, 190, 200),2)  # The color is (255, 190, 200) and the thickness is 2
+                    cv2.circle(np_image, (x_middle, y_middle), 200, (255, 190, 200),2)  # The color is (255, 190, 200) and the thickness is 2
 
                     cur_distance = abs(x_middle - contour_center_x) + abs(y_middle - contour_center_y)
 
-                    if cur_distance <= 300:
+                    if cur_distance <= 200:
                         continue
 
                     if cur_distance < min_distance:
@@ -768,7 +818,9 @@ class Metin:
         self.metin_window = metin_window
 
         np_image = np.array(screenshot)
-        return cv2.cvtColor(np_image, cv2.COLOR_RGB2BGR)
+
+        np_image = cv2.cvtColor(np_image, cv2.COLOR_RGB2BGR)
+        return np_image
 
 
 def resize_image(image):
