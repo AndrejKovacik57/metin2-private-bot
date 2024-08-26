@@ -528,9 +528,9 @@ class Metin:
                         output = output.strip()
                         outputs.append((output, (x1, x2, y1, y2)))
 
-                    print(f'output = {output}')
-                    logging.debug(f'Output: {output}')
-                    logging.debug(f'{output} in {result} -> {output in result}')
+                        print(f'output = {output}')
+                        logging.debug(f'Output: {output}')
+                        logging.debug(f'{output} in {result} -> {output in result}')
                     print(f'{output} in {result} -> {output in result}')
                     if output in result or output.lower() in result.lower():
                         print('BOT OCHRANA PRELOMENA')
