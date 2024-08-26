@@ -11,9 +11,17 @@ import threading
 import pytesseract
 import keyboard
 import random
+import logging
 
 
 custom_config = r'--oem 3 --psm 6 outputbase digits'
+
+logging.basicConfig(
+    filename='bot_solver.log',  # Log to a file
+    level=logging.DEBUG,  # Set the logging level
+    format='%(asctime)s - %(levelname)s - %(message)s',  # Log format
+    datefmt='%Y-%m-%d %H:%M:%S'  # Date format
+)
 
 
 class Screenshot:
@@ -32,6 +40,8 @@ class Screenshot:
             print('not found')
             return None
         if location is not None:
+
+            logging.info('Bot solver started')
             print(f'Object found at location: {location}')
             if self.on_found_callback:
                 self.on_found_callback()
@@ -66,23 +76,42 @@ class Screenshot:
         extracted_text_code_to_find = pytesseract.image_to_string(resized_code_to_find, config=custom_config)
         code_to_find_number = extracted_text_code_to_find[:4]
         print(f'code_to_find_number {code_to_find_number}')
+
+        logging.debug(f'code_to_find_number {code_to_find_number}')
+        smallest_difference = 999
+        output = None
+        smallest_difference_num = None
+
         for option in options:
             resized_option = resize_image(option.screenshot)
             extracted_text_option = pytesseract.image_to_string(resized_option, config=custom_config)
             option_number = extracted_text_option[:4]
             print(f'option_number {option_number}')
+            logging.debug(f'option_number {option_number}')
+            result_x1, result_y1 = option.left_up
+            result_x2, result_y2 = option.right_down
+
+            result_center_x = result_x1 + (result_x2 - result_x1) // 2
+            result_center_y = result_y1 + (result_y2 - result_y1) // 2
+
+            pos_x = result_center_x + 10
+            pos_y = result_center_y + 90
+
             if option_number == code_to_find_number:
                 print('found matching option')
-                result_x1, result_y1 = option.left_up
-                result_x2, result_y2 = option.right_down
 
-                result_center_x = result_x1 + (result_x2 - result_x1) // 2
-                result_center_y = result_y1 + (result_y2 - result_y1) // 2
-
-                pos_x = result_center_x + 10
-                pos_y = result_center_y + 90
+                logging.debug(f'found matching option')
 
                 return pos_x, pos_y
+            else:
+                differences = sum(1 for a, b in zip(option_number, code_to_find_number) if a != b)
+                if smallest_difference > differences:
+                    smallest_difference_num = option_number
+                    smallest_difference = differences
+                    output = pos_x, pos_y
+
+        logging.debug(f'using smallest difference on {smallest_difference_num}')
+        return output
 
 
 class ApplicationWindow:
@@ -266,7 +295,7 @@ class ApplicationWindow:
 
             else:
                 god_buff_timer_diff = time.time() - self.metin.god_buff_cd
-                if god_buff_timer_diff > 1810:
+                if god_buff_timer_diff > 5: #1810
                     print(f'god buff2 {god_buff_timer_diff }')
                     press_button('F9')
                     self.metin.god_buff_cd = time.time()
@@ -284,7 +313,7 @@ class ApplicationWindow:
 
             if self.metin.solved_at is not None:
                 time_diff = time.time() - self.metin.solved_at
-                if time_diff > 180:
+                if time_diff > 5:
                     self.bot_solver()
                     self.metin.solved_at = time.time()
             else:
