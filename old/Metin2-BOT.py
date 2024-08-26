@@ -402,7 +402,6 @@ class Metin:
         self.metin_is_being_destroyed = False
         self.god_buff_cd = 0
         self.skills_to_activate = skills_to_activate
-        self.skill_positions = {'1': 1, '2': 2, '3': 3, '4': 4, 'F1': 5, 'F2': 6, 'F3': 7, 'F4': 8}
         self.skills_time = 0
         self.capes_time = 0
 
@@ -475,7 +474,10 @@ class Metin:
     def activate_skills(self):
         press_button_multiple('ctrl+g')
         time.sleep(0.2)
+
+        print(f'self.skills_to_activate {self.skills_to_activate}')
         for skill_to_activate in self.skills_to_activate:
+            print(f'skill_to_activate {skill_to_activate}')
             press_button(skill_to_activate)
             time.sleep(2)
         press_button_multiple('ctrl+g')
@@ -525,7 +527,7 @@ def create_low_upp(metin_mask):
 
 def press_button(button):
     keyboard.press(button)
-    time.sleep(0.15)
+    time.sleep(0.3)
     keyboard.release(button)
 
 
