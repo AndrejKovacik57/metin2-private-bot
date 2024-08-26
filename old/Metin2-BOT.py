@@ -396,7 +396,7 @@ class Metin:
         self.skills_to_activate = skills_to_activate
         self.skill_positions = {'1': 1, '2': 2, '3': 3, '4': 4, 'F1': 5, 'F2': 6, 'F3': 7, 'F4': 8}
         self.skills_time = 0
-        self.cape_time = 0
+        self.capes_time = 0
 
     def on_found(self):
         self.solving_bot_check = True
