@@ -268,9 +268,9 @@ class ApplicationWindow:
                 self.metin.capes_time = time.time()
                 press_button('F4')
             else:
-                cape_time = time.time() - self.metin.capes_time
-                if cape_time > 5 + random.random() * (2 - 0.1) + 0.1:
-                    print(f'capes1 {cape_time}')
+                capes_time = time.time() - self.metin.capes_time
+                if capes_time > 5 + random.random() * (2 - 0.1) + 0.1:
+                    print(f'capes1 {capes_time}')
                     self.metin.capes_time = time.time()
                     press_button('F4')
 
