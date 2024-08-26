@@ -14,8 +14,19 @@ import keyboard
 import torch
 from ultralytics import YOLO
 import gc
+import logging
+
 
 custom_config_text = r'--oem 3 --psm 6 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+
+
+# Configure logging
+logging.basicConfig(
+    filename='bot_solver.log',  # Log to a file
+    level=logging.DEBUG,  # Set the logging level
+    format='%(asctime)s - %(levelname)s - %(message)s',  # Log format
+    datefmt='%Y-%m-%d %H:%M:%S'  # Date format
+)
 
 
 class NoCudaOrCPUModuleFound(ValueError):
@@ -472,6 +483,7 @@ class Metin:
 
         if location is not None:
             print('bot_solver')
+            logging.info('Bot solver started')
 
             cancel_x = self.window_left + location.left + location.width + 13
             cancel_y = self.window_top + location.top + location.height / 2
@@ -495,6 +507,7 @@ class Metin:
 
             result = result.strip()
             print(f'text to find {result}')
+            logging.debug(f'Text to find: {result}')
 
             no_outputs = []
             outputs = []
@@ -516,9 +529,12 @@ class Metin:
                         outputs.append((output, (x1, x2, y1, y2)))
 
                     print(f'output = {output}')
+                    logging.debug(f'Output: {output}')
+                    logging.debug(f'{output} in {result} -> {output in result}')
                     print(f'{output} in {result} -> {output in result}')
                     if output in result:
                         print('BOT OCHRANA PRELOMENA')
+                        logging.info('Bot protection bypassed')
                         x_to_click = self.window_left + location.left + 6 + x1 + (x2 - x1) / 2
                         y_to_click = self.window_top + location.top + 28 + y1 + (y2 - y1) / 2
                         mouse_left_click(x_to_click, y_to_click, self.window_title)
@@ -529,6 +545,7 @@ class Metin:
                         break
                 # lower check
                 if len(no_outputs) > 0 and not found:
+                    logging.info('No outputs found, random click')
                     print('**********************************')
                     print('***********ADO KUKAJ**************')
                     print('**********************************')
@@ -543,20 +560,21 @@ class Metin:
                     time.sleep(2)
 
                 if len(no_outputs) == 0 and not found:
-                    bool_out, coords = try_common_replacements(result, outputs)
-                    if bool_out:
+                    new_option, coords = try_common_replacements(result, outputs)
+                    if new_option:
                         found = True
                         x1, x2, y1, y2 = coords
                         print('ZAMENENY KLIK NA OCHRANU')
+                        logging.info(f'Click after replacement: {new_option}')
                         x_to_click = self.window_left + location.left + 6 + x1 + (x2 - x1) / 2
                         y_to_click = self.window_top + location.top + 28 + y1 + (y2 - y1) / 2
                         mouse_left_click(x_to_click, y_to_click, self.window_title)
                         self.bot_timer = 0
                         self.bot_time_diff = time.time() - self.bot_timer
 
-
                 if self.bot_time_diff > 5 and not found:
                     print('BOT OCHRANA ZATVORENA')
+                    logging.info('Bot protection closed')
                     mouse_left_click(cancel_x, cancel_y, self.window_title)
                     self.bot_timer = 0
                     time.sleep(2)
@@ -1027,9 +1045,9 @@ def try_common_replacements(result, outputs, additional_replacements=None):
 
                 # Check if the modified output matches the result
                 if modified_output in result:
-                    return True, coords  # Found a match
+                    return modified_output, coords  # Found a match
 
-    return False, (0, 0, 0, 0)  # No match found
+    return '', (0, 0, 0, 0)  # No match found
 
 
 def main():
