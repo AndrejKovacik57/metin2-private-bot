@@ -352,7 +352,7 @@ class ApplicationWindow:
 
 
     def bot_solver(self):
-        metin_window = gw.getWindowsWithTitle(window_title)[0]
+        metin_window = gw.getWindowsWithTitle(self.window_title)[0]
         screenshot = get_window_screenshot(metin_window)
 
         self.metin.window_top = metin_window.left
