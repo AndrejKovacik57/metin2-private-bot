@@ -532,7 +532,7 @@ class Metin:
                     logging.debug(f'Output: {output}')
                     logging.debug(f'{output} in {result} -> {output in result}')
                     print(f'{output} in {result} -> {output in result}')
-                    if output in result:
+                    if output in result or output.lower() in result.lower():
                         print('BOT OCHRANA PRELOMENA')
                         logging.info('Bot protection bypassed')
                         x_to_click = self.window_left + location.left + 6 + x1 + (x2 - x1) / 2
@@ -1044,7 +1044,7 @@ def try_common_replacements(result, outputs, additional_replacements=None):
                 modified_output = modified_output.replace(key, value)
 
                 # Check if the modified output matches the result
-                if modified_output in result:
+                if modified_output in result or modified_output.lower() in result.lower():
                     return modified_output, coords  # Found a match
 
     return '', (0, 0, 0, 0)  # No match found
