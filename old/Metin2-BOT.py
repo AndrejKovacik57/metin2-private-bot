@@ -13,7 +13,6 @@ import keyboard
 import random
 
 
-window_title = ""
 custom_config = r'--oem 3 --psm 6 outputbase digits'
 
 
@@ -91,6 +90,11 @@ class ApplicationWindow:
         self.root = tk.Tk()
         self.root.title(title)
 
+        # Create a text entry field
+        self.entry_title = tk.Label(self.root, text="Metin Title:")
+        self.entry_title.pack(pady=5)
+        self.text_title = tk.Entry(self.root, width=50)
+        self.text_title.pack(pady=5)
         # Set window size
         self.root.geometry(f"{width}x{height}")
 
@@ -147,7 +151,7 @@ class ApplicationWindow:
         self.metin = None
 
         self.running = False
-
+        self.window_title = 0
         self.tesseract_path = ''
         self.metin_stones = []
         self.load_config_values()
@@ -161,11 +165,13 @@ class ApplicationWindow:
         self.metin_stones = cfg['metin_stones']
         self.metin_options = [item['name'] for item in self.metin_stones]
 
+        self.window_title = cfg['window_title']
         self.dropdown['values'] = self.metin_options
         if self.metin_options:
             self.dropdown.set(self.metin_options[0])
 
         self.text_tesseract_path.insert(0, cfg['tesseract_path'])
+        self.text_title.insert(0, cfg['window_title'])
         self.text_bot_check.insert(0, cfg['bot_test_img_path'])
         self.text_metin_hp_check.insert(0, cfg['metin_hp_img_path'])
         self.text_skills_check.insert(0, cfg['skills_to_activate'])
@@ -175,6 +181,8 @@ class ApplicationWindow:
         self.metin.bot_img_path = self.text_bot_check.get()
 
         self.cfg['bot_test_img_path'] = self.text_bot_check.get()
+        self.cfg['window_title'] = self.text_title.get()
+        self.window_title = self.text_title.get()
         self.cfg['tesseract_path'] = self.text_tesseract_path.get()
         self.cfg['metin_hp_img_path'] = self.text_metin_hp_check.get()
         self.cfg['skills_to_activate'] = self.text_skills_check.get()
@@ -224,7 +232,7 @@ class ApplicationWindow:
         while self.running:
             sleep_time = random.random() * (upper_limit - lower_limit) + lower_limit
             time.sleep(sleep_time)
-            metin_window = gw.getWindowsWithTitle(window_title)[0]
+            metin_window = gw.getWindowsWithTitle(self.window_title)[0]
             screenshot = get_window_screenshot(metin_window)
             self.metin.window_left = metin_window.left
             self.metin.window_top = metin_window.top
