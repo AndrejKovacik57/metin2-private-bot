@@ -297,7 +297,7 @@ class ApplicationWindow:
                         continue
 
                     press_button('q')
-                    press_button('F4')
+
 
                     metin_destroy_time_diff = time.time() - self.metin.metin_destroying_time
                     if metin_is_alive and metin_destroy_time_diff > 5 and not self.metin.metin_is_being_destroyed:
