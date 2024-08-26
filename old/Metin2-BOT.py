@@ -10,6 +10,7 @@ from tkinter import ttk
 import threading
 import pytesseract
 import keyboard
+import random
 
 
 window_title = ""
@@ -217,9 +218,12 @@ class ApplicationWindow:
                 self.metin.contour_low = metin_config['contourLow']
                 self.metin.contour_high = metin_config['contourHigh']
         self.metin.lower, self.metin.upper = create_low_upp(metin_mask)
-
+        upper_limit = 0.5
+        lower_limit = 0.1
         target_pixel_value = np.array([187, 19, 19])
         while self.running:
+            sleep_time = random.random() * (upper_limit - lower_limit) + lower_limit
+            time.sleep(sleep_time)
             metin_window = gw.getWindowsWithTitle(window_title)[0]
             screenshot = get_window_screenshot(metin_window)
             self.metin.window_left = metin_window.left
