@@ -451,14 +451,14 @@ class Metin:
                 np_image = self.get_np_image()
                 if self.running:
                     self.bot_solver(np_image)
-                # if self.running:
-                #     self.death_check(np_image)
-                # if self.running:
-                #     self.deliver_bio()
-                # if self.running:
-                #     self.activate_skills()
-                # if self.running:
-                #     self.destroy_metin(np_image)
+                if self.running:
+                    self.death_check(np_image)
+                if self.running:
+                    self.deliver_bio()
+                if self.running:
+                    self.activate_skills()
+                if self.running:
+                    self.destroy_metin(np_image)
 
     def bot_solver(self, np_image):
         # 433 x 280
