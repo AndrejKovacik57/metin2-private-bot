@@ -250,6 +250,7 @@ class ApplicationWindow:
                     print(f'skill2 {skill_time}')
                     self.metin.activate_skills()
                     self.metin.skills_time = time.time()
+
             if self.metin.god_buff_cd == 0:
                 print('god buff1')
                 self.metin.god_buff_cd = time.time()
@@ -261,6 +262,17 @@ class ApplicationWindow:
                     print(f'god buff2 {god_buff_timer_diff }')
                     press_button('F9')
                     self.metin.god_buff_cd = time.time()
+
+            if self.metin.capes_time == 0:
+                print('capes1')
+                self.metin.capes_time = time.time()
+                press_button('F4')
+            else:
+                cape_time = time.time() - self.metin.capes_time
+                if cape_time > 5:
+                    print(f'capes1 {cape_time}')
+                    self.metin.capes_time = time.time()
+                    press_button('F4')
 
             if self.metin.solved_at is not None:
                 time_diff = time.time() - self.metin.solved_at
@@ -384,6 +396,7 @@ class Metin:
         self.skills_to_activate = skills_to_activate
         self.skill_positions = {'1': 1, '2': 2, '3': 3, '4': 4, 'F1': 5, 'F2': 6, 'F3': 7, 'F4': 8}
         self.skills_time = 0
+        self.cape_time = 0
 
     def on_found(self):
         self.solving_bot_check = True
