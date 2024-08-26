@@ -15,7 +15,6 @@ import torch
 from ultralytics import YOLO
 import gc
 
-
 custom_config_text = r'--oem 3 --psm 6 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
 
 
@@ -111,7 +110,7 @@ class ApplicationWindow:
 
         self.set_respawn_button_location = tk.Button(text="Set respawn location",
                                                      command=self.apply_respawn_button_location)
-        self.set_respawn_button_location.grid(row=9, column=2,  pady=9)
+        self.set_respawn_button_location.grid(row=9, column=2, pady=9)
 
         self.set_cancel_location = tk.Button(text="Set cancel location",
                                              command=self.apply_cancel_location)
@@ -221,12 +220,14 @@ class ApplicationWindow:
 
     def apply_hp_bar_location(self):
         if None not in [self.start_x, self.start_y, self.end_x, self.end_y]:
-            output = [min(self.start_x, self.end_x), min(self.end_y, self.start_y), max(self.start_x, self.end_x), max(self.end_y, self.start_y)]
+            output = [min(self.start_x, self.end_x), min(self.end_y, self.start_y), max(self.start_x, self.end_x),
+                      max(self.end_y, self.start_y)]
             self.cfg['information_locations']['hp_bar_location'] = output
 
     def apply_respawn_button_location(self):
         if None not in [self.start_x, self.start_y, self.end_x, self.end_y]:
-            output = [min(self.start_x, self.end_x), min(self.end_y, self.start_y), max(self.start_x, self.end_x), max(self.end_y, self.start_y)]
+            output = [min(self.start_x, self.end_x), min(self.end_y, self.start_y), max(self.start_x, self.end_x),
+                      max(self.end_y, self.start_y)]
             self.cfg['information_locations']['respawn_button_location'] = output
 
     def apply_hp_full_location(self):
@@ -246,13 +247,15 @@ class ApplicationWindow:
     def apply_scan_window_location(self):
         # z lava, z hora, z prava, z dola
         if None not in [self.start_x, self.start_y, self.end_x, self.end_y]:
-            output = [min(self.start_x, self.end_x), min(self.end_y, self.start_y), max(self.start_x, self.end_x), max(self.end_y, self.start_y)]
+            output = [min(self.start_x, self.end_x), min(self.end_y, self.start_y), max(self.start_x, self.end_x),
+                      max(self.end_y, self.start_y)]
 
             self.cfg['information_locations']['scan_window_location'] = output
 
     def apply_cancel_location(self):
         if None not in [self.start_x, self.start_y, self.end_x, self.end_y]:
-            output = [min(self.start_x, self.end_x), min(self.end_y, self.start_y), max(self.start_x, self.end_x), max(self.end_y, self.start_y)]
+            output = [min(self.start_x, self.end_x), min(self.end_y, self.start_y), max(self.start_x, self.end_x),
+                      max(self.end_y, self.start_y)]
 
             self.cfg['information_locations']['cancel_location'] = output
 
@@ -299,6 +302,7 @@ class ApplicationWindow:
 
     def display_screenshot(self):
         screenshot = self.metin.image_to_display
+
         def update_image(screenshot=screenshot):
             # If the screenshot is not a PIL image, convert it
             if not isinstance(screenshot, Image.Image):
@@ -444,16 +448,22 @@ class Metin:
                 time.sleep(sleep_time)
 
                 np_image = self.get_np_image()
-                self.bot_solver(np_image)
-                self.death_check(np_image)
-                self.deliver_bio()
-                self.activate_skills()
-                self.destroy_metin(np_image)
+                if self.running:
+                    self.bot_solver(np_image)
+                if self.running:
+                    self.death_check(np_image)
+                if self.running:
+                    self.deliver_bio()
+                if self.running:
+                    self.activate_skills()
+                if self.running:
+                    self.destroy_metin(np_image)
 
     def bot_solver(self, np_image):
         # 433 x 280
         box = 64
         space = 15
+
         try:
             location = pyautogui.locate('bot_images\\bot_check_bar2.png', np_image, confidence=0.7)
         except pyautogui.ImageNotFoundException:
@@ -638,7 +648,8 @@ class Metin:
                 check_hp_np_image = self.get_np_image()
                 pixel_to_check = check_hp_np_image[pixel_y, pixel_x]
 
-                print(f'pixel_to_check {pixel_to_check} | target_pixel_value {target_pixel_value}| click delay {a - time.time()}s')
+                print(
+                    f'pixel_to_check {pixel_to_check} | target_pixel_value {target_pixel_value}| click delay {a - time.time()}s')
 
                 # press_button('esc', self.window_title)
                 if np.all(np.abs(pixel_to_check - target_pixel_value) <= 5):
@@ -649,8 +660,6 @@ class Metin:
                 else:
                     print('METIN SA UZ NICI')
                     press_button('q', self.window_title)
-
-
 
                 # HERE I WANT TO display_screenshot(output_image)
                 if self.show_img:
@@ -692,7 +701,8 @@ class Metin:
                     pixel_y += self.window_top
 
                     pixel_to_check = np_image[pixel_y, pixel_x]
-                    print(f'pixel_to_check {pixel_to_check} | target_pixel_value {target_pixel_value}| self.metin_destroy_time_diff {self.metin_destroy_time_diff}s')
+                    print(
+                        f'pixel_to_check {pixel_to_check} | target_pixel_value {target_pixel_value}| self.metin_destroy_time_diff {self.metin_destroy_time_diff}s')
                     # HERE I WANT TO display_screenshot(output_image)
                     if self.show_img:
                         self.image_to_display = output_image
@@ -756,7 +766,8 @@ class Metin:
                              (255, 190, 200), 2)
                     # Optionally, you can calculate the distance between the middle of the screenshot and the contour center
                     # Draw a circle around the point (x_middle, y_middle) with a radius of 300px
-                    cv2.circle(np_image, (x_middle, y_middle), 200, (255, 190, 200),2)  # The color is (255, 190, 200) and the thickness is 2
+                    cv2.circle(np_image, (x_middle, y_middle), 200, (255, 190, 200),
+                               2)  # The color is (255, 190, 200) and the thickness is 2
 
                     cur_distance = abs(x_middle - contour_center_x) + abs(y_middle - contour_center_y)
 
@@ -786,6 +797,7 @@ class Metin:
             return True
         else:
             return False
+
     def bot_detection_solver(self, np_image):
         image = Image.fromarray(np_image)
 
