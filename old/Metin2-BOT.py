@@ -9,7 +9,6 @@ import tkinter as tk
 from tkinter import ttk
 import threading
 import pytesseract
-import pydirectinput
 import keyboard
 
 
@@ -243,7 +242,7 @@ class ApplicationWindow:
                 self.metin.activate_skills()
             else:
                 skill_time = time.time() - self.metin.skills_time
-                if skill_time > 150:
+                if skill_time > 7210:
                     print(f'skill2 {skill_time}')
                     self.metin.activate_skills()
                     self.metin.skills_time = time.time()
@@ -254,7 +253,7 @@ class ApplicationWindow:
 
             else:
                 god_buff_timer_diff = time.time() - self.metin.god_buff_cd
-                if god_buff_timer_diff > 300:
+                if god_buff_timer_diff > 1810:
                     print(f'god buff2 {god_buff_timer_diff }')
                     press_button('F9')
                     self.metin.god_buff_cd = time.time()
@@ -449,40 +448,12 @@ class Metin:
             return True
 
     def activate_skills(self):
-        x1, y1 = 568, 1020  # z lava, z hore
-        x2, y2 = 835, 1050  # z prava, z dola
-        max_attempts = 10
-        went_down = False
+        press_button_multiple('ctrl+g')
+        time.sleep(0.2)
         for skill_to_activate in self.skills_to_activate:
-            for counter in range(max_attempts):
-                print(f'---{skill_to_activate} try {counter}---')
-                skill_pos = self.skill_positions[skill_to_activate]
-                pixels = []
-                offset = 16 if skill_pos < 5 else 30  # 14 pixels between nums and Fs
-                skill_pixel_position = 32 * (skill_pos - 1) + offset
-                for _ in range(3):
-                    np_image = np.array(get_window_screenshot(self.metin_window))
-                    skills = np_image[y1: y2, x1: x2]
-                    pixel = skills[0, skill_pixel_position].tolist()
-                    if pixel not in pixels:
-                        pixels.append(pixel)
-                    time.sleep(0.1)
-                num_of_diff_pixels = len(pixels)
-                print(f'num_of_diff_pixels: {num_of_diff_pixels}')
-                if num_of_diff_pixels > 1:
-                    print('skill active')
-                    if went_down and self.metin_window and window_title in self.metin_window.title:
-                        press_button_multiple('ctrl+g')
-                    break
-                else:
-                    if counter > 1:
-                        # couldnt activate skill because character is on horse, we go down from mount
-                        if self.metin_window and window_title in self.metin_window.title:
-                            press_button_multiple('ctrl+g')
-                            went_down = True
-                    print('skill not active')
-                    press_button(skill_to_activate)
-                    counter += 1
+            press_button(skill_to_activate)
+            time.sleep(2)
+        press_button_multiple('ctrl+g')
 
 
 def resize_image(image):
