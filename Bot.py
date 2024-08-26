@@ -363,6 +363,7 @@ class ApplicationWindow:
         self.root.mainloop()
 
 
+
 class Metin:
     def __init__(self, metin_hp_img, skills_to_activate, display_screenshot):
         self.window_top = None
@@ -423,7 +424,7 @@ class Metin:
             self.model_cuda = YOLO(f'{path}best.pt')
         else:
             print("CPU-only version of PyTorch is installed.")
-            self.model_cpu = YOLO(f'{path}best.onnx')
+            self.model_cpu = YOLO(f'{path}best.onnx', task='detect')
 
         combinations = [a + b for a in characters for b in characters]
         combo_to_id = {combo: idx for idx, combo in enumerate(combinations)}
@@ -450,14 +451,14 @@ class Metin:
                 np_image = self.get_np_image()
                 if self.running:
                     self.bot_solver(np_image)
-                if self.running:
-                    self.death_check(np_image)
-                if self.running:
-                    self.deliver_bio()
-                if self.running:
-                    self.activate_skills()
-                if self.running:
-                    self.destroy_metin(np_image)
+                # if self.running:
+                #     self.death_check(np_image)
+                # if self.running:
+                #     self.deliver_bio()
+                # if self.running:
+                #     self.activate_skills()
+                # if self.running:
+                #     self.destroy_metin(np_image)
 
     def bot_solver(self, np_image):
         # 433 x 280
@@ -488,18 +489,15 @@ class Metin:
             x2 = x1 + 245
             y1 = self.window_top + location.top + 180
             y2 = y1 + 40
-            np_image_text = resize_image(np_image[y1: y2, x1: x2])
 
-            np_image_text = preprocess_image(np_image_text)
-            # cv2.imshow('np_image_text1',np_image_text)
-            np_image_text = np_image_text[20:60, 230:270]
-            # cv2.imshow('np_image_text2',np_image_text)
+            np_image_text = preprocess_image(np_image[y1: y2, x1: x2])
             result = pytesseract.image_to_string(np_image_text, config=custom_config_text)
 
             result = result.strip()
             print(f'text to find {result}')
 
             no_outputs = []
+            outputs = []
             found = False
             for row in range(2):
                 if found:
@@ -515,10 +513,11 @@ class Metin:
                         no_outputs.append((x1, x2, y1, y2))
                     else:
                         output = output.strip()
-                    print(f'output = {output}')
-                    print(f'{output} == {result} -> {output == result}')
+                        outputs.append((output, (x1, x2, y1, y2)))
 
-                    if output == result:
+                    print(f'output = {output}')
+                    print(f'{output} in {result} -> {output in result}')
+                    if output in result:
                         print('BOT OCHRANA PRELOMENA')
                         x_to_click = self.window_left + location.left + 6 + x1 + (x2 - x1) / 2
                         y_to_click = self.window_top + location.top + 28 + y1 + (y2 - y1) / 2
@@ -529,7 +528,7 @@ class Metin:
                         time.sleep(2)
                         break
                 # lower check
-                if len(no_outputs) > 0:
+                if len(no_outputs) > 0 and not found:
                     print('**********************************')
                     print('***********ADO KUKAJ**************')
                     print('**********************************')
@@ -540,9 +539,23 @@ class Metin:
                     mouse_left_click(x_to_click, y_to_click, self.window_title)
                     self.bot_timer = 0
                     self.bot_time_diff = time.time() - self.bot_timer
+                    found = True
                     time.sleep(2)
 
-                if self.bot_time_diff > 5 and self.bot_timer != 0:
+                if len(no_outputs) == 0 and not found:
+                    bool_out, coords = try_common_replacements(result, outputs)
+                    if bool_out:
+                        found = True
+                        x1, x2, y1, y2 = coords
+                        print('ZAMENENY KLIK NA OCHRANU')
+                        x_to_click = self.window_left + location.left + 6 + x1 + (x2 - x1) / 2
+                        y_to_click = self.window_top + location.top + 28 + y1 + (y2 - y1) / 2
+                        mouse_left_click(x_to_click, y_to_click, self.window_title)
+                        self.bot_timer = 0
+                        self.bot_time_diff = time.time() - self.bot_timer
+
+
+                if self.bot_time_diff > 5 and not found:
                     print('BOT OCHRANA ZATVORENA')
                     mouse_left_click(cancel_x, cancel_y, self.window_title)
                     self.bot_timer = 0
@@ -928,10 +941,95 @@ def mouse_right_click(pos_x, pos_y, window_title):
 
 def preprocess_image(image):
     # Convert the image to grayscale
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    # Apply a threshold to get a binary image
-    _, binary_image = cv2.threshold(gray, 120, 255, cv2.THRESH_BINARY_INV)
-    return binary_image
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+    # Define the lower and upper range for the green color
+    lower_green = np.array([40, 40, 40])
+    upper_green = np.array([90, 255, 255])
+
+    # Create a mask for green areas in the image
+    mask = cv2.inRange(hsv, lower_green, upper_green)
+
+    # Bitwise-AND the mask and the original image
+    result = cv2.bitwise_and(image, image, mask=mask)
+
+    # Convert the result to RGB for plotting with matplotlib
+    result_rgb = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
+    # Convert the image to grayscale for finding the non-black columns
+    gray = cv2.cvtColor(result_rgb, cv2.COLOR_RGB2GRAY)
+
+    # Find the first and last column that contains non-black pixels
+    non_black_columns = np.where(gray.max(axis=0) > 0)[0]
+    if non_black_columns.size > 0:
+        # Calculate the difference between consecutive column indices
+        differences = np.diff(non_black_columns)
+
+        # Identify segments of continuous columns (no large gaps)
+        large_jump_indices = np.where(differences > 10)[0]  # Threshold for detecting gaps
+
+        if large_jump_indices.size > 0:
+            # Focus on the largest continuous segment (between two large jumps)
+            segments = np.split(non_black_columns, large_jump_indices + 1)
+            longest_segment = max(segments, key=len)
+
+            # Set the left and right bounds to the start and end of the largest segment
+            left_bound = longest_segment[0]
+            right_bound = longest_segment[-1]
+        else:
+            # If there are no large jumps, consider the full range
+            left_bound = non_black_columns[0]
+            right_bound = non_black_columns[-1]
+
+        # Crop the image to remove black areas from left and right
+        cropped_image = result_rgb[:, left_bound - 5:right_bound + 5]
+    else:
+        # If no non-black pixels are found, return the original result_rgb
+        cropped_image = result_rgb
+
+    # Apply a binary threshold to make the text more distinct
+
+    # Optionally, resize the image to make the characters more distinguishable
+    resized_image = cv2.resize(cropped_image, None, fx=5, fy=5, interpolation=cv2.INTER_CUBIC)
+
+    return resized_image
+
+
+def try_common_replacements(result, outputs, additional_replacements=None):
+    # Define a dictionary of common OCR misrecognitions
+    replacements = {
+        '0': 'O', 'O': '0',
+        '1': 'I', 'I': '1', 'l': '1', 'L': '1',
+        '5': 'S', 'S': '5',
+        '2': 'Z', 'Z': '2',
+        '6': 'G', 'G': '6',
+        '8': 'B', 'B': '8',
+        'F': '7', '7': 'F'
+    }
+
+    # If additional replacements are provided, extend the dictionary
+    if additional_replacements:
+        replacements.update(additional_replacements)
+        # Ensure the additional replacements are bidirectional
+        additional_reversed = {v: k for k, v in additional_replacements.items()}
+        replacements.update(additional_reversed)
+
+    # Iterate through each output in the list
+    for output in outputs:
+        # Start with the original output
+        modified_output, coords = output
+
+        # Try each replacement one by one
+        for key, value in replacements.items():
+            # Only apply the replacement if the key or value is in the result
+            if key in result or value in result:
+                # Replace the key in the modified output
+                modified_output = modified_output.replace(key, value)
+
+                # Check if the modified output matches the result
+                if modified_output in result:
+                    return True, coords  # Found a match
+
+    return False, (0, 0, 0, 0)  # No match found
 
 
 def main():
