@@ -463,7 +463,7 @@ class Metin:
         time.sleep(2)
         # upper_limit = 0.5
         # lower_limit = 0.1
-        # self.choose_weather()
+        self.choose_weather()
         while self.running:
             with self.lock:
                 # sleep_time = random.random() * (upper_limit - lower_limit) + lower_limit
