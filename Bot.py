@@ -318,6 +318,7 @@ class ApplicationWindow:
         def update_image(screenshot=screenshot):
             # If the screenshot is not a PIL image, convert it
             if not isinstance(screenshot, Image.Image):
+                screenshot = screenshot[:, :, ::-1]
                 screenshot = Image.fromarray(screenshot)
 
             # Resize the image to fit the width of the window and half the height
@@ -570,7 +571,7 @@ class Metin:
                     self.bot_time_diff = time.time() - self.bot_timer
                     found = True
                     if self.debug_bot == 1:
-                        save_debug_image(np_image_captcha, np_img_captcha_option_resized)
+                        save_debug_image(np_image_captcha, np_image_text)
                     time.sleep(2)
 
                 if len(no_outputs) == 0 and not found:
@@ -593,7 +594,7 @@ class Metin:
                     self.bot_timer = 0
                     time.sleep(2)
                     if self.debug_bot == 1:
-                        save_debug_image(np_image_captcha, np_img_captcha_option_resized)
+                        save_debug_image(np_image_captcha, np_image_text)
 
             del np_image_captcha
             del np_img_captcha_option_resized
@@ -758,17 +759,17 @@ class Metin:
                     # check if after 10s metin is being destroyed or player is stuck
                     if np.all(np.abs(pixel_to_check - target_pixel_value) <= 5):
                         print('zatvaram metin okno')
+                        choices = ['a', 'd']
                         cancel_x1, cancel_y1, cancel_x2, cancel_y2 = self.cancel_location
 
                         x_to_cancel = (self.window_left + cancel_x1 + (cancel_x2 - cancel_x1) / 2)
                         y_to_cancel = (self.window_top + cancel_y1 + (cancel_y2 - cancel_y1) / 2)
 
                         mouse_left_click(x_middle, y_middle, self.window_title)
+                        metin_is_alive = False
                         time.sleep(0.2)
                         mouse_left_click(x_to_cancel, y_to_cancel, self.window_title)
-                        press_button('a', self.window_title)
-                        time.sleep(0.2)
-                        press_button('d', self.window_title)
+                        press_button(random.choice(choices), self.window_title)
                         time.sleep(0.2)
                         press_button('q', self.window_title)
                         time.sleep(0.2)
@@ -916,20 +917,26 @@ class Metin:
         np_image = self.get_np_image()
         # options
         location = locate_image('bot_images\\settings_options.png', np_image, 0.9)
+        if location is None:
+            return
         self.click_location_middle(location)
         time.sleep(0.5)
 
         np_image = self.get_np_image()
         # system options
         location = locate_image('bot_images\\system_options.png', np_image, 0.9)
+        if location is None:
+            return
         self.click_location_middle(location)
         time.sleep(0.45)
 
         np_image = self.get_np_image()
         # options menu
         location = locate_image('bot_images\\options_menu.png', np_image, 0.9)
+        if location is None:
+            return
         cancel_x = self.window_left + location.left + location.width - 15
-        cancel_y =self.window_top + location.top + 15
+        cancel_y = self.window_top + location.top + 15
         graphic_settings_x = self.window_left + location.left + 210
         graphic_settings_y = self.window_top + location.top + 50
         mouse_left_click(graphic_settings_x, graphic_settings_y, self.window_title)
@@ -938,6 +945,8 @@ class Metin:
         np_image = self.get_np_image()
         # graphics options
         location = locate_image('bot_images\\graphics_settings.png', np_image, 0.9)
+        if location is None:
+            return
         segment = location.height / 4
         graphic_options_x = self.window_left + location.left + location.width / 2
         graphic_options_y = self.window_top + location.top + segment * 3 + segment / 4
@@ -947,6 +956,8 @@ class Metin:
         np_image = self.get_np_image()
         # graphics options
         location = locate_image('bot_images\\weather.png', np_image, 0.9)
+        if location is None:
+            return
         space = 24
         width = 86
         height = 50
@@ -1149,13 +1160,13 @@ def try_common_replacements(result, outputs, additional_replacements=None):
     return '', (0, 0, 0, 0)  # No match found
 
 
-def save_debug_image(np_image_captcha, np_img_captcha_option_resized, folder="debug-images"):
+def save_debug_image(np_image_captcha, np_image_text, folder="debug-images"):
     # Ensure the folder exists
     if not os.path.exists(folder):
         os.makedirs(folder)
 
     save_image(np_image_captcha, 'debug_captcha', folder)
-    save_image(np_img_captcha_option_resized, 'debug_desire', folder)
+    save_image(np_image_text, 'debug_desire', folder)
 
 
 def save_image(img, name, folder):
