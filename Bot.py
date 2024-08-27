@@ -532,17 +532,17 @@ class Metin:
                         logging.debug(f'Output: {output}')
                         logging.debug(f'{output} in {result} -> {output in result}')
                         print(f'{output} in {result} -> {output in result}')
-                    if output is not None and output in result or output.lower() in result.lower():
-                        print('BOT OCHRANA PRELOMENA')
-                        logging.info('Bot protection bypassed')
-                        x_to_click = self.window_left + location.left + 6 + x1 + (x2 - x1) / 2
-                        y_to_click = self.window_top + location.top + 28 + y1 + (y2 - y1) / 2
-                        mouse_left_click(x_to_click, y_to_click, self.window_title)
-                        self.bot_timer = 0
-                        self.bot_time_diff = time.time() - self.bot_timer
-                        found = True
-                        time.sleep(2)
-                        break
+                        if output in result or output.lower() in result.lower():
+                            print('BOT OCHRANA PRELOMENA')
+                            logging.info('Bot protection bypassed')
+                            x_to_click = self.window_left + location.left + 6 + x1 + (x2 - x1) / 2
+                            y_to_click = self.window_top + location.top + 28 + y1 + (y2 - y1) / 2
+                            mouse_left_click(x_to_click, y_to_click, self.window_title)
+                            self.bot_timer = 0
+                            self.bot_time_diff = time.time() - self.bot_timer
+                            found = True
+                            time.sleep(2)
+                            break
                 # lower check
                 if len(no_outputs) > 0 and not found:
                     logging.info('No outputs found, random click')
