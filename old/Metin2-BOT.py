@@ -295,7 +295,7 @@ class ApplicationWindow:
 
             else:
                 god_buff_timer_diff = time.time() - self.metin.god_buff_cd
-                if god_buff_timer_diff > 5: #1810
+                if god_buff_timer_diff > 300: #1810
                     print(f'god buff2 {god_buff_timer_diff }')
                     press_button('F9')
                     self.metin.god_buff_cd = time.time()
