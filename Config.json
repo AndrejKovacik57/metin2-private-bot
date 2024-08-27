@@ -4,7 +4,7 @@
     "skills_to_activate": "F1 F3 F4",
     "skills_cd": "1610",
     "bio_cd": "30",
-    "bio_item_num": "24",
+    "bio_item_num": "30",
     "window_name": "",
     "information_locations": {
         "hp_bar_location": [
@@ -61,7 +61,11 @@
                 "vMax": 252
             },
             "contourLow": 2500,
-            "contourHigh": 7544
+            "contourHigh": 7544,
+            "aspect_low": 67,
+            "aspect_high": 131,
+            "circularity": 144,
+            "weather": 9
         },
         {
             "name": "Metin of fall",
@@ -74,7 +78,11 @@
                 "vMax": 255
             },
             "contourLow": 1155,
-            "contourHigh": 8037
+            "contourHigh": 8037,
+            "aspect_low": 67,
+            "aspect_high": 131,
+            "circularity": 144,
+            "weather": 9
         },
         {
             "name": "Metin of death",
@@ -87,20 +95,28 @@
                 "vMax": 10000
             },
             "contourLow": 1155,
-            "contourHigh": 8037
+            "contourHigh": 8037,
+            "aspect_low": 67,
+            "aspect_high": 131,
+            "circularity": 144,
+            "weather": 9
         },
         {
             "name": "Metin of murder",
             "mask": {
-                "hMin": 117,
+                "hMin": 9,
                 "sMin": 0,
                 "vMin": 0,
-                "hMax": 174,
-                "sMax": 255,
-                "vMax": 123
+                "hMax": 26,
+                "sMax": 52,
+                "vMax": 253
             },
-            "contourLow": 1155,
-            "contourHigh": 6698
+            "contourLow": 699,
+            "contourHigh": 8000,
+            "aspect_low": 64,
+            "aspect_high": 117,
+            "circularity": 55,
+            "weather": 9
         },
         {
             "name": "Metin Tu-Young",
@@ -113,7 +129,11 @@
                 "vMax": 255
             },
             "contourLow": 789,
-            "contourHigh": 61698
+            "contourHigh": 61698,
+            "aspect_low": 67,
+            "aspect_high": 131,
+            "circularity": 144,
+            "weather": 9
         },
         {
             "name": "Metin Jeon-Un",
@@ -126,7 +146,11 @@
                 "vMax": 255
             },
             "contourLow": 1000,
-            "contourHigh": 5600
+            "contourHigh": 5600,
+            "aspect_low": 67,
+            "aspect_high": 131,
+            "circularity": 144,
+            "weather": 9
         }
     ]
 }

@@ -374,7 +374,6 @@ class ApplicationWindow:
         self.root.mainloop()
 
 
-
 class Metin:
     def __init__(self, metin_hp_img, skills_to_activate, display_screenshot):
         self.window_top = None
@@ -421,6 +420,12 @@ class Metin:
         self.show_img = False
         self.image_to_display = None
         self.bio_item_num = 0
+        self.aspect_low = 0
+        self.aspect_high = 0
+        self.circularity = 0
+        self.weather = 0
+        self.selected_weather = 0
+
         self.display_screenshot = display_screenshot
         self.lock = threading.Lock()
         self.model_initialize()
@@ -448,16 +453,21 @@ class Metin:
                 metin_mask = metin_config
                 self.contour_low = metin_config['contourLow']
                 self.contour_high = metin_config['contourHigh']
+                self.aspect_low = metin_config['aspect_low'] / 100.0
+                self.aspect_high = metin_config['aspect_high'] / 100.0
+                self.circularity = metin_config['circularity'] / 1000.0
+                self.weather = metin_config['weather']
+                break
         self.lower, self.upper = create_low_upp(metin_mask)
 
-        upper_limit = 0.5
-        lower_limit = 0.1
-
         time.sleep(2)
+        # upper_limit = 0.5
+        # lower_limit = 0.1
+        # self.choose_weather()
         while self.running:
             with self.lock:
-                sleep_time = random.random() * (upper_limit - lower_limit) + lower_limit
-                time.sleep(sleep_time)
+                # sleep_time = random.random() * (upper_limit - lower_limit) + lower_limit
+                # time.sleep(sleep_time)
 
                 np_image = self.get_np_image()
                 if self.running:
@@ -648,13 +658,13 @@ class Metin:
         target_pixel_value = np.array(self.hp_full_pixel_colour)
         x1, y1, x2, y2 = self.scan_window_location  # z lava, z hora, z prava, z dola
         np_image_crop = np_image[y1: y2, x1: x2]
-        x_middle = (x2 - x1) // 2
-        y_middle = (y2 - y1) // 2
+        x_middle = self.window_left + (x2 - x1) // 2
+        y_middle = self.window_top + (y2 - y1) // 2
 
         selected_contour_pos, output_image = self.locate_metin(np_image_crop, x_middle, y_middle)
         # there are metins on screen
         if selected_contour_pos is not None:
-            print('destroy_metin')
+            print('Metin Found')
             metin_pos_x, metin_pos_y = selected_contour_pos
 
             metin_pos_x += self.window_left + x1
@@ -662,35 +672,38 @@ class Metin:
 
             # no metin is being destroyed
             if not self.destroying_metin:
+                print('Click at metin')
                 press_button('z', self.window_title)
                 time.sleep(0.15)
                 press_button('y', self.window_title)
-
-                # click at metin to show hp to see if its being destroyed already
-                a = time.time()
-                mouse_right_click(metin_pos_x, metin_pos_y, self.window_title)
-
-                pixel_x, pixel_y = self.hp_full_location[:2]
-                pixel_x += self.window_left
-                pixel_y += self.window_top
-
-                # pyautogui.moveTo(pixel_x, pixel_y)
-                time.sleep(0.5)
-                check_hp_np_image = self.get_np_image()
-                pixel_to_check = check_hp_np_image[pixel_y, pixel_x]
-
-                print(
-                    f'pixel_to_check {pixel_to_check} | target_pixel_value {target_pixel_value}| click delay {a - time.time()}s')
-
-                # press_button('esc', self.window_title)
-                if np.all(np.abs(pixel_to_check - target_pixel_value) <= 5):
-                    print('klik na metin')
-                    mouse_left_click(metin_pos_x, metin_pos_y, self.window_title)
-                    self.destroying_metin = True
-                    self.metin_destroying_time = time.time()
-                else:
-                    print('METIN SA UZ NICI')
-                    press_button('q', self.window_title)
+                mouse_left_click(metin_pos_x, metin_pos_y, self.window_title)
+                self.destroying_metin = True
+                self.metin_destroying_time = time.time()
+                # # click at metin to show hp to see if its being destroyed already
+                # a = time.time()
+                # mouse_right_click(metin_pos_x, metin_pos_y, self.window_title)
+                #
+                # pixel_x, pixel_y = self.hp_full_location[:2]
+                # pixel_x += self.window_left
+                # pixel_y += self.window_top
+                #
+                # # pyautogui.moveTo(pixel_x, pixel_y)
+                # time.sleep(0.5)
+                # check_hp_np_image = self.get_np_image()
+                # pixel_to_check = check_hp_np_image[pixel_y, pixel_x]
+                #
+                # print(
+                #     f'pixel_to_check {pixel_to_check} | target_pixel_value {target_pixel_value}| click delay {a - time.time()}s')
+                #
+                # # press_button('esc', self.window_title)
+                # if np.all(np.abs(pixel_to_check - target_pixel_value) <= 5):
+                #     print('klik na metin')
+                #     mouse_left_click(metin_pos_x, metin_pos_y, self.window_title)
+                #     self.destroying_metin = True
+                #     self.metin_destroying_time = time.time()
+                # else:
+                #     print('METIN SA UZ NICI')
+                #     press_button('q', self.window_title)
 
                 # HERE I WANT TO display_screenshot(output_image)
                 if self.show_img:
@@ -703,7 +716,7 @@ class Metin:
                 hp_bar = np_image[hp_bar_y1: hp_bar_y2, hp_bar_x1: hp_bar_x2]
 
                 # check if metin was destroyed
-                metin_is_alive = self.locate_metin_hp(hp_bar, 0.7)
+                metin_is_alive = self.locate_metin_hp(hp_bar, 0.9)
                 self.destroying_metin = metin_is_alive
                 print(f'nici sa metin {metin_is_alive}')
 
@@ -711,6 +724,8 @@ class Metin:
                 if self.show_img:
                     self.image_to_display = output_image
                     self.display_screenshot()
+
+                press_button('q', self.window_title)
 
                 if not metin_is_alive:
                     # Cleanup
@@ -721,19 +736,14 @@ class Metin:
                     gc.collect()
                     return
 
-                press_button('q', self.window_title)
-
                 self.metin_destroy_time_diff = time.time() - self.metin_destroying_time
 
-                if metin_is_alive and self.metin_destroy_time_diff > 10:
-                    print(f'metin sa nici {self.metin_destroy_time_diff}s')
+                if metin_is_alive and self.metin_destroy_time_diff > 4:
                     pixel_x, pixel_y = self.hp_full_location[:2]
                     pixel_x += self.window_left
                     pixel_y += self.window_top
 
                     pixel_to_check = np_image[pixel_y, pixel_x]
-                    print(
-                        f'pixel_to_check {pixel_to_check} | target_pixel_value {target_pixel_value}| self.metin_destroy_time_diff {self.metin_destroy_time_diff}s')
                     # HERE I WANT TO display_screenshot(output_image)
                     if self.show_img:
                         self.image_to_display = output_image
@@ -747,10 +757,17 @@ class Metin:
                         x_to_cancel = (self.window_left + cancel_x1 + (cancel_x2 - cancel_x1) / 2)
                         y_to_cancel = (self.window_top + cancel_y1 + (cancel_y2 - cancel_y1) / 2)
 
+                        mouse_left_click(x_middle, y_middle, self.window_title)
+                        time.sleep(0.2)
                         mouse_left_click(x_to_cancel, y_to_cancel, self.window_title)
                         press_button('a', self.window_title)
                         time.sleep(0.2)
                         press_button('d', self.window_title)
+                        time.sleep(0.2)
+                        press_button('q', self.window_title)
+                        time.sleep(0.2)
+                        press_button('q', self.window_title)
+                        time.sleep(0.2)
 
         else:
             # HERE I WANT TO display_screenshot(np_image_crop)
@@ -766,8 +783,8 @@ class Metin:
             del output_image
         if 'np_image_crop' in locals():
             del np_image_crop
-        if 'check_hp_np_image' in locals():
-            del check_hp_np_image
+        # if 'check_hp_np_image' in locals():
+        #     del check_hp_np_image
         if 'hp_bar' in locals():
             del hp_bar
         gc.collect()
@@ -787,27 +804,33 @@ class Metin:
             for contour in contours:
                 if self.contour_high > cv2.contourArea(contour) > self.contour_low:  # 900
                     x, y, w, h = cv2.boundingRect(contour)
-                    cv2.rectangle(np_image, (x, y), (x + w, y + h), (0, 255, 0), 2)  # Draw rectangle
+                    aspect_ratio = float(w) / h
+                    area = cv2.contourArea(contour)
+                    perimeter = cv2.arcLength(contour, True)
+                    circularity = 4 * np.pi * (area / (perimeter * perimeter))
+                    if self.aspect_low < aspect_ratio < self.aspect_high and circularity > self.circularity:
 
-                    contour_center_x = x + w // 2
-                    contour_center_y = y + h // 2
+                        cv2.rectangle(np_image, (x, y), (x + w, y + h), (0, 255, 0), 2)  # Draw rectangle
 
-                    # Draw a line from the middle of the screenshot to the center of the contour
-                    cv2.line(np_image, (x_middle, y_middle), (contour_center_x, contour_center_y),
-                             (255, 190, 200), 2)
-                    # Optionally, you can calculate the distance between the middle of the screenshot and the contour center
-                    # Draw a circle around the point (x_middle, y_middle) with a radius of 300px
-                    cv2.circle(np_image, (x_middle, y_middle), 200, (255, 190, 200),
-                               2)  # The color is (255, 190, 200) and the thickness is 2
+                        contour_center_x = x + w // 2
+                        contour_center_y = y + h // 2
 
-                    cur_distance = abs(x_middle - contour_center_x) + abs(y_middle - contour_center_y)
+                        # Draw a line from the middle of the screenshot to the center of the contour
+                        cv2.line(np_image, (x_middle, y_middle), (contour_center_x, contour_center_y),
+                                 (255, 190, 200), 2)
+                        # Optionally, you can calculate the distance between the middle of the screenshot and the contour center
+                        # Draw a circle around the point (x_middle, y_middle) with a radius of 300px
+                        cv2.circle(np_image, (x_middle, y_middle), 200, (255, 190, 200),
+                                   2)  # The color is (255, 190, 200) and the thickness is 2
 
-                    if cur_distance <= 200:
-                        continue
+                        cur_distance = abs(x_middle - contour_center_x) + abs(y_middle - contour_center_y)
 
-                    if cur_distance < min_distance:
-                        min_distance = cur_distance
-                        selected_contour = contour
+                        if cur_distance <= 200:
+                            continue
+
+                        if cur_distance < min_distance:
+                            min_distance = cur_distance
+                            selected_contour = contour
 
         if selected_contour is not None:
             x, y, w, h = cv2.boundingRect(selected_contour)
@@ -879,6 +902,72 @@ class Metin:
 
         np_image = cv2.cvtColor(np_image, cv2.COLOR_RGB2BGR)
         return np_image
+
+    def choose_weather(self):
+        time.sleep(2)
+        if self.selected_weather == self.weather:
+            return
+        np_image = self.get_np_image()
+        # options
+        location = locate_image('bot_images\\settings_options.png', np_image, 0.9)
+        self.click_location_middle(location)
+        time.sleep(0.5)
+
+        np_image = self.get_np_image()
+        # system options
+        location = locate_image('bot_images\\system_options.png', np_image, 0.9)
+        self.click_location_middle(location)
+        time.sleep(0.45)
+
+        np_image = self.get_np_image()
+        # options menu
+        location = locate_image('bot_images\\options_menu.png', np_image, 0.9)
+        cancel_x = self.window_left + location.left + location.width - 15
+        cancel_y =self.window_top + location.top + 15
+        graphic_settings_x = self.window_left + location.left + 210
+        graphic_settings_y = self.window_top + location.top + 50
+        mouse_left_click(graphic_settings_x, graphic_settings_y, self.window_title)
+        time.sleep(0.27)
+
+        np_image = self.get_np_image()
+        # graphics options
+        location = locate_image('bot_images\\graphics_settings.png', np_image, 0.9)
+        segment = location.height / 4
+        graphic_options_x = self.window_left + location.left + location.width / 2
+        graphic_options_y = self.window_top + location.top + segment * 3 + segment / 4
+        mouse_left_click(graphic_options_x, graphic_options_y, self.window_title)
+        time.sleep(0.33)
+
+        np_image = self.get_np_image()
+        # graphics options
+        location = locate_image('bot_images\\weather.png', np_image, 0.9)
+        space = 24
+        width = 86
+        height = 50
+        counter = 0
+        for row in range(4):
+            for column in range(3):
+                if counter == self.weather - 1:
+                    print(counter)
+                    y1 = location.top + height * row
+                    y2 = y1 + height
+                    x1 = location.left + width * column + space * column
+                    x2 = x1 + width
+
+                    move_x = self.window_left +  x1 + (x2 - x1) / 2
+                    move_y = self.window_top + y1 + (y2 - y1) / 2
+                    mouse_left_click(move_x, move_y, self.window_title)
+                    self.selected_weather = counter + 1
+
+                counter += 1
+        time.sleep(0.2)
+
+        mouse_left_click(cancel_x, cancel_y, self.window_title)
+
+    def click_location_middle(self, location):
+        system_options_x = self.window_left + location.left + location.width / 2
+        system_options_y = self.window_top + location.top + location.height / 2
+        mouse_left_click(system_options_x, system_options_y, self.window_title)
 
 
 def resize_image(image):
@@ -1049,6 +1138,13 @@ def try_common_replacements(result, outputs, additional_replacements=None):
 
     return '', (0, 0, 0, 0)  # No match found
 
+
+def locate_image(path, np_image, confidence=0.9):
+    try:
+        location = pyautogui.locate(path, np_image, confidence=confidence)
+    except pyautogui.ImageNotFoundException:
+        location = None
+    return location
 
 def main():
     app = ApplicationWindow()
