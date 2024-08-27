@@ -531,7 +531,7 @@ class Metin:
                         print(f'output = {output}')
                         logging.debug(f'Output: {output}')
                         logging.debug(f'{output} in {result} -> {output in result}')
-                    print(f'{output} in {result} -> {output in result}')
+                        print(f'{output} in {result} -> {output in result}')
                     if output in result or output.lower() in result.lower():
                         print('BOT OCHRANA PRELOMENA')
                         logging.info('Bot protection bypassed')
