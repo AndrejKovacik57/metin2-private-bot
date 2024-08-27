@@ -532,7 +532,7 @@ class Metin:
                         logging.debug(f'Output: {output}')
                         logging.debug(f'{output} in {result} -> {output in result}')
                         print(f'{output} in {result} -> {output in result}')
-                    if output in result or output.lower() in result.lower():
+                    if output is not None and output in result or output.lower() in result.lower():
                         print('BOT OCHRANA PRELOMENA')
                         logging.info('Bot protection bypassed')
                         x_to_click = self.window_left + location.left + 6 + x1 + (x2 - x1) / 2
