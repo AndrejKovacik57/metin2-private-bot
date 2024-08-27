@@ -15,6 +15,7 @@ import torch
 from ultralytics import YOLO
 import gc
 import logging
+import os
 
 
 custom_config_text = r'--oem 3 --psm 6 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
@@ -35,7 +36,7 @@ class NoCudaOrCPUModuleFound(ValueError):
 
 
 class ApplicationWindow:
-    def __init__(self, title="Metin Bot"):
+    def __init__(self, title="Metin Bot", debug_bot=0):
         self.root = tk.Tk()
         self.root.title(title)
 
@@ -156,14 +157,14 @@ class ApplicationWindow:
         self.screenshot_image_top = None
         self.image_label = None
 
-        self.load_config_values()
+        self.load_config_values(debug_bot)
 
-    def load_config_values(self):
+    def load_config_values(self, debug_bot):
         cfg = load_config('Config.json')
         self.cfg = cfg
 
         pytesseract.pytesseract.tesseract_cmd = cfg['tesseract_path']
-        self.metin = Metin(cfg['metin_hp_img_path'], cfg['skills_to_activate'].split(), self.display_screenshot)
+        self.metin = Metin(cfg['metin_hp_img_path'], cfg['skills_to_activate'].split(), self.display_screenshot, debug_bot)
         self.metin.metin_stones = cfg['metin_stones']
         self.metin_options = [item['name'] for item in self.metin.metin_stones]
         self.metin.skills_cd = int(cfg['skills_cd']) if cfg['skills_cd'].isdigit() else 0
@@ -375,7 +376,8 @@ class ApplicationWindow:
 
 
 class Metin:
-    def __init__(self, metin_hp_img, skills_to_activate, display_screenshot):
+    def __init__(self, metin_hp_img, skills_to_activate, display_screenshot, debug_bot):
+        self.debug_bot = debug_bot
         self.window_top = None
         self.window_left = None
         self.window_right = None
@@ -567,6 +569,8 @@ class Metin:
                     self.bot_timer = 0
                     self.bot_time_diff = time.time() - self.bot_timer
                     found = True
+                    if self.debug_bot == 1:
+                        save_debug_image(np_image_captcha, np_img_captcha_option_resized)
                     time.sleep(2)
 
                 if len(no_outputs) == 0 and not found:
@@ -588,6 +592,8 @@ class Metin:
                     mouse_left_click(cancel_x, cancel_y, self.window_title)
                     self.bot_timer = 0
                     time.sleep(2)
+                    if self.debug_bot == 1:
+                        save_debug_image(np_image_captcha, np_img_captcha_option_resized)
 
             del np_image_captcha
             del np_img_captcha_option_resized
@@ -1104,13 +1110,16 @@ def preprocess_image(image):
 def try_common_replacements(result, outputs, additional_replacements=None):
     # Define a dictionary of common OCR misrecognitions
     replacements = {
-        '0': 'O', 'O': '0',
-        '1': 'I', 'I': '1', 'l': '1', 'L': '1',
-        '5': 'S', 'S': '5',
-        '2': 'Z', 'Z': '2',
-        '6': 'G', 'G': '6',
-        '8': 'B', 'B': '8',
-        'F': '7', '7': 'F'
+        '0': ['O'], 'O': ['0'],
+        '1': ['I'], 'I': ['1'], 'l': ['1'], 'L': ['1'],
+        '5': ['S'], 'S': ['5', '3'],
+        '2': ['Z'], 'Z': ['2'],
+        '6': ['G'], 'G': ['6'],
+        '8': ['B'], 'B': ['8'],
+        'F': ['7'], '7': ['F'],
+        '3': ['S'], 'V': ['y'],
+        'y': ['V'], 'h': ['A'],
+        'A': ['h']
     }
 
     # If additional replacements are provided, extend the dictionary
@@ -1126,17 +1135,46 @@ def try_common_replacements(result, outputs, additional_replacements=None):
         modified_output, coords = output
 
         # Try each replacement one by one
-        for key, value in replacements.items():
+        for key, values in replacements.items():
             # Only apply the replacement if the key or value is in the result
-            if key in result or value in result:
-                # Replace the key in the modified output
-                modified_output = modified_output.replace(key, value)
+            for value in values:
+                if key in result or value in result:
+                    # Replace the key in the modified output
+                    modified_output = modified_output.replace(key, value)
 
-                # Check if the modified output matches the result
-                if modified_output in result or modified_output.lower() in result.lower():
-                    return modified_output, coords  # Found a match
+                    # Check if the modified output matches the result
+                    if modified_output in result or modified_output.lower() in result.lower():
+                        return modified_output, coords  # Found a match
 
     return '', (0, 0, 0, 0)  # No match found
+
+
+def save_debug_image(np_image_captcha, np_img_captcha_option_resized, folder="debug-images"):
+    # Ensure the folder exists
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+
+    save_image(np_image_captcha, 'debug_captcha', folder)
+    save_image(np_img_captcha_option_resized, 'debug_desire', folder)
+
+
+def save_image(img, name, folder):
+    # Initialize file number
+    file_number = 0
+
+    # Check for the next available filename
+    while True:
+        file_name = f"{name}_{file_number}.png"
+        file_path = os.path.join(folder, file_name)
+
+        if not os.path.exists(file_path):
+            break
+        file_number += 1
+
+    # Convert the numpy array to an image and save it
+    image = Image.fromarray(img)
+    image.save(file_path)
+    print(f"Image saved as {file_path}")
 
 
 def locate_image(path, np_image, confidence=0.9):
@@ -1146,8 +1184,9 @@ def locate_image(path, np_image, confidence=0.9):
         location = None
     return location
 
+
 def main():
-    app = ApplicationWindow()
+    app = ApplicationWindow(debug_bot=0)
     app.run()
 
 
