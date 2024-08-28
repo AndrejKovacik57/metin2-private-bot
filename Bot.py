@@ -108,33 +108,36 @@ class ApplicationWindow:
         self.text_bio_cd = tk.Entry(self.root, width=30)
         self.text_bio_cd.grid(row=7, column=2, pady=5)
 
+        self.apply = tk.Button(self.root, text="Reset skill", command=self.reset_skill)
+        self.apply.grid(row=8, column=0, columnspan=4, pady=10)
+
         # Create a button to take a screenshot and center it
         self.screenshot_button = tk.Button(self.root, text="Take Screenshot", command=self.take_screenshot)
         self.screenshot_button.grid(row=8, column=0, columnspan=4, pady=10)
 
         self.set_metin_hp_bar_location = tk.Button(text="Set HP bar location",
                                                    command=self.apply_hp_bar_location)
-        self.set_metin_hp_bar_location.grid(row=9, column=0, pady=10)
+        self.set_metin_hp_bar_location.grid(row=10, column=0, pady=10)
 
         self.set_metin_hp_full_location = tk.Button(text="Set full HP location",
                                                     command=self.apply_hp_full_location)
-        self.set_metin_hp_full_location.grid(row=9, column=1, pady=10)
+        self.set_metin_hp_full_location.grid(row=10, column=1, pady=10)
 
         self.set_respawn_button_location = tk.Button(text="Set respawn location",
                                                      command=self.apply_respawn_button_location)
-        self.set_respawn_button_location.grid(row=9, column=2, pady=9)
+        self.set_respawn_button_location.grid(row=10, column=2, pady=9)
 
         self.set_cancel_location = tk.Button(text="Set cancel location",
                                              command=self.apply_cancel_location)
-        self.set_cancel_location.grid(row=10, column=0, pady=10)
+        self.set_cancel_location.grid(row=11, column=0, pady=10)
 
         self.set_scan_window = tk.Button(text="Set scan window",
                                          command=self.apply_scan_window_location)
-        self.set_scan_window.grid(row=10, column=1, pady=10)
+        self.set_scan_window.grid(row=11, column=1, pady=10)
 
         self.set_bio_button = tk.Button(text="Set bio wait time",
                                         command=self.apply_bio_button_location)
-        self.set_bio_button.grid(row=10, column=2, pady=10)
+        self.set_bio_button.grid(row=11, column=2, pady=10)
 
         # Create the Apply button and center it
         self.apply = tk.Button(self.root, text="Apply", command=self.apply_fields)
@@ -218,6 +221,9 @@ class ApplicationWindow:
 
         self.metin.skills_to_activate = self.cfg['skills_to_activate'].split()
         save_config(self.cfg, 'Config.json')
+
+    def reset_skill(self):
+        self.metin.skill_timer = 0
 
     def save_selected_option(self, event):
         self.metin.selected_metin = self.dropdown.get()
@@ -547,7 +553,7 @@ class Metin:
                         print(f'{output} in {result} -> {output in result}')
                         if output in result or output.lower() in result.lower():
                             print('BOT OCHRANA PRELOMENA')
-                            logging.info('Bot protection bypassed')
+                            logging.debug('Bot protection bypassed')
                             x_to_click = self.window_left + location.left + 6 + x1 + (x2 - x1) / 2
                             y_to_click = self.window_top + location.top + 28 + y1 + (y2 - y1) / 2
                             mouse_left_click(x_to_click, y_to_click, self.window_title)
@@ -558,7 +564,7 @@ class Metin:
                             break
                 # lower check
                 if len(no_outputs) > 0 and not found:
-                    logging.info('No outputs found, random click')
+                    logging.debug('No outputs found, random click')
                     print('**********************************')
                     print('***********ADO KUKAJ**************')
                     print('**********************************')
@@ -580,7 +586,7 @@ class Metin:
                         found = True
                         x1, x2, y1, y2 = coords
                         print('ZAMENENY KLIK NA OCHRANU')
-                        logging.info(f'Click after replacement: {new_option}')
+                        logging.debug(f'Click after replacement: {new_option}')
                         x_to_click = self.window_left + location.left + 6 + x1 + (x2 - x1) / 2
                         y_to_click = self.window_top + location.top + 28 + y1 + (y2 - y1) / 2
                         mouse_left_click(x_to_click, y_to_click, self.window_title)
@@ -589,7 +595,7 @@ class Metin:
 
                 if self.bot_time_diff > 5 and not found:
                     print('BOT OCHRANA ZATVORENA')
-                    logging.info('Bot protection closed')
+                    logging.debug('Bot protection closed')
                     mouse_left_click(cancel_x, cancel_y, self.window_title)
                     self.bot_timer = 0
                     time.sleep(2)
@@ -1197,7 +1203,7 @@ def locate_image(path, np_image, confidence=0.9):
 
 
 def main():
-    app = ApplicationWindow(debug_bot=0)
+    app = ApplicationWindow(debug_bot=1)
     app.run()
 
 
