@@ -108,12 +108,12 @@ class ApplicationWindow:
         self.text_bio_cd = tk.Entry(self.root, width=30)
         self.text_bio_cd.grid(row=7, column=2, pady=5)
 
-        self.apply = tk.Button(self.root, text="Reset skill", command=self.reset_skill)
-        self.apply.grid(row=8, column=0, columnspan=4, pady=10)
+        self.reset_skill = tk.Button(self.root, text="Reset skill", command=self.reset_skill)
+        self.reset_skill.grid(row=8, column=0, columnspan=4, pady=10)
 
         # Create a button to take a screenshot and center it
         self.screenshot_button = tk.Button(self.root, text="Take Screenshot", command=self.take_screenshot)
-        self.screenshot_button.grid(row=8, column=0, columnspan=4, pady=10)
+        self.screenshot_button.grid(row=9, column=0, columnspan=4, pady=10)
 
         self.set_metin_hp_bar_location = tk.Button(text="Set HP bar location",
                                                    command=self.apply_hp_bar_location)
@@ -592,15 +592,17 @@ class Metin:
                         mouse_left_click(x_to_click, y_to_click, self.window_title)
                         self.bot_timer = 0
                         self.bot_time_diff = time.time() - self.bot_timer
+                    time.sleep(2)
 
                 if self.bot_time_diff > 5 and not found:
                     print('BOT OCHRANA ZATVORENA')
                     logging.debug('Bot protection closed')
                     mouse_left_click(cancel_x, cancel_y, self.window_title)
                     self.bot_timer = 0
-                    time.sleep(2)
                     if self.debug_bot == 1:
                         save_debug_image(np_image_captcha, np_image_text)
+
+                    time.sleep(2)
 
             del np_image_captcha
             del np_img_captcha_option_resized
@@ -1132,9 +1134,9 @@ def try_common_replacements(result, outputs, additional_replacements=None):
         '5': ['S'], 'S': ['5', '3'],
         '2': ['Z'], 'Z': ['2'],
         '6': ['G'], 'G': ['6'],
-        '8': ['B'], 'B': ['8'],
+        '8': ['B', '3'], 'B': ['8'],
         'F': ['7'], '7': ['F'],
-        '3': ['S'], 'V': ['y'],
+        '3': ['S', '8'], 'V': ['y'],
         'y': ['V'], 'h': ['A'],
         'A': ['h']
     }
@@ -1203,7 +1205,7 @@ def locate_image(path, np_image, confidence=0.9):
 
 
 def main():
-    app = ApplicationWindow(debug_bot=1)
+    app = ApplicationWindow(debug_bot=0)
     app.run()
 
 
