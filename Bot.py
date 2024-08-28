@@ -770,7 +770,7 @@ class Metin:
                         choices = ['a', 'd']
                         cancel_x1, cancel_y1, cancel_x2, cancel_y2 = self.cancel_location
 
-                        x_to_cancel = (self.window_left + cancel_x1 + (cancel_x2 - cancel_x1) / 2)
+                        x_to_cancel = (self.window_left + cancel_x1 + (cancel_x2 - cancel_x1) * 0.75)
                         y_to_cancel = (self.window_top + cancel_y1 + (cancel_y2 - cancel_y1) / 2)
 
                         mouse_left_click(x_middle, y_middle, self.window_title)
@@ -1205,7 +1205,7 @@ def locate_image(path, np_image, confidence=0.9):
 
 
 def main():
-    app = ApplicationWindow(debug_bot=0)
+    app = ApplicationWindow(debug_bot=1)
     app.run()
 
 
