@@ -2,10 +2,23 @@
     "tesseract_path": "C:\\Program Files\\Tesseract-OCR\\tesseract.exe",
     "metin_hp_img_path": "bot_images\\metin_hp.png",
     "skills_to_activate": "F1 F3 F4",
-    "skills_cd": "1610",
+    "skills_cd": "3376",
     "bio_cd": "30",
     "bio_item_num": "30",
     "window_name": "",
+    "replacements": {
+        "0": ["O"], "O": ["0"],
+        "1": ["I"], "I": ["1"], "l": ["1"], "L": ["1"],
+        "5": ["S"], "S": ["5", "3"],
+        "2": ["Z"], "Z": ["2"],
+        "6": ["G"], "G": ["6"],
+        "8": ["B", "3"], "B": ["8"],
+        "F": ["7"], "7": ["F"],
+        "3": ["S", "8"], "V": ["y", "Y"],
+        "y": ["V"], "h": ["A"],
+        "A": ["h"], "Y": ["V"]
+    },
+
     "information_locations": {
         "hp_bar_location": [
             1314,

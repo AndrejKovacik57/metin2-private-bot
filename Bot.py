@@ -187,6 +187,7 @@ class ApplicationWindow:
         self.metin.bio_location = cfg['information_locations']['bio_location']
         self.metin.cancel_location = cfg['information_locations']['cancel_location']
         self.metin.respawn_location = cfg['information_locations']['respawn_button_location']
+        self.metin.replacements = cfg['replacements']
 
         self.text_tesseract_path.insert(0, cfg['tesseract_path'])
         self.text_metin_hp_check.insert(0, cfg['metin_hp_img_path'])
@@ -434,6 +435,17 @@ class Metin:
         self.circularity = 0
         self.weather = 0
         self.selected_weather = 0
+        self.replacements = {}
+
+        self.settings_options = 'bot_images\\settings_options.png'
+        self.bot_check_bar = 'bot_images\\bot_check_bar2.png'
+        self.restart = 'bot_images\\restart_img.png'
+        self.bio_deliver = 'bot_images\\bio_deliver.png'
+        self.system_options = 'bot_images\\system_options.png'
+        self.options_menu = 'bot_images\\options_menu.png'
+        self.graphics_settings = 'bot_images\\graphics_settings.png'
+        self.weather_image = 'bot_images\\weather.png'
+
 
         self.display_screenshot = display_screenshot
         self.lock = threading.Lock()
@@ -495,10 +507,7 @@ class Metin:
         box = 64
         space = 15
 
-        try:
-            location = pyautogui.locate('bot_images\\bot_check_bar2.png', np_image, confidence=0.7)
-        except pyautogui.ImageNotFoundException:
-            location = None
+        location = locate_image(self.bot_check_bar, np_image, confidence=0.7)
 
         if location is not None:
             print('bot_solver')
@@ -581,7 +590,7 @@ class Metin:
                     time.sleep(2)
 
                 if len(no_outputs) == 0 and not found:
-                    new_option, coords = try_common_replacements(result, outputs)
+                    new_option, coords = try_common_replacements(result, outputs, self.replacements)
                     if new_option:
                         found = True
                         x1, x2, y1, y2 = coords
@@ -614,10 +623,8 @@ class Metin:
         if self.respawn_timer == 0 or self.respawn_timer != 0 and self.respawn_timer_diff >= 10:
             print('death_check')
             self.respawn_timer = time.time()
-            try:
-                respawn_location = pyautogui.locate('bot_images\\restart_img.png', np_image, confidence=0.7)
-            except pyautogui.ImageNotFoundException:
-                respawn_location = None
+
+            respawn_location = locate_image(self.restart, np_image, confidence=0.7)
 
             if respawn_location is not None:
                 respawn_x = self.window_left + respawn_location.left + respawn_location.width / 2
@@ -641,10 +648,7 @@ class Metin:
             time.sleep(1)
             np_image_bio = self.get_np_image()
 
-            try:
-                location = pyautogui.locate('bot_images\\bio_deliver.png', np_image_bio, confidence=0.7)
-            except pyautogui.ImageNotFoundException:
-                location = None
+            location = locate_image(self.bio_deliver, np_image_bio, confidence=0.7)
 
             if location is not None:
                 deliver_x = self.window_left + location.left + location.width / 2
@@ -924,7 +928,7 @@ class Metin:
             return
         np_image = self.get_np_image()
         # options
-        location = locate_image('bot_images\\settings_options.png', np_image, 0.9)
+        location = locate_image(self.settings_options, np_image, 0.9)
         if location is None:
             return
         self.click_location_middle(location)
@@ -932,7 +936,7 @@ class Metin:
 
         np_image = self.get_np_image()
         # system options
-        location = locate_image('bot_images\\system_options.png', np_image, 0.9)
+        location = locate_image(self.system_options, np_image, 0.9)
         if location is None:
             return
         self.click_location_middle(location)
@@ -940,7 +944,7 @@ class Metin:
 
         np_image = self.get_np_image()
         # options menu
-        location = locate_image('bot_images\\options_menu.png', np_image, 0.9)
+        location = locate_image(self.options_menu, np_image, 0.9)
         if location is None:
             return
         cancel_x = self.window_left + location.left + location.width - 15
@@ -952,7 +956,7 @@ class Metin:
 
         np_image = self.get_np_image()
         # graphics options
-        location = locate_image('bot_images\\graphics_settings.png', np_image, 0.9)
+        location = locate_image(self.graphics_settings, np_image, 0.9)
         if location is None:
             return
         segment = location.height / 4
@@ -963,7 +967,7 @@ class Metin:
 
         np_image = self.get_np_image()
         # graphics options
-        location = locate_image('bot_images\\weather.png', np_image, 0.9)
+        location = locate_image(self.weather_image, np_image, 0.9)
         if location is None:
             return
         space = 24
@@ -1126,28 +1130,7 @@ def preprocess_image(image):
     return resized_image
 
 
-def try_common_replacements(result, outputs, additional_replacements=None):
-    # Define a dictionary of common OCR misrecognitions
-    replacements = {
-        '0': ['O'], 'O': ['0'],
-        '1': ['I'], 'I': ['1'], 'l': ['1'], 'L': ['1'],
-        '5': ['S'], 'S': ['5', '3'],
-        '2': ['Z'], 'Z': ['2'],
-        '6': ['G'], 'G': ['6'],
-        '8': ['B', '3'], 'B': ['8'],
-        'F': ['7'], '7': ['F'],
-        '3': ['S', '8'], 'V': ['y'],
-        'y': ['V'], 'h': ['A'],
-        'A': ['h']
-    }
-
-    # If additional replacements are provided, extend the dictionary
-    if additional_replacements:
-        replacements.update(additional_replacements)
-        # Ensure the additional replacements are bidirectional
-        additional_reversed = {v: k for k, v in additional_replacements.items()}
-        replacements.update(additional_reversed)
-
+def try_common_replacements(result, outputs, replacements):
     # Iterate through each output in the list
     for output in outputs:
         # Start with the original output
@@ -1205,7 +1188,7 @@ def locate_image(path, np_image, confidence=0.9):
 
 
 def main():
-    app = ApplicationWindow(debug_bot=1)
+    app = ApplicationWindow(debug_bot=0)
     app.run()
 
 
