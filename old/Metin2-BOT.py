@@ -313,7 +313,7 @@ class ApplicationWindow:
 
             if self.metin.solved_at is not None:
                 time_diff = time.time() - self.metin.solved_at
-                if time_diff > 5:
+                if time_diff > 2:
                     self.bot_solver()
                     self.metin.solved_at = time.time()
             else:
@@ -378,7 +378,6 @@ class ApplicationWindow:
                 press_button('q')
                 press_button('z')
                 print("No valid contour found.")
-
 
     def bot_solver(self):
         metin_window = gw.getWindowsWithTitle(self.window_title)[0]
