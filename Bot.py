@@ -437,15 +437,17 @@ class Metin:
         self.selected_weather = 0
         self.replacements = {}
 
-        self.settings_options = 'bot_images\\settings_options.png'
-        self.bot_check_bar = 'bot_images\\bot_check_bar2.png'
-        self.restart = 'bot_images\\restart_img.png'
-        self.bio_deliver = 'bot_images\\bio_deliver.png'
-        self.system_options = 'bot_images\\system_options.png'
-        self.options_menu = 'bot_images\\options_menu.png'
-        self.graphics_settings = 'bot_images\\graphics_settings.png'
-        self.weather_image = 'bot_images\\weather.png'
+        self.settings_options = None
+        self.bot_check_bar = None
+        self.restart = None
+        self.bio_deliver = None
+        self.system_options = None
+        self.options_menu = None
+        self.graphics_settings = None
+        self.weather_image = None
+        self.template = None
 
+        self.load_images()
 
         self.display_screenshot = display_screenshot
         self.lock = threading.Lock()
@@ -466,6 +468,17 @@ class Metin:
         combinations = [a + b for a in characters for b in characters]
         combo_to_id = {combo: idx for idx, combo in enumerate(combinations)}
         self.label_keys = list(combo_to_id.keys())
+
+    def load_images(self):
+        self.settings_options = load_image('bot_images\\settings_options.png')
+        self.bot_check_bar = load_image('bot_images\\bot_check_bar2.png')
+        self.restart = load_image('bot_images\\restart_img.png')
+        self.bio_deliver = load_image('bot_images\\bio_deliver.png')
+        self.system_options = load_image('bot_images\\system_options.png')
+        self.options_menu = load_image('bot_images\\options_menu.png')
+        self.graphics_settings = load_image('bot_images\\graphics_settings.png')
+        self.weather_image = load_image('bot_images\\weather.png')
+        self.template = load_image('bot_images\\metin_hp2.png')
 
     def bot_loop(self):
         metin_mask = {}
@@ -735,7 +748,7 @@ class Metin:
                 hp_bar = np_image[hp_bar_y1: hp_bar_y2, hp_bar_x1: hp_bar_x2]
 
                 # check if metin was destroyed
-                metin_is_alive = self.locate_metin_hp(hp_bar, 0.9)
+                metin_is_alive = self.locate_metin_hp(hp_bar)
                 self.destroying_metin = metin_is_alive
                 print(f'nici sa metin {metin_is_alive}')
 
@@ -743,9 +756,6 @@ class Metin:
                 if self.show_img:
                     self.image_to_display = output_image
                     self.display_screenshot()
-
-                press_button('q', self.window_title)
-
                 if not metin_is_alive:
                     # Cleanup
                     if 'output_image' in locals():
@@ -755,38 +765,40 @@ class Metin:
                     gc.collect()
                     return
 
-                self.metin_destroy_time_diff = time.time() - self.metin_destroying_time
+                else:
+                    self.metin_destroy_time_diff = time.time() - self.metin_destroying_time
+                    press_button('q', self.window_title)
 
-                if metin_is_alive and self.metin_destroy_time_diff > 4:
-                    pixel_x, pixel_y = self.hp_full_location[:2]
-                    pixel_x += self.window_left
-                    pixel_y += self.window_top
+                    if self.metin_destroy_time_diff > 4:
+                        pixel_x, pixel_y = self.hp_full_location[:2]
+                        pixel_x += self.window_left
+                        pixel_y += self.window_top
 
-                    pixel_to_check = np_image[pixel_y, pixel_x]
-                    # HERE I WANT TO display_screenshot(output_image)
-                    if self.show_img:
-                        self.image_to_display = output_image
-                        self.display_screenshot()
+                        pixel_to_check = np_image[pixel_y, pixel_x]
+                        # HERE I WANT TO display_screenshot(output_image)
+                        if self.show_img:
+                            self.image_to_display = output_image
+                            self.display_screenshot()
 
-                    # check if after 10s metin is being destroyed or player is stuck
-                    if np.all(np.abs(pixel_to_check - target_pixel_value) <= 5):
-                        print('zatvaram metin okno')
-                        choices = ['a', 'd']
-                        cancel_x1, cancel_y1, cancel_x2, cancel_y2 = self.cancel_location
+                        # check if after 10s metin is being destroyed or player is stuck
+                        if np.all(np.abs(pixel_to_check - target_pixel_value) <= 5):
+                            print('zatvaram metin okno')
+                            choices = ['a', 'd']
+                            cancel_x1, cancel_y1, cancel_x2, cancel_y2 = self.cancel_location
 
-                        x_to_cancel = (self.window_left + cancel_x1 + (cancel_x2 - cancel_x1) * 0.75)
-                        y_to_cancel = (self.window_top + cancel_y1 + (cancel_y2 - cancel_y1) / 2)
+                            x_to_cancel = (self.window_left + cancel_x1 + (cancel_x2 - cancel_x1) * 0.75)
+                            y_to_cancel = (self.window_top + cancel_y1 + (cancel_y2 - cancel_y1) / 2)
 
-                        mouse_left_click(x_middle, y_middle, self.window_title)
-                        metin_is_alive = False
-                        time.sleep(0.2)
-                        mouse_left_click(x_to_cancel, y_to_cancel, self.window_title)
-                        press_button(random.choice(choices), self.window_title)
-                        time.sleep(0.2)
-                        press_button('q', self.window_title)
-                        time.sleep(0.2)
-                        press_button('q', self.window_title)
-                        time.sleep(0.2)
+                            mouse_left_click(x_middle, y_middle, self.window_title)
+                            metin_is_alive = False
+                            time.sleep(0.2)
+                            mouse_left_click(x_to_cancel, y_to_cancel, self.window_title)
+                            press_button(random.choice(choices), self.window_title)
+                            time.sleep(0.2)
+                            press_button('q', self.window_title)
+                            time.sleep(0.2)
+                            press_button('q', self.window_title)
+                            time.sleep(0.2)
 
         else:
             # HERE I WANT TO display_screenshot(np_image_crop)
@@ -818,7 +830,7 @@ class Metin:
         selected_contour_pos = None
         min_distance = float('inf')
         # width, height = image.size
-
+        circle_r = 200
         if contours:
             for contour in contours:
                 if self.contour_high > cv2.contourArea(contour) > self.contour_low:  # 900
@@ -839,12 +851,12 @@ class Metin:
                                  (255, 190, 200), 2)
                         # Optionally, you can calculate the distance between the middle of the screenshot and the contour center
                         # Draw a circle around the point (x_middle, y_middle) with a radius of 300px
-                        cv2.circle(np_image, (x_middle, y_middle), 200, (255, 190, 200),
+                        cv2.circle(np_image, (x_middle, y_middle), circle_r, (255, 190, 200),
                                    2)  # The color is (255, 190, 200) and the thickness is 2
 
                         cur_distance = abs(x_middle - contour_center_x) + abs(y_middle - contour_center_y)
 
-                        if cur_distance <= 200:
+                        if cur_distance <= circle_r:
                             continue
 
                         if cur_distance < min_distance:
@@ -860,16 +872,8 @@ class Metin:
             return None, np_image
         return selected_contour_pos, np_image
 
-    def locate_metin_hp(self, np_image, confidence=0.8):
-        try:
-            location = pyautogui.locate(self.metin_hp_img, np_image, confidence=confidence)
-        except pyautogui.ImageNotFoundException:
-            location = None
-
-        if location is not None:
-            return True
-        else:
-            return False
+    def locate_metin_hp(self, np_image):
+        return is_subimage(np_image, self.template)
 
     def bot_detection_solver(self, np_image):
         image = Image.fromarray(np_image)
@@ -1187,8 +1191,32 @@ def locate_image(path, np_image, confidence=0.9):
     return location
 
 
+def load_image(path):
+        image = Image.open(path)
+        # Convert the image to a NumPy array
+        image_array = np.array(image)
+        return cv2.cvtColor(image_array, cv2.COLOR_RGB2BGR)
+
+
+def is_subimage(image, template):
+    # Get dimensions of the image and the template
+    image_h, image_w = image.shape[:2]
+    template_h, template_w = template.shape[:2]
+
+    # Iterate over every possible starting position in the image
+    for y in range(image_h - template_h + 1):
+        for x in range(image_w - template_w + 1):
+            # Extract the subimage from the main image
+            sub_image = image[y:y + template_h, x:x + template_w]
+
+            # Check if the subimage matches the template
+            if np.array_equal(sub_image, template):
+                return True
+    return False
+
+
 def main():
-    app = ApplicationWindow(debug_bot=0)
+    app = ApplicationWindow(debug_bot=1)
     app.run()
 
 
