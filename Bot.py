@@ -515,7 +515,7 @@ class Metin:
 
             if self.show_img:
                 self.display_screenshot()
-            time.sleep(0.01)
+            time.sleep(0.1)
 
     def bot_loop(self):
         metin_mask = {}
