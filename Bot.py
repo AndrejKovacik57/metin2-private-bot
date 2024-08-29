@@ -159,6 +159,8 @@ class ApplicationWindow:
         self.screenshot_image_left = None
         self.screenshot_image_top = None
         self.image_label = None
+        self.screenshot_thread = None
+        self.bot_loop_thread = None
 
         self.load_config_values(debug_bot)
 
@@ -281,12 +283,14 @@ class ApplicationWindow:
     def start_bot_loop_thread(self):
         if not self.metin.running:  # Prevent starting multiple threads
             self.metin.running = True
-            threading.Thread(target=self.metin.bot_loop, daemon=True).start()
+            self.bot_loop_thread = threading.Thread(target=self.metin.bot_loop, daemon=True)
+            self.bot_loop_thread.start()
 
     def start_screenshot_thread(self):
         if not self.metin.screenshotting:  # Prevent starting multiple threads
             self.metin.screenshotting = True
-            threading.Thread(target=self.metin.img_loop, daemon=True).start()
+        self.screenshot_thread = threading.Thread(target=self.metin.img_loop, daemon=True)
+        self.screenshot_thread.start()
 
     def start_bot_loops(self):
         self.start_bot_loop_thread()
@@ -388,6 +392,12 @@ class ApplicationWindow:
         self.metin.solving_bot_check = False
         self.metin.running = False
         self.metin.screenshotting = False
+
+        if hasattr(self, 'bot_loop_thread') and self.bot_loop_thread.is_alive():
+            self.bot_loop_thread.join()
+
+        if hasattr(self, 'screenshot_thread') and self.screenshot_thread.is_alive():
+            self.screenshot_thread.join()
 
     def run(self):
         self.root.mainloop()
@@ -652,7 +662,6 @@ class Metin:
 
                     time.sleep(2)
 
-
     def death_check(self):
         self.respawn_timer_diff = time.time() - self.respawn_timer
         if self.respawn_timer == 0 or self.respawn_timer != 0 and self.respawn_timer_diff >= 10:
@@ -692,7 +701,6 @@ class Metin:
 
                 press_button('esc', self.window_title)
                 time.sleep(0.15)
-
 
     def activate_skills(self):
         self.skill_timer_diff = time.time() - self.skill_timer
