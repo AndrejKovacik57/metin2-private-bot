@@ -544,14 +544,14 @@ class Metin:
 
                 if self.running:
                     self.bot_solver()
-                if self.running:
-                    self.death_check()
-                if self.running:
-                    self.deliver_bio()
-                if self.running:
-                    self.activate_skills()
-                if self.running:
-                    self.destroy_metin()
+                # if self.running:
+                #     self.death_check()
+                # if self.running:
+                #     self.deliver_bio()
+                # if self.running:
+                #     self.activate_skills()
+                # if self.running:
+                #     self.destroy_metin()
                 print(f'Iteration execution time {time.time() - loop_time}s')
 
     def bot_solver(self):
@@ -585,6 +585,7 @@ class Metin:
             np_image_text = preprocess_image(np_image[y1: y2, x1: x2])
             result = pytesseract.image_to_string(np_image_text, config=custom_config_text)
             cv2.imshow('np_image_text', np_image_text)
+            cv2.imshow('np_image_captcha', np_image_captcha)
             result = result.strip()
             print(f'text to find {result}')
             logging.debug(f'Text to find: {result}')
