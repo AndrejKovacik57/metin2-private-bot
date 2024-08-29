@@ -483,12 +483,12 @@ class Metin:
         path = 'models_yolov8/'
         characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
-        if 'cu' in torch.__version__:
-            print("CUDA-enabled version of PyTorch is installed.")
-            self.model_cuda = YOLO(f'{path}best.pt')
-        else:
-            print("CPU-only version of PyTorch is installed.")
-            self.model_cpu = YOLO(f'{path}best.onnx', task='detect')
+        # if 'cu' in torch.__version__:
+        #     print("CUDA-enabled version of PyTorch is installed.")
+        #     self.model_cuda = YOLO(f'{path}best.pt')
+        # else:
+        print("CPU-only version of PyTorch is installed.")
+        self.model_cpu = YOLO(f'{path}best.onnx', task='detect')
 
         combinations = [a + b for a in characters for b in characters]
         combo_to_id = {combo: idx for idx, combo in enumerate(combinations)}
@@ -626,6 +626,8 @@ class Metin:
                             found = True
                             time.sleep(2)
                             break
+
+                cv2.waitKey(0)
                 # lower check
                 if len(no_outputs) > 0 and not found:
                     logging.debug('No outputs found, random click')
