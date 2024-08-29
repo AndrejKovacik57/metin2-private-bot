@@ -584,7 +584,7 @@ class Metin:
 
             np_image_text = preprocess_image(np_image[y1: y2, x1: x2])
             result = pytesseract.image_to_string(np_image_text, config=custom_config_text)
-
+            cv2.imshow('np_image_text', np_image_text)
             result = result.strip()
             print(f'text to find {result}')
             logging.debug(f'Text to find: {result}')
@@ -608,6 +608,7 @@ class Metin:
                         output = output.strip()
                         outputs.append((output, (x1, x2, y1, y2)))
 
+                        cv2.imshow('np_img_captcha_option_resized', np_img_captcha_option_resized)
                         print(f'output = {output}')
                         logging.debug(f'Output: {output}')
                         logging.debug(f'{output} in {result} -> {output in result}')
@@ -617,7 +618,9 @@ class Metin:
                             logging.debug('Bot protection bypassed')
                             x_to_click = self.window_left + location.left + 6 + x1 + (x2 - x1) / 2
                             y_to_click = self.window_top + location.top + 28 + y1 + (y2 - y1) / 2
-                            mouse_left_click(x_to_click, y_to_click, self.window_title)
+                            # mouse_left_click(x_to_click, y_to_click, self.window_title)
+
+                            pyautogui.moveTo(x_to_click, y_to_click, self.window_title)
                             self.bot_timer = 0
                             self.bot_time_diff = time.time() - self.bot_timer
                             found = True
@@ -630,7 +633,8 @@ class Metin:
                     x1, x2, y1, y2 = random.choice(no_outputs)
                     x_to_click = self.window_left + location.left + 6 + x1 + (x2 - x1) / 2
                     y_to_click = self.window_top + location.top + 28 + y1 + (y2 - y1) / 2
-                    mouse_left_click(x_to_click, y_to_click, self.window_title)
+                    # mouse_left_click(x_to_click, y_to_click, self.window_title)
+                    pyautogui.moveTo(x_to_click, y_to_click, self.window_title)
                     self.bot_timer = 0
                     self.bot_time_diff = time.time() - self.bot_timer
                     found = True
@@ -647,7 +651,9 @@ class Metin:
                         logging.debug(f'Click after replacement: {new_option}')
                         x_to_click = self.window_left + location.left + 6 + x1 + (x2 - x1) / 2
                         y_to_click = self.window_top + location.top + 28 + y1 + (y2 - y1) / 2
-                        mouse_left_click(x_to_click, y_to_click, self.window_title)
+                        # mouse_left_click(x_to_click, y_to_click, self.window_title)
+
+                        pyautogui.moveTo(x_to_click, y_to_click, self.window_title)
                         self.bot_timer = 0
                         self.bot_time_diff = time.time() - self.bot_timer
                     time.sleep(2)
@@ -655,7 +661,9 @@ class Metin:
                 if self.bot_time_diff > 5 and not found:
                     print('Bot protection closed')
                     logging.debug('Bot protection closed')
-                    mouse_left_click(cancel_x, cancel_y, self.window_title)
+                    # mouse_left_click(cancel_x, cancel_y, self.window_title)
+
+                    pyautogui.moveTo(cancel_x, cancel_y, self.window_title)
                     self.bot_timer = 0
                     if self.debug_bot == 1:
                         save_debug_image(np_image_captcha, np_image_text)
