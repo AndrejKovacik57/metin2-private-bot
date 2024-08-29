@@ -652,10 +652,6 @@ class Metin:
 
                     time.sleep(2)
 
-            del np_image_captcha
-            del np_img_captcha_option_resized
-            del np_image_text
-            gc.collect()
 
     def death_check(self):
         self.respawn_timer_diff = time.time() - self.respawn_timer
@@ -697,8 +693,6 @@ class Metin:
                 press_button('esc', self.window_title)
                 time.sleep(0.15)
 
-            del np_image_bio
-            gc.collect()
 
     def activate_skills(self):
         self.skill_timer_diff = time.time() - self.skill_timer
