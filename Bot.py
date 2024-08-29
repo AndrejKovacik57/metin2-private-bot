@@ -36,12 +36,12 @@ class NoCudaOrCPUModuleFound(ValueError):
 
 
 class ApplicationWindow:
-    def __init__(self, title="Metin Bot", debug_bot=0):
+    def __init__(self, title='Metin Bot', debug_bot=0):
         self.root = tk.Tk()
         self.root.title(title)
 
         # Set window size
-        self.root.geometry(f"{450}x{600}")
+        self.root.geometry(f'{450}x{600}')
 
         # Create a grid layout for better organization
         self.root.grid_columnconfigure(0, weight=1)
@@ -603,7 +603,7 @@ class Metin:
                         logging.debug(f'{output} in {result} -> {output in result}')
                         print(f'{output} in {result} -> {output in result}')
                         if output in result or output.lower() in result.lower():
-                            print('BOT OCHRANA PRELOMENA')
+                            print('Bot protection bypassed')
                             logging.debug('Bot protection bypassed')
                             x_to_click = self.window_left + location.left + 6 + x1 + (x2 - x1) / 2
                             y_to_click = self.window_top + location.top + 28 + y1 + (y2 - y1) / 2
@@ -616,11 +616,8 @@ class Metin:
                 # lower check
                 if len(no_outputs) > 0 and not found:
                     logging.debug('No outputs found, random click')
-                    print('**********************************')
-                    print('***********ADO KUKAJ**************')
-                    print('**********************************')
+                    print('No outputs found, random click')
                     x1, x2, y1, y2 = random.choice(no_outputs)
-                    print('RANDOM KLIK NA OCHRANU')
                     x_to_click = self.window_left + location.left + 6 + x1 + (x2 - x1) / 2
                     y_to_click = self.window_top + location.top + 28 + y1 + (y2 - y1) / 2
                     mouse_left_click(x_to_click, y_to_click, self.window_title)
@@ -636,7 +633,7 @@ class Metin:
                     if new_option:
                         found = True
                         x1, x2, y1, y2 = coords
-                        print('ZAMENENY KLIK NA OCHRANU')
+                        print(f'Click after replacement: {new_option}')
                         logging.debug(f'Click after replacement: {new_option}')
                         x_to_click = self.window_left + location.left + 6 + x1 + (x2 - x1) / 2
                         y_to_click = self.window_top + location.top + 28 + y1 + (y2 - y1) / 2
@@ -646,7 +643,7 @@ class Metin:
                     time.sleep(2)
 
                 if self.bot_time_diff > 5 and not found:
-                    print('BOT OCHRANA ZATVORENA')
+                    print('Bot protection closed')
                     logging.debug('Bot protection closed')
                     mouse_left_click(cancel_x, cancel_y, self.window_title)
                     self.bot_timer = 0
@@ -1139,7 +1136,7 @@ def save_image(img, name, folder):
 
     # Check for the next available filename
     while True:
-        file_name = f"{name}_{file_number}.png"
+        file_name = f'{name}_{file_number}.png'
         file_path = os.path.join(folder, file_name)
 
         if not os.path.exists(file_path):
@@ -1149,7 +1146,8 @@ def save_image(img, name, folder):
     # Convert the numpy array to an image and save it
     image = Image.fromarray(img)
     image.save(file_path)
-    print(f"Image saved as {file_path}")
+    print(f'Image saved as {file_path}')
+    logging.debug(f'Image saved as {file_path}')
 
 
 def locate_image(path, np_image, confidence=0.9):
