@@ -495,13 +495,15 @@ class Metin:
         self.lower, self.upper = create_low_upp(metin_mask)
 
         time.sleep(2)
-        # upper_limit = 0.5
-        # lower_limit = 0.1
+        upper_limit = 0.5
+        lower_limit = 0.1
         self.choose_weather()
+
         while self.running:
             with self.lock:
-                # sleep_time = random.random() * (upper_limit - lower_limit) + lower_limit
-                # time.sleep(sleep_time)
+                loop_time = time.time()
+                sleep_time = random.random() * (upper_limit - lower_limit) + lower_limit
+                time.sleep(sleep_time)
 
                 np_image = self.get_np_image()
                 if self.running:
@@ -514,6 +516,7 @@ class Metin:
                     self.activate_skills()
                 if self.running:
                     self.destroy_metin(np_image)
+                print(f'Iteration execution time {time.time() - loop_time}s')
 
     def bot_solver(self, np_image):
         # 433 x 280
