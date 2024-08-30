@@ -181,10 +181,10 @@
                 "sMin": 0,
                 "vMin": 0,
                 "hMax": 26,
-                "sMax": 52,
+                "sMax": 61,
                 "vMax": 253
             },
-            "contourLow": 699,
+            "contourLow": 695,
             "contourHigh": 8000,
             "aspect_low": 64,
             "aspect_high": 117,
