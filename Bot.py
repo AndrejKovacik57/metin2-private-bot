@@ -531,18 +531,18 @@ class Metin:
 
                 if self.running:
                     self.bot_solver(np_image)
-                # if self.running:
-                #     self.death_check(np_image)
-                # if self.running:
-                #     self.deliver_bio()
-                # if self.running:
-                #     self.activate_skills()
-                # if self.running:
-                #     self.image_to_display = self.destroy_metin(np_image)
-                #
-                #     if self.show_img:
-                #         self.display_screenshot()
-                #     print(f'Iteration execution time {time.time() - loop_time}s')
+                if self.running:
+                    self.death_check(np_image)
+                if self.running:
+                    self.deliver_bio()
+                if self.running:
+                    self.activate_skills()
+                if self.running:
+                    self.image_to_display = self.destroy_metin(np_image)
+
+                    if self.show_img:
+                        self.display_screenshot()
+                    print(f'Iteration execution time {time.time() - loop_time}s')
 
     def bot_solver(self, np_image):
         # 433 x 280
