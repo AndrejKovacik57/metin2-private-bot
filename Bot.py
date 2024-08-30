@@ -274,8 +274,9 @@ class ApplicationWindow:
     def apply_hp_full_location(self):
         if None not in [self.start_x, self.start_y, self.end_x, self.end_y]:
             np_img = np.array(self.screenshot_image)
-            np_img = cv2.cvtColor(np_img, cv2.COLOR_RGB2BGR)
+            # np_img = cv2.cvtColor(np_img, cv2.COLOR_RGB2BGR)
             pixel = np_img[self.end_y + self.screenshot_image_top, self.end_x + self.screenshot_image_left]
+            print(f'ukladam {pixel}')
             self.cfg_local['information_locations']['hp_full_pixel_colour'] = pixel.tolist()
 
             self.cfg_local['information_locations']['hp_full_location'] = [self.end_x, self.end_y, self.start_x, self.start_y]
@@ -778,6 +779,7 @@ class Metin:
                         pixel_to_check = np_image[pixel_y, pixel_x]
                         # HERE I WANT TO display_screenshot(output_image)
 
+                        print(f'pixel_to_check {pixel_to_check} target_pixel_value {target_pixel_value}')
                         # check if after 10s metin is being destroyed or player is stuck
                         if np.all(np.abs(pixel_to_check - target_pixel_value) <= 5):
                             print('zatvaram metin okno')
