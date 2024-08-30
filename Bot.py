@@ -647,17 +647,35 @@ class Metin:
                     self.bot_time_diff = time.time() - self.bot_timer
                 time.sleep(2)
 
-                if self.bot_time_diff > 5 and not found:
-                    print('Bot protection closed')
-                    logging.info('Bot protection closed')
-                    # mouse_left_click(cancel_x, cancel_y, self.window_title)
+            if len(result) < 2 and not found:
+                for output_tup in outputs:
+                    output, coords = output_tup
+                    if result in output or result.lower() in output.lower():
+                        print('Bot result less then 2 try')
+                        logging.info('Bot result less then 2 try')
+                        x1, x2, y1, y2 = coords
+                        x_to_click = self.window_left + location.left + 6 + x1 + (x2 - x1) / 2
+                        y_to_click = self.window_top + location.top + 28 + y1 + (y2 - y1) / 2
+                        # mouse_left_click(x_to_click, y_to_click, self.window_title)
+                        pyautogui.moveTo(x_to_click, y_to_click)
+                        self.bot_timer = 0
+                        self.bot_time_diff = time.time() - self.bot_timer
+                        found = True
 
-                    pyautogui.moveTo(cancel_x, cancel_y)
-                    self.bot_timer = 0
-                    if self.debug_bot == 1:
-                        save_debug_image(np_image_captcha, np_image_text)
+                        if self.debug_bot == 1:
+                            save_debug_image(np_image_captcha, np_image_text)
+                        time.sleep(2)
+            if self.bot_time_diff > 5 and not found:
+                print('Bot protection closed')
+                logging.info('Bot protection closed')
+                # mouse_left_click(cancel_x, cancel_y, self.window_title)
 
-                    time.sleep(2)
+                pyautogui.moveTo(cancel_x, cancel_y)
+                self.bot_timer = 0
+                if self.debug_bot == 1:
+                    save_debug_image(np_image_captcha, np_image_text)
+
+                time.sleep(2)
 
     def death_check(self, np_image):
         self.respawn_timer_diff = time.time() - self.respawn_timer
