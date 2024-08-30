@@ -618,38 +618,38 @@ class Metin:
                             time.sleep(2)
                             break
 
-                cv2.waitKey(0)
-                # lower check
-                if len(no_outputs) > 0 and not found:
-                    logging.debug('No outputs found, random click')
-                    print('No outputs found, random click')
-                    x1, x2, y1, y2 = random.choice(no_outputs)
+            cv2.waitKey(0)
+            # lower check
+            if len(no_outputs) > 0 and not found:
+                logging.debug('No outputs found, random click')
+                print('No outputs found, random click')
+                x1, x2, y1, y2 = random.choice(no_outputs)
+                x_to_click = self.window_left + location.left + 6 + x1 + (x2 - x1) / 2
+                y_to_click = self.window_top + location.top + 28 + y1 + (y2 - y1) / 2
+                # mouse_left_click(x_to_click, y_to_click, self.window_title)
+                pyautogui.moveTo(x_to_click, y_to_click)
+                self.bot_timer = 0
+                self.bot_time_diff = time.time() - self.bot_timer
+                found = True
+                if self.debug_bot == 1:
+                    save_debug_image(np_image_captcha, np_image_text)
+                time.sleep(2)
+
+            if len(no_outputs) == 0 and not found:
+                new_option, coords = try_common_replacements(result, outputs, self.replacements)
+                if new_option:
+                    found = True
+                    x1, x2, y1, y2 = coords
+                    print(f'Click after replacement: {new_option}')
+                    logging.debug(f'Click after replacement: {new_option}')
                     x_to_click = self.window_left + location.left + 6 + x1 + (x2 - x1) / 2
                     y_to_click = self.window_top + location.top + 28 + y1 + (y2 - y1) / 2
                     # mouse_left_click(x_to_click, y_to_click, self.window_title)
+
                     pyautogui.moveTo(x_to_click, y_to_click)
                     self.bot_timer = 0
                     self.bot_time_diff = time.time() - self.bot_timer
-                    found = True
-                    if self.debug_bot == 1:
-                        save_debug_image(np_image_captcha, np_image_text)
-                    time.sleep(2)
-
-                if len(no_outputs) == 0 and not found:
-                    new_option, coords = try_common_replacements(result, outputs, self.replacements)
-                    if new_option:
-                        found = True
-                        x1, x2, y1, y2 = coords
-                        print(f'Click after replacement: {new_option}')
-                        logging.debug(f'Click after replacement: {new_option}')
-                        x_to_click = self.window_left + location.left + 6 + x1 + (x2 - x1) / 2
-                        y_to_click = self.window_top + location.top + 28 + y1 + (y2 - y1) / 2
-                        # mouse_left_click(x_to_click, y_to_click, self.window_title)
-
-                        pyautogui.moveTo(x_to_click, y_to_click)
-                        self.bot_timer = 0
-                        self.bot_time_diff = time.time() - self.bot_timer
-                    time.sleep(2)
+                time.sleep(2)
 
                 if self.bot_time_diff > 5 and not found:
                     print('Bot protection closed')
