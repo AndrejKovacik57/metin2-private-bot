@@ -530,14 +530,14 @@ class Metin:
 
                 np_image = self.get_np_image()
 
-                if self.running:
-                    self.bot_solver(np_image)
-                if self.running:
-                    self.death_check(np_image)
-                if self.running:
-                    self.deliver_bio()
-                if self.running:
-                    self.activate_skills()
+                # if self.running:
+                #     self.bot_solver(np_image)
+                # if self.running:
+                #     self.death_check(np_image)
+                # if self.running:
+                #     self.deliver_bio()
+                # if self.running:
+                #     self.activate_skills()
                 if self.running:
                     self.image_to_display = self.destroy_metin(np_image)
 
@@ -777,6 +777,7 @@ class Metin:
                         pixel_y += self.window_top
 
                         pixel_to_check = np_image[pixel_y, pixel_x]
+                        pixel_to_check = pixel_to_check[::-1]
                         # HERE I WANT TO display_screenshot(output_image)
 
                         print(f'pixel_to_check {pixel_to_check} target_pixel_value {target_pixel_value}')
