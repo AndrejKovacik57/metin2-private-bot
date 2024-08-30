@@ -24,7 +24,7 @@ custom_config_text = r'--oem 3 --psm 6 -c tessedit_char_whitelist=ABCDEFGHIJKLMN
 # Configure logging
 logging.basicConfig(
     filename='bot_solver.log',  # Log to a file
-    level=logging.DEBUG,  # Set the logging level
+    level=logging.INFO,  # Set the logging level
     format='%(asctime)s - %(levelname)s - %(message)s',  # Log format
     datefmt='%Y-%m-%d %H:%M:%S'  # Date format
 )
@@ -479,12 +479,12 @@ class Metin:
         path = 'models_yolov8/'
         characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
-        # if 'cu' in torch.__version__:
-        #     print("CUDA-enabled version of PyTorch is installed.")
-        #     self.model_cuda = YOLO(f'{path}best.pt')
-        # else:
-        print("CPU-only version of PyTorch is installed.")
-        self.model_cpu = YOLO(f'{path}best.onnx', task='detect')
+        if 'cu' in torch.__version__:
+            print("CUDA-enabled version of PyTorch is installed.")
+            self.model_cuda = YOLO(f'{path}best.pt')
+        else:
+            print("CPU-only version of PyTorch is installed.")
+            self.model_cpu = YOLO(f'{path}best.onnx', task='detect')
 
         combinations = [a + b for a in characters for b in characters]
         combo_to_id = {combo: idx for idx, combo in enumerate(combinations)}
@@ -531,12 +531,12 @@ class Metin:
 
                 if self.running:
                     self.bot_solver(np_image)
-                # if self.running:
-                #     self.death_check(np_image)
-                # if self.running:
-                #     self.deliver_bio()
-                # if self.running:
-                #     self.activate_skills()
+                if self.running:
+                    self.death_check(np_image)
+                if self.running:
+                    self.deliver_bio()
+                if self.running:
+                    self.activate_skills()
                 if self.running:
                     self.image_to_display = self.destroy_metin(np_image)
 
@@ -574,11 +574,9 @@ class Metin:
 
             np_image_text = preprocess_image(np_image[y1: y2, x1: x2])
             result = pytesseract.image_to_string(np_image_text, config=custom_config_text)
-            cv2.imshow('np_image_text', np_image_text)
-            cv2.imshow('np_image_captcha', np_image_captcha)
             result = result.strip()
             print(f'text to find {result}')
-            logging.debug(f'Text to find: {result}')
+            logging.info(f'Text to find: {result}')
 
             no_outputs = []
             outputs = []
@@ -599,35 +597,31 @@ class Metin:
                         output = output.strip()
                         outputs.append((output, (x1, x2, y1, y2)))
 
-                        cv2.imshow('np_img_captcha_option_resized', np_img_captcha_option_resized)
                         print(f'output = {output}')
-                        logging.debug(f'Output: {output}')
-                        logging.debug(f'{output} in {result} -> {output in result}')
+                        logging.info(f'Output: {output}')
+                        logging.info(f'{output} in {result} -> {output in result}')
                         print(f'{output} in {result} -> {output in result}')
                         if output in result or output.lower() in result.lower():
                             print('Bot protection bypassed')
-                            logging.debug('Bot protection bypassed')
+                            logging.info('Bot protection bypassed')
                             x_to_click = self.window_left + location.left + 6 + x1 + (x2 - x1) / 2
                             y_to_click = self.window_top + location.top + 28 + y1 + (y2 - y1) / 2
-                            # mouse_left_click(x_to_click, y_to_click, self.window_title)
+                            mouse_left_click(x_to_click, y_to_click, self.window_title)
 
-                            pyautogui.moveTo(x_to_click, y_to_click)
                             self.bot_timer = 0
                             self.bot_time_diff = time.time() - self.bot_timer
                             found = True
                             time.sleep(2)
                             break
 
-            cv2.waitKey(0)
             # lower check
             if len(no_outputs) > 0 and not found:
-                logging.debug('No outputs found, random click')
+                logging.info('No outputs found, random click')
                 print('No outputs found, random click')
                 x1, x2, y1, y2 = random.choice(no_outputs)
                 x_to_click = self.window_left + location.left + 6 + x1 + (x2 - x1) / 2
                 y_to_click = self.window_top + location.top + 28 + y1 + (y2 - y1) / 2
-                # mouse_left_click(x_to_click, y_to_click, self.window_title)
-                pyautogui.moveTo(x_to_click, y_to_click)
+                mouse_left_click(x_to_click, y_to_click, self.window_title)
                 self.bot_timer = 0
                 self.bot_time_diff = time.time() - self.bot_timer
                 found = True
@@ -641,22 +635,20 @@ class Metin:
                     found = True
                     x1, x2, y1, y2 = coords
                     print(f'Click after replacement: {new_option}')
-                    logging.debug(f'Click after replacement: {new_option}')
+                    logging.info(f'Click after replacement: {new_option}')
                     x_to_click = self.window_left + location.left + 6 + x1 + (x2 - x1) / 2
                     y_to_click = self.window_top + location.top + 28 + y1 + (y2 - y1) / 2
-                    # mouse_left_click(x_to_click, y_to_click, self.window_title)
+                    mouse_left_click(x_to_click, y_to_click, self.window_title)
 
-                    pyautogui.moveTo(x_to_click, y_to_click)
                     self.bot_timer = 0
                     self.bot_time_diff = time.time() - self.bot_timer
                 time.sleep(2)
 
                 if self.bot_time_diff > 5 and not found:
                     print('Bot protection closed')
-                    logging.debug('Bot protection closed')
-                    # mouse_left_click(cancel_x, cancel_y, self.window_title)
+                    logging.info('Bot protection closed')
+                    mouse_left_click(cancel_x, cancel_y, self.window_title)
 
-                    pyautogui.moveTo(cancel_x, cancel_y)
                     self.bot_timer = 0
                     if self.debug_bot == 1:
                         save_debug_image(np_image_captcha, np_image_text)
@@ -1158,7 +1150,7 @@ def save_image(img, name, folder):
     image = Image.fromarray(img)
     image.save(file_path)
     print(f'Image saved as {file_path}')
-    logging.debug(f'Image saved as {file_path}')
+    logging.info(f'Image saved as {file_path}')
 
 
 def locate_image(path, np_image, confidence=0.9):
