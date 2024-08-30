@@ -606,7 +606,8 @@ class Metin:
                             logging.info('Bot protection bypassed')
                             x_to_click = self.window_left + location.left + 6 + x1 + (x2 - x1) / 2
                             y_to_click = self.window_top + location.top + 28 + y1 + (y2 - y1) / 2
-                            mouse_left_click(x_to_click, y_to_click, self.window_title)
+                            # mouse_left_click(x_to_click, y_to_click, self.window_title)
+                            pyautogui.moveTo(x_to_click, y_to_click)
 
                             self.bot_timer = 0
                             self.bot_time_diff = time.time() - self.bot_timer
@@ -621,7 +622,8 @@ class Metin:
                 x1, x2, y1, y2 = random.choice(no_outputs)
                 x_to_click = self.window_left + location.left + 6 + x1 + (x2 - x1) / 2
                 y_to_click = self.window_top + location.top + 28 + y1 + (y2 - y1) / 2
-                mouse_left_click(x_to_click, y_to_click, self.window_title)
+                # mouse_left_click(x_to_click, y_to_click, self.window_title)
+                pyautogui.moveTo(x_to_click, y_to_click)
                 self.bot_timer = 0
                 self.bot_time_diff = time.time() - self.bot_timer
                 found = True
@@ -638,8 +640,9 @@ class Metin:
                     logging.info(f'Click after replacement: {new_option}')
                     x_to_click = self.window_left + location.left + 6 + x1 + (x2 - x1) / 2
                     y_to_click = self.window_top + location.top + 28 + y1 + (y2 - y1) / 2
-                    mouse_left_click(x_to_click, y_to_click, self.window_title)
+                    # mouse_left_click(x_to_click, y_to_click, self.window_title)
 
+                    pyautogui.moveTo(x_to_click, y_to_click)
                     self.bot_timer = 0
                     self.bot_time_diff = time.time() - self.bot_timer
                 time.sleep(2)
@@ -647,8 +650,9 @@ class Metin:
                 if self.bot_time_diff > 5 and not found:
                     print('Bot protection closed')
                     logging.info('Bot protection closed')
-                    mouse_left_click(cancel_x, cancel_y, self.window_title)
+                    # mouse_left_click(cancel_x, cancel_y, self.window_title)
 
+                    pyautogui.moveTo(cancel_x, cancel_y)
                     self.bot_timer = 0
                     if self.debug_bot == 1:
                         save_debug_image(np_image_captcha, np_image_text)
