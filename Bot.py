@@ -83,11 +83,6 @@ class ApplicationWindow:
         self.text_tesseract_path = tk.Entry(self.root, width=30)
         self.text_tesseract_path.grid(row=5, column=0, pady=5)
 
-        self.entry_metin_hp_check = tk.Label(self.root, text="Metin HP Img:")
-        self.entry_metin_hp_check.grid(row=4, column=1, pady=5)
-        self.text_metin_hp_check = tk.Entry(self.root, width=30)
-        self.text_metin_hp_check.grid(row=5, column=1, pady=5)
-
         self.entry_bio_item_num = tk.Label(self.root, text="Bio item num:")
         self.entry_bio_item_num.grid(row=4, column=2, pady=5)
         self.text_bio_item_num = tk.Entry(self.root, width=30)
@@ -135,7 +130,7 @@ class ApplicationWindow:
                                          command=self.apply_scan_window_location)
         self.set_scan_window.grid(row=11, column=1, pady=10)
 
-        self.set_bio_button = tk.Button(text="Set bio wait time",
+        self.set_bio_button = tk.Button(text="Set bio",
                                         command=self.apply_bio_button_location)
         self.set_bio_button.grid(row=11, column=2, pady=10)
 
@@ -144,6 +139,7 @@ class ApplicationWindow:
         self.apply.grid(row=12, column=0, columnspan=4, pady=10)
 
         self.cfg = {}
+        self.cfg_local = {}
         self.information_locations = {}
 
         self.metin = None
@@ -164,64 +160,90 @@ class ApplicationWindow:
 
     def load_config_values(self, debug_bot):
         cfg = load_config('Config.json')
+        cfg_local = load_config('Config-local.json')
         self.cfg = cfg
+        self.cfg_local = cfg_local
 
         pytesseract.pytesseract.tesseract_cmd = cfg['tesseract_path']
-        self.metin = Metin(cfg['metin_hp_img_path'], cfg['skills_to_activate'].split(), self.display_screenshot, debug_bot)
+
+        self.text_tesseract_path.insert(0, cfg['tesseract_path'])
+
+        if cfg_local:
+            self.metin = Metin(cfg_local['skills_to_activate'].split(), self.display_screenshot, debug_bot)
+            self.metin.skills_cd = int(cfg_local['skills_cd']) if cfg_local['skills_cd'].isdigit() else 0
+            self.metin.bio_cd = (int(cfg_local['bio_cd']) if cfg_local['bio_cd'].isdigit() else 0) * 60
+            self.metin.bio_item_num = int(cfg_local['bio_item_num']) if cfg_local['bio_item_num'].isdigit() else 0
+
+            self.metin.window_title = self.cfg_local['window_name']
+            self.text_skills_check.insert(0, cfg_local['skills_to_activate'])
+            self.text_window_name.insert(0, cfg_local['window_name'])
+            self.text_skills_cd.insert(0, cfg_local['skills_cd'])
+            self.text_bio_cd.insert(0, cfg_local['bio_cd'])
+            self.text_bio_item_num.insert(0, cfg_local['bio_item_num'])
+            if 'information_locations' not in self.cfg_local:
+                self.cfg_local['information_locations'] = {}
+            self.load_locations()
+
+        else:
+
+            self.cfg_local['information_locations'] = {}
+            self.metin = Metin([], self.display_screenshot, debug_bot)
+
         self.metin.metin_stones = cfg['metin_stones']
         self.metin_options = [item['name'] for item in self.metin.metin_stones]
-        self.metin.skills_cd = int(cfg['skills_cd']) if cfg['skills_cd'].isdigit() else 0
-        self.metin.bio_cd = (int(cfg['bio_cd']) if cfg['bio_cd'].isdigit() else 0) * 60
-        self.metin.bio_item_num = int(cfg['bio_item_num']) if cfg['bio_item_num'].isdigit() else 0
+
         self.dropdown['values'] = self.metin_options
         if self.metin_options:
             self.dropdown.set(self.metin_options[0])
             self.metin.selected_metin = self.metin_options[0]
 
-        self.metin.window_title = self.cfg['window_name']
-
-        self.metin.hp_bar_location = cfg['information_locations']['hp_bar_location']
-        self.metin.hp_full_location = cfg['information_locations']['hp_full_location']
-        self.metin.hp_full_pixel_colour = cfg['information_locations']['hp_full_pixel_colour']
-        self.metin.scan_window_location = cfg['information_locations']['scan_window_location']
-        self.metin.bio_location = cfg['information_locations']['bio_location']
-        self.metin.cancel_location = cfg['information_locations']['cancel_location']
-        self.metin.respawn_location = cfg['information_locations']['respawn_button_location']
         self.metin.replacements = cfg['replacements']
-
-        self.text_tesseract_path.insert(0, cfg['tesseract_path'])
-        self.text_metin_hp_check.insert(0, cfg['metin_hp_img_path'])
-        self.text_skills_check.insert(0, cfg['skills_to_activate'])
-        self.text_window_name.insert(0, cfg['window_name'])
-        self.text_skills_cd.insert(0, cfg['skills_cd'])
-        self.text_bio_cd.insert(0, cfg['bio_cd'])
-        self.text_bio_item_num.insert(0, cfg['bio_item_num'])
 
     def apply_fields(self):
         pytesseract.pytesseract.tesseract_cmd = self.text_tesseract_path.get()
         self.metin.window_title = self.text_window_name.get()
 
         self.cfg['tesseract_path'] = self.text_tesseract_path.get()
-        self.cfg['metin_hp_img_path'] = self.text_metin_hp_check.get()
-        self.cfg['skills_to_activate'] = self.text_skills_check.get()
-        self.cfg['window_name'] = self.text_window_name.get()
-        self.cfg['skills_cd'] = self.text_skills_cd.get()
-        self.cfg['bio_cd'] = self.text_bio_cd.get()
-        self.cfg['bio_item_num'] = self.text_bio_item_num.get()
+        self.cfg_local['skills_to_activate'] = self.text_skills_check.get()
+        self.cfg_local['window_name'] = self.text_window_name.get()
+        self.cfg_local['skills_cd'] = self.text_skills_cd.get()
+        self.cfg_local['bio_cd'] = self.text_bio_cd.get()
+        self.cfg_local['bio_item_num'] = self.text_bio_item_num.get()
 
         self.metin.skills_cd = int(self.text_skills_cd.get()) if self.text_skills_cd.get().isdigit() else 0
         self.metin.bio_cd = (int(self.text_bio_cd.get()) if self.text_bio_cd.get().isdigit() else 0) * 60 + 15
         self.metin.bio_item_num = int(self.text_bio_item_num.get()) if self.text_bio_item_num.get().isdigit() else 0
-        self.metin.hp_bar_location = self.cfg['information_locations']['hp_bar_location']
-        self.metin.hp_full_location = self.cfg['information_locations']['hp_full_location']
-        self.metin.hp_full_pixel_colour = self.cfg['information_locations']['hp_full_pixel_colour']
-        self.metin.scan_window_location = self.cfg['information_locations']['scan_window_location']
-        self.metin.bio_location = self.cfg['information_locations']['bio_location']
-        self.metin.cancel_location = self.cfg['information_locations']['cancel_location']
-        self.metin.respawn_location = self.cfg['information_locations']['respawn_button_location']
 
-        self.metin.skills_to_activate = self.cfg['skills_to_activate'].split()
+        self.load_locations()
+
+        self.metin.skills_to_activate = self.cfg_local['skills_to_activate'].split()
         save_config(self.cfg, 'Config.json')
+        save_config(self.cfg_local, 'Config-local.json')
+
+    def load_locations(self):
+        if 'information_locations' in self.cfg_local:
+            info_locs = self.cfg_local['information_locations']
+
+            if 'hp_bar_location' in info_locs:
+                self.metin.hp_bar_location = info_locs['hp_bar_location']
+
+            if 'hp_full_location' in info_locs:
+                self.metin.hp_full_location = info_locs['hp_full_location']
+
+            if 'hp_full_pixel_colour' in info_locs:
+                self.metin.hp_full_pixel_colour = info_locs['hp_full_pixel_colour']
+
+            if 'scan_window_location' in info_locs:
+                self.metin.scan_window_location = info_locs['scan_window_location']
+
+            if 'bio_location' in info_locs:
+                self.metin.bio_location = info_locs['bio_location']
+
+            if 'cancel_location' in info_locs:
+                self.metin.cancel_location = info_locs['cancel_location']
+
+            if 'respawn_button_location' in info_locs:
+                self.metin.respawn_location = info_locs['respawn_button_location']
 
     def reset_skill(self):
         self.metin.skill_timer = 0
@@ -241,27 +263,27 @@ class ApplicationWindow:
         if None not in [self.start_x, self.start_y, self.end_x, self.end_y]:
             output = [min(self.start_x, self.end_x), min(self.end_y, self.start_y), max(self.start_x, self.end_x),
                       max(self.end_y, self.start_y)]
-            self.cfg['information_locations']['hp_bar_location'] = output
+            self.cfg_local['information_locations']['hp_bar_location'] = output
 
     def apply_respawn_button_location(self):
         if None not in [self.start_x, self.start_y, self.end_x, self.end_y]:
             output = [min(self.start_x, self.end_x), min(self.end_y, self.start_y), max(self.start_x, self.end_x),
                       max(self.end_y, self.start_y)]
-            self.cfg['information_locations']['respawn_button_location'] = output
+            self.cfg_local['information_locations']['respawn_button_location'] = output
 
     def apply_hp_full_location(self):
         if None not in [self.start_x, self.start_y, self.end_x, self.end_y]:
             np_img = np.array(self.screenshot_image)
             np_img = cv2.cvtColor(np_img, cv2.COLOR_RGB2BGR)
             pixel = np_img[self.end_y + self.screenshot_image_top, self.end_x + self.screenshot_image_left]
-            self.cfg['information_locations']['hp_full_pixel_colour'] = pixel.tolist()
+            self.cfg_local['information_locations']['hp_full_pixel_colour'] = pixel.tolist()
 
-            self.cfg['information_locations']['hp_full_location'] = [self.end_x, self.end_y, self.start_x, self.start_y]
+            self.cfg_local['information_locations']['hp_full_location'] = [self.end_x, self.end_y, self.start_x, self.start_y]
 
     def apply_bio_button_location(self):
         print('biooo')
         if None not in [self.start_x, self.start_y, self.end_x, self.end_y]:
-            self.cfg['information_locations']['bio_location'] = [self.end_x, self.end_y, self.start_x, self.start_y]
+            self.cfg_local['information_locations']['bio_location'] = [self.end_x, self.end_y, self.start_x, self.start_y]
 
     def apply_scan_window_location(self):
         # z lava, z hora, z prava, z dola
@@ -269,14 +291,14 @@ class ApplicationWindow:
             output = [min(self.start_x, self.end_x), min(self.end_y, self.start_y), max(self.start_x, self.end_x),
                       max(self.end_y, self.start_y)]
 
-            self.cfg['information_locations']['scan_window_location'] = output
+            self.cfg_local['information_locations']['scan_window_location'] = output
 
     def apply_cancel_location(self):
         if None not in [self.start_x, self.start_y, self.end_x, self.end_y]:
             output = [min(self.start_x, self.end_x), min(self.end_y, self.start_y), max(self.start_x, self.end_x),
                       max(self.end_y, self.start_y)]
 
-            self.cfg['information_locations']['cancel_location'] = output
+            self.cfg_local['information_locations']['cancel_location'] = output
 
     def start_bot_loop_thread(self):
         if not self.metin.running:  # Prevent starting multiple threads
@@ -383,7 +405,7 @@ class ApplicationWindow:
 
 
 class Metin:
-    def __init__(self, metin_hp_img, skills_to_activate, display_screenshot, debug_bot):
+    def __init__(self, skills_to_activate, display_screenshot, debug_bot):
         self.debug_bot = debug_bot
         self.window_top = None
         self.window_left = None
@@ -396,7 +418,6 @@ class Metin:
         self.solving_bot_check = False
         self.contour_low = 0
         self.contour_high = 0
-        self.metin_hp_img = metin_hp_img
         self.destroying_metin = False
         self.metin_destroying_time = 0
         self.model_cuda = None
@@ -445,6 +466,8 @@ class Metin:
         self.weather_image = None
         self.template = None
         self.image_to_display = None
+        self.metin_hp_img = None
+
         self.load_images()
 
         self.display_screenshot = display_screenshot
@@ -477,6 +500,7 @@ class Metin:
         self.graphics_settings = load_image('bot_images\\graphics_settings.png')
         self.weather_image = load_image('bot_images\\weather.png')
         self.template = load_image('bot_images\\metin_hp2.png')
+        self.metin_hp_img = load_image('bot_images\\metin_hp2.png')
 
     def bot_loop(self):
         metin_mask = {}
@@ -971,8 +995,12 @@ def get_window_screenshot(window):
 
 
 def load_config(name):
+    if not os.path.exists(name):
+        return {}
+
     with open(name, 'r') as config:
         config_dict = json.load(config)
+
     return config_dict
 
 
