@@ -63,7 +63,7 @@ class ApplicationWindow:
         self.text_window_name.grid(row=1, column=0, columnspan=4, pady=5)
 
         # Create buttons for start/stop Metin location and label on top for choose metin stone
-        self.start_bot_loop_button = tk.Button(self.root, text="Start bot_loop", command=self.start_bot_loops)
+        self.start_bot_loop_button = tk.Button(self.root, text="Start bot_loop", command=self.start_bot_loop_thread)
         self.start_bot_loop_button.grid(row=2, column=0, pady=10, padx=10)
 
         self.stop_bot_loop_button = tk.Button(self.root, text="Stop bot_loop", command=self.stop_bot_loop)
@@ -159,8 +159,6 @@ class ApplicationWindow:
         self.screenshot_image_left = None
         self.screenshot_image_top = None
         self.image_label = None
-        self.screenshot_thread = None
-        self.bot_loop_thread = None
 
         self.load_config_values(debug_bot)
 
@@ -283,18 +281,7 @@ class ApplicationWindow:
     def start_bot_loop_thread(self):
         if not self.metin.running:  # Prevent starting multiple threads
             self.metin.running = True
-            self.bot_loop_thread = threading.Thread(target=self.metin.bot_loop, daemon=True)
-            self.bot_loop_thread.start()
-
-    def start_screenshot_thread(self):
-        if not self.metin.screenshotting:  # Prevent starting multiple threads
-            self.metin.screenshotting = True
-        self.screenshot_thread = threading.Thread(target=self.metin.img_loop, daemon=True)
-        self.screenshot_thread.start()
-
-    def start_bot_loops(self):
-        self.start_bot_loop_thread()
-        self.start_screenshot_thread()
+            threading.Thread(target=self.metin.bot_loop, daemon=True).start()
 
     def take_screenshot(self):
         # Capture the screenshot of the entire screen
@@ -334,7 +321,6 @@ class ApplicationWindow:
 
     def display_screenshot(self):
         screenshot = self.metin.image_to_display
-
         def update_image(screenshot=screenshot):
             # If the screenshot is not a PIL image, convert it
             if not isinstance(screenshot, Image.Image):
@@ -391,13 +377,6 @@ class ApplicationWindow:
         self.metin.solved_at = 0
         self.metin.solving_bot_check = False
         self.metin.running = False
-        self.metin.screenshotting = False
-
-        if hasattr(self, 'bot_loop_thread') and self.bot_loop_thread.is_alive():
-            self.bot_loop_thread.join()
-
-        if hasattr(self, 'screenshot_thread') and self.screenshot_thread.is_alive():
-            self.screenshot_thread.join()
 
     def run(self):
         self.root.mainloop()
@@ -448,7 +427,6 @@ class Metin:
         self.bot_time_diff = 0
         self.respawn_timer_diff = 0
         self.show_img = False
-        self.image_to_display = None
         self.bio_item_num = 0
         self.aspect_low = 0
         self.aspect_high = 0
@@ -466,12 +444,7 @@ class Metin:
         self.graphics_settings = None
         self.weather_image = None
         self.template = None
-        self.np_image = None
-        self.metin_pos = None
-        self.x_middle = None
-        self.y_middle = None
-        self.screenshotting = False
-
+        self.image_to_display = None
         self.load_images()
 
         self.display_screenshot = display_screenshot
@@ -505,18 +478,6 @@ class Metin:
         self.weather_image = load_image('bot_images\\weather.png')
         self.template = load_image('bot_images\\metin_hp2.png')
 
-    def img_loop(self):
-        x1, y1, x2, y2 = self.scan_window_location
-        while self.screenshotting:
-            self.np_image = self.get_np_image()
-            self.x_middle = self.window_left + (x2 - x1) // 2
-            self.y_middle = self.window_top + (y2 - y1) // 2
-            self.metin_pos, self.image_to_display = self.locate_metin()
-
-            if self.show_img:
-                self.display_screenshot()
-            time.sleep(0.1)
-
     def bot_loop(self):
         metin_mask = {}
         for metin_config in self.metin_stones:
@@ -542,23 +503,28 @@ class Metin:
                 sleep_time = random.random() * (upper_limit - lower_limit) + lower_limit
                 time.sleep(sleep_time)
 
+                np_image = self.get_np_image()
+
                 if self.running:
-                    self.bot_solver()
+                    self.bot_solver(np_image)
                 # if self.running:
-                #     self.death_check()
+                #     self.death_check(np_image)
                 # if self.running:
                 #     self.deliver_bio()
                 # if self.running:
                 #     self.activate_skills()
-                # if self.running:
-                #     self.destroy_metin()
-                print(f'Iteration execution time {time.time() - loop_time}s')
+                if self.running:
+                    self.image_to_display = self.destroy_metin(np_image)
 
-    def bot_solver(self):
+                    if self.show_img:
+                        self.display_screenshot()
+                    print(f'Iteration execution time {time.time() - loop_time}s')
+
+    def bot_solver(self, np_image):
         # 433 x 280
         box = 64
         space = 15
-        np_image = self.np_image
+        np_image = np_image
         location = locate_image(self.bot_check_bar, np_image, confidence=0.7)
 
         if location is not None:
@@ -621,7 +587,7 @@ class Metin:
                             y_to_click = self.window_top + location.top + 28 + y1 + (y2 - y1) / 2
                             # mouse_left_click(x_to_click, y_to_click, self.window_title)
 
-                            pyautogui.moveTo(x_to_click, y_to_click, self.window_title)
+                            pyautogui.moveTo(x_to_click, y_to_click)
                             self.bot_timer = 0
                             self.bot_time_diff = time.time() - self.bot_timer
                             found = True
@@ -673,13 +639,13 @@ class Metin:
 
                     time.sleep(2)
 
-    def death_check(self):
+    def death_check(self, np_image):
         self.respawn_timer_diff = time.time() - self.respawn_timer
         if self.respawn_timer == 0 or self.respawn_timer != 0 and self.respawn_timer_diff >= 10:
             print('death_check')
             self.respawn_timer = time.time()
 
-            respawn_location = locate_image(self.restart, self.np_image, confidence=0.7)
+            respawn_location = locate_image(self.restart, np_image, confidence=0.7)
 
             if respawn_location is not None:
                 respawn_x = self.window_left + respawn_location.left + respawn_location.width / 2
@@ -725,13 +691,17 @@ class Metin:
                 time.sleep(2)
             press_button_multiple('ctrl+g', self.window_title)
 
-    def destroy_metin(self):
+    def destroy_metin(self, np_image):
         target_pixel_value = np.array(self.hp_full_pixel_colour)
         x1, y1, x2, y2 = self.scan_window_location  # z lava, z hora, z prava, z dola
+        np_image_crop = np_image[y1: y2, x1: x2]
+        x_middle = self.window_left + (x2 - x1) // 2
+        y_middle = self.window_top + (y2 - y1) // 2
+        metin_pos, image_to_display = self.locate_metin(np_image_crop, x_middle, y_middle)
         # there are metins on screen
-        if self.metin_pos is not None:
+        if metin_pos is not None:
             print('Metin Found')
-            metin_pos_x, metin_pos_y = self.metin_pos
+            metin_pos_x, metin_pos_y = metin_pos
 
             metin_pos_x += self.window_left + x1
             metin_pos_y += self.window_top + y1
@@ -749,7 +719,7 @@ class Metin:
             else:
                 hp_bar_x1, hp_bar_y1, hp_bar_x2, hp_bar_y2 = self.hp_bar_location
 
-                hp_bar = self.np_image[hp_bar_y1: hp_bar_y2, hp_bar_x1: hp_bar_x2]
+                hp_bar = np_image[hp_bar_y1: hp_bar_y2, hp_bar_x1: hp_bar_x2]
 
                 # check if metin was destroyed
                 metin_is_alive = self.locate_metin_hp(hp_bar)
@@ -759,7 +729,7 @@ class Metin:
                 # HERE I WANT TO display_screenshot(output_image)
                 if not metin_is_alive:
                     # Cleanup
-                    return
+                    return image_to_display
 
                 else:
                     self.metin_destroy_time_diff = time.time() - self.metin_destroying_time
@@ -770,7 +740,7 @@ class Metin:
                         pixel_x += self.window_left
                         pixel_y += self.window_top
 
-                        pixel_to_check = self.np_image[pixel_y, pixel_x]
+                        pixel_to_check = np_image[pixel_y, pixel_x]
                         # HERE I WANT TO display_screenshot(output_image)
 
                         # check if after 10s metin is being destroyed or player is stuck
@@ -782,7 +752,7 @@ class Metin:
                             x_to_cancel = (self.window_left + cancel_x1 + (cancel_x2 - cancel_x1) * 0.75)
                             y_to_cancel = (self.window_top + cancel_y1 + (cancel_y2 - cancel_y1) / 2)
 
-                            mouse_left_click(self.x_middle, self.y_middle, self.window_title)
+                            mouse_left_click(x_middle, y_middle, self.window_title)
                             metin_is_alive = False
                             time.sleep(0.2)
                             mouse_left_click(x_to_cancel, y_to_cancel, self.window_title)
@@ -797,9 +767,9 @@ class Metin:
             press_button('q', self.window_title)
             print("Searching for metin")
 
-    def locate_metin(self):
-        x1, y1, x2, y2 = self.scan_window_location  # z lava, z hora, z prava, z dola
-        np_image = self.np_image[y1: y2, x1: x2]
+        return image_to_display
+
+    def locate_metin(self, np_image, x_middle, y_middle):
         # Convert the image to HSV
         hsv = cv2.cvtColor(np_image, cv2.COLOR_BGR2HSV)
         mask = cv2.inRange(hsv, self.lower, self.upper)
@@ -826,14 +796,14 @@ class Metin:
                         contour_center_y = y + h // 2
 
                         # Draw a line from the middle of the screenshot to the center of the contour
-                        cv2.line(np_image, (self.x_middle, self.y_middle), (contour_center_x, contour_center_y),
+                        cv2.line(np_image, (x_middle, y_middle), (contour_center_x, contour_center_y),
                                  (255, 190, 200), 2)
                         # Optionally, you can calculate the distance between the middle of the screenshot and the contour center
                         # Draw a circle around the point (x_middle, y_middle) with a radius of 300px
-                        cv2.circle(np_image, (self.x_middle, self.y_middle), circle_r, (255, 190, 200),
+                        cv2.circle(np_image, (x_middle, y_middle), circle_r, (255, 190, 200),
                                    2)  # The color is (255, 190, 200) and the thickness is 2
 
-                        cur_distance = abs(self.x_middle - contour_center_x) + abs(self.y_middle - contour_center_y)
+                        cur_distance = abs(x_middle - contour_center_x) + abs(y_middle - contour_center_y)
 
                         if cur_distance <= circle_r:
                             continue
