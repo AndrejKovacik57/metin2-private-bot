@@ -577,9 +577,6 @@ class Metin:
             result = result.strip()
             print(f'text to find {result}')
             logging.info(f'Text to find: {result}')
-            cv2.imshow('np_image_captcha', np_image_captcha)
-            cv2.imshow('np_image_text', np_image_text)
-            cv2.waitKey(0)
             no_outputs = []
             outputs = []
             found = False
