@@ -196,33 +196,33 @@
             "mask": {
                 "hMin": 0,
                 "sMin": 0,
-                "vMin": 98,
-                "hMax": 10,
+                "vMin": 87,
+                "hMax": 14,
                 "sMax": 255,
                 "vMax": 255
             },
-            "contourLow": 789,
-            "contourHigh": 61698,
-            "aspect_low": 67,
-            "aspect_high": 131,
-            "circularity": 144,
-            "weather": 9
+            "contourLow": 558,
+            "contourHigh": 8000,
+            "aspect_low": 42,
+            "aspect_high": 132,
+            "circularity": 275,
+            "weather": 3
         },
         {
             "name": "Metin Jeon-Un",
             "mask": {
-                "hMin": 0,
-                "sMin": 0,
-                "vMin": 98,
-                "hMax": 10,
-                "sMax": 255,
+                "hMin": 7,
+                "sMin": 98,
+                "vMin": 37,
+                "hMax": 9,
+                "sMax": 210,
                 "vMax": 255
             },
-            "contourLow": 1000,
-            "contourHigh": 5600,
-            "aspect_low": 67,
-            "aspect_high": 131,
-            "circularity": 144,
+            "contourLow": 338,
+            "contourHigh": 8000,
+            "aspect_low": 63,
+            "aspect_high": 104,
+            "circularity": 183,
             "weather": 9
         }
     ]
