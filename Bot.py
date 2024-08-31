@@ -579,7 +579,7 @@ class Metin:
         time.sleep(2)
         upper_limit = 0.5
         lower_limit = 0.1
-        self.choose_weather()
+        # self.choose_weather()
 
         while self.running:
             with self.lock:
@@ -589,22 +589,22 @@ class Metin:
 
                 np_image = self.get_np_image()
 
-                if self.running:
-                    self.bot_solver(np_image)
-                if self.running:
-                    self.death_check(np_image)
-                if self.running:
-                    self.deliver_bio()
+                # if self.running:
+                #     self.bot_solver(np_image)
+                # if self.running:
+                #     self.death_check(np_image)
+                # if self.running:
+                #     self.deliver_bio()
                 if self.running:
                     self.put_thief_glove(np_image)
-                if self.running:
-                    self.activate_skills()
-                if self.running:
-                    self.image_to_display = self.destroy_metin(np_image)
-
-                    if self.show_img:
-                        self.display_screenshot()
-                    print(f'Iteration execution time {time.time() - loop_time}s')
+                # if self.running:
+                #     self.activate_skills()
+                # if self.running:
+                #     self.image_to_display = self.destroy_metin(np_image)
+                #
+                #     if self.show_img:
+                #         self.display_screenshot()
+                #     print(f'Iteration execution time {time.time() - loop_time}s')
 
     def bot_solver(self, np_image):
         # 433 x 280
@@ -781,9 +781,9 @@ class Metin:
         if self.thief_glove_timer == 0 or self.thief_glove_timer != 0 and self.thief_glove_time_diff >= self.thief_glove_cd:
             print('put_thief_glove')
             self.thief_glove_timer = time.time()
-            print(f'self.thief_glove_location { self.thief_glove_location}')
             x1, y1, x2, y2 = self.thief_glove_location
             thief_glove_slot = np_image[y1: y2, x1: x2]
+            cv2.imshow('thief_glove_slot', thief_glove_slot)
             inventory = locate_image(self.inventory, np_image)
 
             if inventory is None:
@@ -795,7 +795,9 @@ class Metin:
                 gloves = locate_image(self.thief_glove_5h, thief_glove_slot)
 
             if gloves is not None:
-                self.click_location_middle(gloves)
+                x = x1 + self.window_left + gloves.left + gloves.width / 2
+                y = y1 + self.window_top + gloves.top + gloves.height / 2
+                mouse_right_click(x, y, self.window_title)
 
     def activate_skills(self):
         self.skill_timer_diff = time.time() - self.skill_timer
@@ -1073,9 +1075,10 @@ class Metin:
         mouse_left_click(cancel_x, cancel_y, self.window_title)
 
     def click_location_middle(self, location):
-        system_options_x = self.window_left + location.left + location.width / 2
-        system_options_y = self.window_top + location.top + location.height / 2
-        mouse_left_click(system_options_x, system_options_y, self.window_title)
+        x = self.window_left + location.left + location.width / 2
+        y = self.window_top + location.top + location.height / 2
+        print(f'click x {x} y {x}')
+        mouse_left_click(x, y, self.window_title)
 
 
 def resize_image(image):
