@@ -201,7 +201,7 @@ class ApplicationWindow:
 
             self.load_cfg_local()
             self.metin.metin_time = int(cfg_local['metin_time']) if cfg_local['metin_time'].isdigit() else 0
-            self.text_metin_time.insert(0, cfg_local['text_metin_time'])
+            self.text_metin_time.insert(0, cfg_local['metin_time'])
 
         else:
 
