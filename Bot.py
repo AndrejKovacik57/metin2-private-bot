@@ -13,7 +13,6 @@ import pytesseract
 import keyboard
 import torch
 from ultralytics import YOLO
-import gc
 import logging
 import os
 
@@ -181,7 +180,6 @@ class ApplicationWindow:
         pytesseract.pytesseract.tesseract_cmd = cfg['tesseract_path']
 
         self.text_tesseract_path.insert(0, cfg['tesseract_path'])
-        self.text_metin_time.insert(0, cfg['text_metin_time'])
 
         if cfg_local:
             self.metin = Metin(cfg_local['skills_to_activate'].split(), self.display_screenshot, debug_bot)
@@ -197,11 +195,13 @@ class ApplicationWindow:
             self.text_bio_item_num.insert(0, cfg_local['bio_item_num'])
             if 'information_locations' not in self.cfg_local:
                 self.cfg_local['information_locations'] = {}
+
             if 'metin_time' not in self.cfg_local:
                 self.cfg_local['metin_time'] = '0'
 
             self.load_cfg_local()
             self.metin.metin_time = int(cfg_local['metin_time']) if cfg_local['metin_time'].isdigit() else 0
+            self.text_metin_time.insert(0, cfg_local['text_metin_time'])
 
         else:
 
