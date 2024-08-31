@@ -786,8 +786,9 @@ class Metin:
 
             if inventory is None:
                 press_button('i', self.window_title)
-                time.sleep(2)
                 np_image = self.get_np_image()
+                time.sleep(2)
+
             x1, y1, x2, y2 = self.thief_glove_location
             thief_glove_slot = np_image[y1: y2, x1: x2]
 
