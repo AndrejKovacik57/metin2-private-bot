@@ -788,6 +788,7 @@ class Metin:
 
             if inventory is None:
                 press_button('i', self.window_title)
+                time.sleep(2)
 
             if self.selected_glove == 'Thief gloves 30m':
                 gloves = locate_image(self.thief_glove_30m, thief_glove_slot)
@@ -836,6 +837,7 @@ class Metin:
                 mouse_left_click(metin_pos_x, metin_pos_y, self.window_title)
                 self.destroying_metin = True
                 self.metin_destroying_time = time.time()
+                time.sleep(2)
 
             else:
                 hp_bar_x1, hp_bar_y1, hp_bar_x2, hp_bar_y2 = self.hp_bar_location
@@ -860,7 +862,7 @@ class Metin:
                         print('Metin is not being destroyed, stopping')
                         self.cancel_metin_window(x_middle, y_middle)
 
-                    if self.metin_destroy_time_diff > 6:
+                    if self.metin_destroy_time_diff > 10:
                         pixel_x, pixel_y = self.hp_full_location[:2]
                         pixel_x += self.window_left
                         pixel_y += self.window_top
