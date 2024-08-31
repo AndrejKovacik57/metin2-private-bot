@@ -110,11 +110,16 @@ class ApplicationWindow:
         self.text_bio_cd.grid(row=7, column=2, pady=5)
 
         self.reset_skill = tk.Button(self.root, text="Reset skill", command=self.reset_skill)
-        self.reset_skill.grid(row=8, column=0, columnspan=4, pady=10)
+        self.reset_skill.grid(row=8, column=0, pady=10)
+
+        self.entry_metin_time = tk.Label(self.root, text="Metin time limit:")
+        self.entry_metin_time.grid(row=8, column=0, columnspan=4, pady=5)
+        self.text_metin_time = tk.Entry(self.root, width=15)
+        self.text_metin_time.grid(row=9, column=0, columnspan=4, pady=5)
 
         # Create a button to take a screenshot and center it
         self.screenshot_button = tk.Button(self.root, text="Take Screenshot", command=self.take_screenshot)
-        self.screenshot_button.grid(row=9, column=0, columnspan=4, pady=10)
+        self.screenshot_button.grid(row=9, column=1, pady=10)
 
         self.set_metin_hp_bar_location = tk.Button(text="Set HP bar location",
                                                    command=self.apply_hp_bar_location)
@@ -176,6 +181,7 @@ class ApplicationWindow:
         pytesseract.pytesseract.tesseract_cmd = cfg['tesseract_path']
 
         self.text_tesseract_path.insert(0, cfg['tesseract_path'])
+        self.text_metin_time.insert(0, cfg['text_metin_time'])
 
         if cfg_local:
             self.metin = Metin(cfg_local['skills_to_activate'].split(), self.display_screenshot, debug_bot)
@@ -191,7 +197,11 @@ class ApplicationWindow:
             self.text_bio_item_num.insert(0, cfg_local['bio_item_num'])
             if 'information_locations' not in self.cfg_local:
                 self.cfg_local['information_locations'] = {}
-            self.load_locations()
+            if 'metin_time' not in self.cfg_local:
+                self.cfg_local['metin_time'] = '0'
+
+            self.load_cfg_local()
+            self.metin.metin_time = int(cfg_local['metin_time']) if cfg_local['metin_time'].isdigit() else 0
 
         else:
 
@@ -222,18 +232,20 @@ class ApplicationWindow:
         self.cfg_local['skills_cd'] = self.text_skills_cd.get()
         self.cfg_local['bio_cd'] = self.text_bio_cd.get()
         self.cfg_local['bio_item_num'] = self.text_bio_item_num.get()
+        self.cfg_local['metin_time'] = self.text_metin_time.get()
 
         self.metin.skills_cd = int(self.text_skills_cd.get()) if self.text_skills_cd.get().isdigit() else 0
         self.metin.bio_cd = (int(self.text_bio_cd.get()) if self.text_bio_cd.get().isdigit() else 0) * 60 + 15
         self.metin.bio_item_num = int(self.text_bio_item_num.get()) if self.text_bio_item_num.get().isdigit() else 0
+        self.metin.metin_time = int(self.text_metin_time.get()) if self.text_metin_time.get().isdigit() else 0
 
-        self.load_locations()
+        self.load_cfg_local()
 
         self.metin.skills_to_activate = self.cfg_local['skills_to_activate'].split()
         save_config(self.cfg, 'Config.json')
         save_config(self.cfg_local, 'Config-local.json')
 
-    def load_locations(self):
+    def load_cfg_local(self):
         if 'information_locations' in self.cfg_local:
             info_locs = self.cfg_local['information_locations']
 
@@ -466,6 +478,7 @@ class Metin:
         self.bot_timer = 0
         self.bio_timer = 0
         self.respawn_timer = 0
+        self.metin_time = 0
         self.hp_bar_location = None
         self.hp_full_location = None
         self.hp_full_pixel_colour = None
@@ -843,6 +856,9 @@ class Metin:
                     self.metin_destroy_time_diff = time.time() - self.metin_destroying_time
                     press_button('q', self.window_title)
 
+                    if self.metin_time != 0 and self.metin_destroy_time_diff > self.metin_time:
+                        self.cancel_metin_window(x_middle, y_middle)
+
                     if self.metin_destroy_time_diff > 10:
                         pixel_x, pixel_y = self.hp_full_location[:2]
                         pixel_x += self.window_left
@@ -855,29 +871,32 @@ class Metin:
                         print(f'pixel_to_check {pixel_to_check} target_pixel_value {target_pixel_value}')
                         # check if after 10s metin is being destroyed or player is stuck
                         if np.all(np.abs(pixel_to_check - target_pixel_value) <= 5):
-                            print('zatvaram metin okno')
-                            choices = ['a', 'd']
-                            cancel_x1, cancel_y1, cancel_x2, cancel_y2 = self.cancel_location
+                            self.cancel_metin_window(x_middle, y_middle)
 
-                            x_to_cancel = (self.window_left + cancel_x1 + (cancel_x2 - cancel_x1) * 0.75)
-                            y_to_cancel = (self.window_top + cancel_y1 + (cancel_y2 - cancel_y1) / 2)
-
-                            mouse_left_click(x_middle, y_middle, self.window_title)
-                            metin_is_alive = False
-                            time.sleep(0.2)
-                            mouse_left_click(x_to_cancel, y_to_cancel, self.window_title)
-                            press_button(random.choice(choices), self.window_title)
-                            time.sleep(0.2)
-                            press_button('q', self.window_title)
-                            time.sleep(0.2)
-                            press_button('q', self.window_title)
-                            time.sleep(0.2)
         else:
             # HERE I WANT TO display_screenshot(np_image_crop)
             press_button('q', self.window_title)
             print("Searching for metin")
 
         return image_to_display
+
+    def cancel_metin_window(self, x_middle, y_middle):
+        print('zatvaram metin okno')
+        choices = ['a', 'd']
+        cancel_x1, cancel_y1, cancel_x2, cancel_y2 = self.cancel_location
+
+        x_to_cancel = (self.window_left + cancel_x1 + (cancel_x2 - cancel_x1) * 0.75)
+        y_to_cancel = (self.window_top + cancel_y1 + (cancel_y2 - cancel_y1) / 2)
+
+        mouse_left_click(x_middle, y_middle, self.window_title)
+        time.sleep(0.2)
+        mouse_left_click(x_to_cancel, y_to_cancel, self.window_title)
+        press_button(random.choice(choices), self.window_title)
+        time.sleep(0.2)
+        press_button('q', self.window_title)
+        time.sleep(0.2)
+        press_button('q', self.window_title)
+        time.sleep(0.2)
 
     def locate_metin(self, np_image, x_middle, y_middle):
         # Convert the image to HSV
