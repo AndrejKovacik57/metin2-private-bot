@@ -109,12 +109,12 @@ class ApplicationWindow:
         self.text_bio_cd.grid(row=7, column=2, pady=5)
 
         self.reset_skill = tk.Button(self.root, text="Reset skill", command=self.reset_skill)
-        self.reset_skill.grid(row=8, column=0, pady=10)
+        self.reset_skill.grid(row=8, column=1, pady=10)
 
         self.entry_metin_time = tk.Label(self.root, text="Metin time limit:")
-        self.entry_metin_time.grid(row=8, column=0, columnspan=4, pady=5)
+        self.entry_metin_time.grid(row=8, column=0, pady=5)
         self.text_metin_time = tk.Entry(self.root, width=15)
-        self.text_metin_time.grid(row=9, column=0, columnspan=4, pady=5)
+        self.text_metin_time.grid(row=9, column=0, pady=5)
 
         # Create a button to take a screenshot and center it
         self.screenshot_button = tk.Button(self.root, text="Take Screenshot", command=self.take_screenshot)
@@ -579,7 +579,7 @@ class Metin:
         time.sleep(2)
         upper_limit = 0.5
         lower_limit = 0.1
-        # self.choose_weather()
+        self.choose_weather()
 
         while self.running:
             with self.lock:
@@ -798,6 +798,7 @@ class Metin:
                 x = x1 + self.window_left + gloves.left + gloves.width / 2
                 y = y1 + self.window_top + gloves.top + gloves.height / 2
                 mouse_right_click(x, y, self.window_title)
+                time.sleep(1)
 
     def activate_skills(self):
         self.skill_timer_diff = time.time() - self.skill_timer
@@ -856,9 +857,10 @@ class Metin:
                     press_button('q', self.window_title)
 
                     if self.metin_time != 0 and self.metin_destroy_time_diff > self.metin_time:
+                        print('Metin is not being destroyed, stopping')
                         self.cancel_metin_window(x_middle, y_middle)
 
-                    if self.metin_destroy_time_diff > 10:
+                    if self.metin_destroy_time_diff > 6:
                         pixel_x, pixel_y = self.hp_full_location[:2]
                         pixel_x += self.window_left
                         pixel_y += self.window_top
