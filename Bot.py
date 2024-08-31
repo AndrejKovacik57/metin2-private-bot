@@ -781,13 +781,15 @@ class Metin:
         if self.thief_glove_timer == 0 or self.thief_glove_timer != 0 and self.thief_glove_time_diff >= self.thief_glove_cd:
             print('put_thief_glove')
             self.thief_glove_timer = time.time()
-            x1, y1, x2, y2 = self.thief_glove_location
-            thief_glove_slot = np_image[y1: y2, x1: x2]
+
             inventory = locate_image(self.inventory, np_image)
 
             if inventory is None:
                 press_button('i', self.window_title)
                 time.sleep(2)
+                np_image = self.get_np_image()
+            x1, y1, x2, y2 = self.thief_glove_location
+            thief_glove_slot = np_image[y1: y2, x1: x2]
 
             if self.selected_glove == 'Thief gloves 30m':
                 gloves = locate_image(self.thief_glove_30m, thief_glove_slot)
