@@ -76,12 +76,18 @@ class ApplicationWindow:
         self.dropdown = ttk.Combobox(self.root, values=self.metin_options, state="readonly")
         self.dropdown.grid(row=2, column=2, columnspan=2, pady=5)
         # Bind event to the dropdown
-        self.dropdown.bind("<<ComboboxSelected>>", self.save_selected_option)
+        self.dropdown.bind("<<ComboboxSelected>>", self.save_selected_option_metins)
 
         self.entry_tesseract_path = tk.Label(self.root, text="Tesseract Path:")
         self.entry_tesseract_path.grid(row=4, column=0, pady=5)
         self.text_tesseract_path = tk.Entry(self.root, width=30)
         self.text_tesseract_path.grid(row=5, column=0, pady=5)
+
+        self.thief_gloves = ["Thief gloves 30m", "Thief gloves 5h"]
+        self.entry_glove_cd = ttk.Combobox(self.root, values=self.thief_gloves, state="readonly")
+        self.entry_glove_cd.grid(row=5, column=1, pady=5)
+        # Bind event to the dropdown
+        self.entry_glove_cd.bind("<<ComboboxSelected>>", self.save_selected_option_gloves)
 
         self.entry_bio_item_num = tk.Label(self.root, text="Bio item num:")
         self.entry_bio_item_num.grid(row=4, column=2, pady=5)
@@ -134,9 +140,12 @@ class ApplicationWindow:
                                         command=self.apply_bio_button_location)
         self.set_bio_button.grid(row=11, column=2, pady=10)
 
+        self.set_thief_glove_button = tk.Button(text="Set thief glove", command=self.apply_thief_glove_button_location)
+        self.set_thief_glove_button.grid(row=12, column=0, pady=10)
+
         # Create the Apply button and center it
         self.apply = tk.Button(self.root, text="Apply", command=self.apply_fields)
-        self.apply.grid(row=12, column=0, columnspan=4, pady=10)
+        self.apply.grid(row=13, column=0, columnspan=4, pady=10)
 
         self.cfg = {}
         self.cfg_local = {}
@@ -197,6 +206,10 @@ class ApplicationWindow:
             self.dropdown.set(self.metin_options[0])
             self.metin.selected_metin = self.metin_options[0]
 
+        self.entry_glove_cd.set(self.thief_gloves[0])
+        self.metin.selected_glove = self.thief_gloves[0]
+        self.metin.thief_glove_cd = 60 * 30
+
         self.metin.replacements = cfg['replacements']
 
     def apply_fields(self):
@@ -236,6 +249,12 @@ class ApplicationWindow:
             if 'scan_window_location' in info_locs:
                 self.metin.scan_window_location = info_locs['scan_window_location']
 
+            if 'scan_window_location' in info_locs:
+                self.metin.scan_window_location = info_locs['scan_window_location']
+
+            if 'thief_glove_location' in info_locs:
+                self.metin.thief_glove_location = info_locs['thief_glove_location']
+
             if 'bio_location' in info_locs:
                 self.metin.bio_location = info_locs['bio_location']
 
@@ -248,8 +267,17 @@ class ApplicationWindow:
     def reset_skill(self):
         self.metin.skill_timer = 0
 
-    def save_selected_option(self, event):
+    def save_selected_option_metins(self, event):
         self.metin.selected_metin = self.dropdown.get()
+
+    def save_selected_option_gloves(self, event):
+        value = self.entry_glove_cd.get()
+        self.metin.selected_glove = value
+        if value == 'Thief gloves 30m':
+            self.metin.thief_glove_cd = 60 * 30  # 30min
+        else:
+            self.metin.thief_glove_cd = 5 * 60 * 60  # 5h
+
 
     def toggle_display_images(self, *args):
         if self.display_images_var.get() == 1:
@@ -293,6 +321,14 @@ class ApplicationWindow:
                       max(self.end_y, self.start_y)]
 
             self.cfg_local['information_locations']['scan_window_location'] = output
+
+    def apply_thief_glove_button_location(self):
+        # z lava, z hora, z prava, z dola
+        if None not in [self.start_x, self.start_y, self.end_x, self.end_y]:
+            output = [min(self.start_x, self.end_x), min(self.end_y, self.start_y), max(self.start_x, self.end_x),
+                      max(self.end_y, self.start_y)]
+
+            self.cfg_local['information_locations']['thief_glove'] = output
 
     def apply_cancel_location(self):
         if None not in [self.start_x, self.start_y, self.end_x, self.end_y]:
@@ -434,14 +470,20 @@ class Metin:
         self.hp_full_location = None
         self.hp_full_pixel_colour = None
         self.scan_window_location = None
+        self.thief_glove_location = None
         self.bio_location = None
         self.cancel_location = None
         self.respawn_location = None
         self.skills_cd = 0
         self.bio_cd = 0
+        self.thief_glove_cd = 0
+        self.thief_glove_time_diff = 0
+        self.thief_glove_timer = 0
         self.running = False
         self.metin_stones = []
+        self.thief_glove = []
         self.selected_metin = None
+        self.selected_glove = None
         self.skill_timer_diff = 0
         self.bio_timer_diff = 0
         self.bio_cd_random = random.randint(10, 70)
@@ -467,6 +509,10 @@ class Metin:
         self.weather_image = None
         self.template = None
         self.image_to_display = None
+        self.metin_hp_img = None
+        self.thief_glove_30m = None
+        self.thief_glove_5h = None
+        self.inventory = None
         self.metin_hp_img = None
 
         self.load_images()
@@ -502,6 +548,9 @@ class Metin:
         self.weather_image = load_image('bot_images\\weather.png')
         self.template = load_image('bot_images\\metin_hp2.png')
         self.metin_hp_img = load_image('bot_images\\metin_hp2.png')
+        self.thief_glove_30m = load_image('bot_images\\zlodejky_male.png')
+        self.thief_glove_5h = load_image('bot_images\\zlodejky_velke.png')
+        self.inventory = load_image('bot_images\\inventory.png')
 
     def bot_loop(self):
         metin_mask = {}
@@ -536,6 +585,8 @@ class Metin:
                     self.death_check(np_image)
                 if self.running:
                     self.deliver_bio()
+                if self.running:
+                    self.put_thief_glove(np_image)
                 if self.running:
                     self.activate_skills()
                 if self.running:
@@ -715,6 +766,27 @@ class Metin:
                 press_button('esc', self.window_title)
                 time.sleep(0.15)
 
+    def put_thief_glove(self, np_image):
+        self.thief_glove_time_diff = time.time() - self.thief_glove_timer
+        if self.thief_glove_timer == 0 or self.thief_glove_timer != 0 and self.thief_glove_time_diff >= self.thief_glove_cd:
+            print('put_thief_glove')
+            self.thief_glove_timer = time.time()
+
+            x1, y1, x2, y2 = self.thief_glove_location
+            thief_glove_slot = np_image[y1: y2, x1: x2]
+            inventory = locate_image(self.inventory, np_image)
+
+            if inventory is None:
+                press_button('i', self.window_title)
+
+            if self.selected_glove == 'Thief gloves 30m':
+                gloves = locate_image(self.thief_glove_30m, thief_glove_slot)
+            else:
+                gloves = locate_image(self.thief_glove_5h, thief_glove_slot)
+
+            if gloves is not None:
+                self.click_location_middle(gloves)
+
     def activate_skills(self):
         self.skill_timer_diff = time.time() - self.skill_timer
         if self.skill_timer == 0 or self.skill_timer != 0 and self.skill_timer_diff >= self.skills_cd:
@@ -771,7 +843,7 @@ class Metin:
                     self.metin_destroy_time_diff = time.time() - self.metin_destroying_time
                     press_button('q', self.window_title)
 
-                    if self.metin_destroy_time_diff > 4:
+                    if self.metin_destroy_time_diff > 10:
                         pixel_x, pixel_y = self.hp_full_location[:2]
                         pixel_x += self.window_left
                         pixel_y += self.window_top

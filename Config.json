@@ -224,6 +224,23 @@
             "aspect_high": 104,
             "circularity": 183,
             "weather": 9
+        },
+        {
+            "name": "Metin of Wrath",
+            "mask": {
+                "hMin": 71,
+                "sMin": 0,
+                "vMin": 23,
+                "hMax": 180,
+                "sMax": 171,
+                "vMax": 158
+            },
+            "contourLow": 1170,
+            "contourHigh": 8000,
+            "aspect_low": 54,
+            "aspect_high": 78,
+            "circularity": 409,
+            "weather": 3
         }
     ]
 }
