@@ -783,7 +783,6 @@ class Metin:
             self.thief_glove_timer = time.time()
             x1, y1, x2, y2 = self.thief_glove_location
             thief_glove_slot = np_image[y1: y2, x1: x2]
-            cv2.imshow('thief_glove_slot', thief_glove_slot)
             inventory = locate_image(self.inventory, np_image)
 
             if inventory is None:
