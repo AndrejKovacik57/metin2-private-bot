@@ -126,19 +126,19 @@
         {
             "name": "Metin of shadow",
             "mask": {
-                "hMin": 91,
-                "sMin": 0,
+                "hMin": 74,
+                "sMin": 23,
                 "vMin": 0,
                 "hMax": 255,
                 "sMax": 255,
-                "vMax": 252
+                "vMax": 137
             },
-            "contourLow": 2500,
-            "contourHigh": 7544,
-            "aspect_low": 67,
-            "aspect_high": 131,
-            "circularity": 144,
-            "weather": 9
+            "contourLow": 1054,
+            "contourHigh": 7371,
+            "aspect_low": 55,
+            "aspect_high": 113,
+            "circularity": 82,
+            "weather": 1
         },
         {
             "name": "Metin of fall",
