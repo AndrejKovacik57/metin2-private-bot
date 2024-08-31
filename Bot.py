@@ -261,9 +261,6 @@ class ApplicationWindow:
             if 'scan_window_location' in info_locs:
                 self.metin.scan_window_location = info_locs['scan_window_location']
 
-            if 'scan_window_location' in info_locs:
-                self.metin.scan_window_location = info_locs['scan_window_location']
-
             if 'thief_glove_location' in info_locs:
                 self.metin.thief_glove_location = info_locs['thief_glove_location']
 
@@ -289,7 +286,6 @@ class ApplicationWindow:
             self.metin.thief_glove_cd = 60 * 30  # 30min
         else:
             self.metin.thief_glove_cd = 5 * 60 * 60  # 5h
-
 
     def toggle_display_images(self, *args):
         if self.display_images_var.get() == 1:
@@ -340,7 +336,8 @@ class ApplicationWindow:
             output = [min(self.start_x, self.end_x), min(self.end_y, self.start_y), max(self.start_x, self.end_x),
                       max(self.end_y, self.start_y)]
 
-            self.cfg_local['information_locations']['thief_glove'] = output
+            print(f'thief_glove_location {output}')
+            self.cfg_local['information_locations']['thief_glove_location'] = output
 
     def apply_cancel_location(self):
         if None not in [self.start_x, self.start_y, self.end_x, self.end_y]:
@@ -784,7 +781,7 @@ class Metin:
         if self.thief_glove_timer == 0 or self.thief_glove_timer != 0 and self.thief_glove_time_diff >= self.thief_glove_cd:
             print('put_thief_glove')
             self.thief_glove_timer = time.time()
-
+            print(f'self.thief_glove_location { self.thief_glove_location}')
             x1, y1, x2, y2 = self.thief_glove_location
             thief_glove_slot = np_image[y1: y2, x1: x2]
             inventory = locate_image(self.inventory, np_image)
