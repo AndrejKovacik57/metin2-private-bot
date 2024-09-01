@@ -177,19 +177,19 @@
         {
             "name": "Metin of murder",
             "mask": {
-                "hMin": 9,
+                "hMin": 162,
                 "sMin": 0,
                 "vMin": 0,
-                "hMax": 26,
-                "sMax": 61,
-                "vMax": 253
+                "hMax": 255,
+                "sMax": 255,
+                "vMax": 101
             },
-            "contourLow": 695,
+            "contourLow": 688,
             "contourHigh": 8000,
-            "aspect_low": 64,
-            "aspect_high": 117,
-            "circularity": 55,
-            "weather": 9
+            "aspect_low": 65,
+            "aspect_high": 98,
+            "circularity": 100,
+            "weather": 1
         },
         {
             "name": "Metin Tu-Young",
