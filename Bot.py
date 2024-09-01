@@ -581,30 +581,30 @@ class Metin:
         lower_limit = 0.1
         self.choose_weather()
 
-        # while self.running:
-        #     with self.lock:
-        #         loop_time = time.time()
-        #         sleep_time = random.random() * (upper_limit - lower_limit) + lower_limit
-        #         time.sleep(sleep_time)
-        #
-        #         np_image = self.get_np_image()
-        #
-        #         if self.running:
-        #             self.bot_solver(np_image)
-        #         if self.running:
-        #             self.death_check(np_image)
-        #         if self.running:
-        #             self.deliver_bio()
-        #         if self.running:
-        #             self.put_thief_glove(np_image)
-        #         if self.running:
-        #             self.activate_skills()
-        #         if self.running:
-        #             self.image_to_display = self.destroy_metin(np_image)
-        #
-        #             if self.show_img:
-        #                 self.display_screenshot()
-        #             print(f'Iteration execution time {time.time() - loop_time}s')
+        while self.running:
+            with self.lock:
+                loop_time = time.time()
+                sleep_time = random.random() * (upper_limit - lower_limit) + lower_limit
+                time.sleep(sleep_time)
+
+                np_image = self.get_np_image()
+
+                if self.running:
+                    self.bot_solver(np_image)
+                if self.running:
+                    self.death_check(np_image)
+                if self.running:
+                    self.deliver_bio()
+                if self.running:
+                    self.put_thief_glove(np_image)
+                if self.running:
+                    self.activate_skills()
+                if self.running:
+                    self.image_to_display = self.destroy_metin(np_image)
+
+                    if self.show_img:
+                        self.display_screenshot()
+                    print(f'Iteration execution time {time.time() - loop_time}s')
 
     def bot_solver(self, np_image):
         # 433 x 280
