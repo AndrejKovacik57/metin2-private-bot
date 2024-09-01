@@ -581,30 +581,30 @@ class Metin:
         lower_limit = 0.1
         self.choose_weather()
 
-        while self.running:
-            with self.lock:
-                loop_time = time.time()
-                sleep_time = random.random() * (upper_limit - lower_limit) + lower_limit
-                time.sleep(sleep_time)
-
-                np_image = self.get_np_image()
-
-                if self.running:
-                    self.bot_solver(np_image)
-                if self.running:
-                    self.death_check(np_image)
-                if self.running:
-                    self.deliver_bio()
-                if self.running:
-                    self.put_thief_glove(np_image)
-                if self.running:
-                    self.activate_skills()
-                if self.running:
-                    self.image_to_display = self.destroy_metin(np_image)
-
-                    if self.show_img:
-                        self.display_screenshot()
-                    print(f'Iteration execution time {time.time() - loop_time}s')
+        # while self.running:
+        #     with self.lock:
+        #         loop_time = time.time()
+        #         sleep_time = random.random() * (upper_limit - lower_limit) + lower_limit
+        #         time.sleep(sleep_time)
+        #
+        #         np_image = self.get_np_image()
+        #
+        #         if self.running:
+        #             self.bot_solver(np_image)
+        #         if self.running:
+        #             self.death_check(np_image)
+        #         if self.running:
+        #             self.deliver_bio()
+        #         if self.running:
+        #             self.put_thief_glove(np_image)
+        #         if self.running:
+        #             self.activate_skills()
+        #         if self.running:
+        #             self.image_to_display = self.destroy_metin(np_image)
+        #
+        #             if self.show_img:
+        #                 self.display_screenshot()
+        #             print(f'Iteration execution time {time.time() - loop_time}s')
 
     def bot_solver(self, np_image):
         # 433 x 280
@@ -1033,10 +1033,11 @@ class Metin:
         # options menu
         location = locate_image(self.options_menu, np_image, 0.9)
         if location is None:
+            print('options menu none')
             return
         cancel_x = self.window_left + location.left + location.width - 15
         cancel_y = self.window_top + location.top + 15
-        graphic_settings_x = self.window_left + location.left + 210
+        graphic_settings_x = self.window_left + location.left + 310
         graphic_settings_y = self.window_top + location.top + 50
         mouse_left_click(graphic_settings_x, graphic_settings_y, self.window_title)
         time.sleep(0.27)
@@ -1045,6 +1046,7 @@ class Metin:
         # graphics options
         location = locate_image(self.graphics_settings, np_image, 0.9)
         if location is None:
+            print('graphic options none')
             return
         segment = location.height / 4
         graphic_options_x = self.window_left + location.left + location.width / 2
@@ -1053,9 +1055,10 @@ class Metin:
         time.sleep(0.33)
 
         np_image = self.get_np_image()
-        # graphics options
+        # weather
         location = locate_image(self.weather_image, np_image, 0.9)
         if location is None:
+            print('weather none')
             return
         space = 24
         width = 86
