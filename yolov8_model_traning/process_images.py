@@ -29,7 +29,7 @@ def create_dataset_structure():
     os.makedirs(os.path.join(labels_dir, 'test'), exist_ok=True)
 
     # Path to your existing images and labels
-    existing_images_dir = '../training_images'
+    existing_images_dir = 'training_images'
 
     # Get all images and label files
     image_files = [f for f in os.listdir(existing_images_dir) if f.endswith('.png')]

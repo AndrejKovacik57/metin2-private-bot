@@ -1,16 +1,19 @@
 import time
 from ultralytics import YOLO
 from multiprocessing import freeze_support
-
+import os
 from pathlib import Path
+import torch
 
 
 def train():
+    torch.cuda.empty_cache()
+    os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'expandable_segments:True'
     freeze_support()
     # Load the YOLOv8 model (you can choose different versions like yolov8n, yolov8s, yolov8m, yolov8l)
     model = YOLO('../yolov8m.pt')
     # Train the model
-    model.train(data='data.yaml', epochs=20, imgsz=128, batch=32, name='yolov8_custom')
+    model.train(data='data.yaml', epochs=300, imgsz=128, batch=128, name='yolov8_custom', cache=False)
 
 
 def predict():
@@ -85,8 +88,4 @@ def onnx_predict():
 
 
 if __name__ == "__main__":
-    onnx_predict()
-    print('**************')
-    print('**************')
-    print('**************')
-    predict()
+    train()

@@ -407,7 +407,7 @@ class ApplicationWindow:
             else:
                 # Create the label and place it at the bottom of the grid
                 self.image_label = tk.Label(self.root, image=self.screenshot_img)
-                self.image_label.grid(row=13, column=0, columnspan=4, pady=10)
+                self.image_label.grid(row=14, column=0, columnspan=4, pady=10)
 
         # Use `after` to safely update the GUI from the main thread
         self.root.after(0, update_image)
@@ -738,7 +738,7 @@ class Metin:
 
     def death_check(self, np_image):
         self.respawn_timer_diff = time.time() - self.respawn_timer
-        if self.respawn_timer == 0 or self.respawn_timer != 0 and self.respawn_timer_diff >= 10:
+        if self.respawn_timer == 0 or self.respawn_timer != 0 and self.respawn_timer_diff >= 5:
             print('death_check')
             self.respawn_timer = time.time()
 
@@ -748,7 +748,7 @@ class Metin:
                 respawn_x = self.window_left + respawn_location.left + respawn_location.width / 2
                 respawn_y = self.window_top + respawn_location.top + respawn_location.height / 2
                 mouse_left_click(respawn_x, respawn_y, self.window_title)
-                time.sleep(0.5)
+                time.sleep(1)
                 press_button_multiple('ctrl+g', self.window_title)
 
     def deliver_bio(self):
@@ -773,6 +773,7 @@ class Metin:
                 deliver_y = self.window_top + location.top + location.height / 4
                 mouse_left_click(deliver_x, deliver_y, self.window_title)
 
+                time.sleep(random.randint(1, 2))
                 press_button('esc', self.window_title)
                 time.sleep(0.15)
 
@@ -800,6 +801,7 @@ class Metin:
             if gloves is not None:
                 x = x1 + self.window_left + gloves.left + gloves.width / 2
                 y = y1 + self.window_top + gloves.top + gloves.height / 2
+                time.sleep(1)
                 mouse_right_click(x, y, self.window_title)
                 time.sleep(1)
 
@@ -1073,7 +1075,7 @@ class Metin:
                     x1 = location.left + width * column + space * column
                     x2 = x1 + width
 
-                    move_x = self.window_left +  x1 + (x2 - x1) / 2
+                    move_x = self.window_left + x1 + (x2 - x1) / 2
                     move_y = self.window_top + y1 + (y2 - y1) / 2
                     mouse_left_click(move_x, move_y, self.window_title)
                     self.selected_weather = counter + 1
@@ -1096,7 +1098,7 @@ def resize_image(image):
     new_height = int(height * 2)
 
     # Resize the image using a better upscaling method
-    return cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_LANCZOS4)
+    return cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_CUBIC)
 
 
 def get_window_screenshot(window):

@@ -2,22 +2,26 @@ import time
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 import random
 import os
+import numpy as np
+import cv2
 
 # Generate a random character
 def random_char():
     chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
     return ''.join(random.choice(chars) for _ in range(2))
 
+
 # Generate random color
 def random_color():
     return tuple(random.randint(0, 255) for _ in range(3))
+
 
 # Draw random dots, lines, stars, and crosses
 def draw_random_elements(draw, width, height, total_elements=7):
     elements = ["dot", "line", "star", "cross"]
     for _ in range(total_elements):
-        dot_size = random.randint(1, 7)
-        line_length = random.randint(1, 7)
+        dot_size = random.randint(1, 4)
+        line_length = random.randint(1, 5)
         element = random.choice(elements)
         if element == "dot":
             # Draw random dots or ovals
@@ -67,7 +71,7 @@ def draw_random_elements(draw, width, height, total_elements=7):
 
 # Create a single image with random characters, rotation, and anti-captcha elements
 def create_image(combo_to_id):
-    high_res_width, high_res_height = 200, 200
+    high_res_width, high_res_height = 64, 64
     image = Image.new('RGB', (high_res_width, high_res_height), random_color())
     draw = ImageDraw.Draw(image)
 
@@ -75,7 +79,7 @@ def create_image(combo_to_id):
                   "C:/Windows/Fonts/CascadiaCode.ttf", "C:/Windows/Fonts/CascadiaMono.ttf",
                   "C:/Windows/Fonts/constani.ttf"]
     font_path = random.choice(font_paths)
-    font = ImageFont.truetype(font_path, random.randint(80, 100))
+    font = ImageFont.truetype(font_path, random.randint(25, 32))
     text = random_char()  # Generate two characters
 
     # Get the class ID for the character combination
@@ -101,16 +105,21 @@ def create_image(combo_to_id):
     # Randomly decide if elements should be drawn in front of or behind the text
     if random.choice(["behind", "in_front"]) == "behind":
         draw_random_elements(draw, high_res_width, high_res_height, random.randint(1, 7))
-        paste_x = (high_res_width - rotated_text.width) // 2
-        paste_y = (high_res_height - rotated_text.height) // 2
+        paste_x = (high_res_width - rotated_text.width) // 2 + random.randint(-10,10)
+        paste_y = (high_res_height - rotated_text.height) // 2 + random.randint(-10,10)
         image.paste(rotated_text, (paste_x, paste_y), rotated_text)
     else:
-        paste_x = (high_res_width - rotated_text.width) // 2
-        paste_y = (high_res_height - rotated_text.height) // 2
+        paste_x = (high_res_width - rotated_text.width) // 2 + random.randint(-10,10)
+        paste_y = (high_res_height - rotated_text.height) // 2 2 + random.randint(-10,10)
         image.paste(rotated_text, (paste_x, paste_y), rotated_text)
-        draw_random_elements(draw, high_res_width, high_res_height, random.randint(1, 7))
+        draw_random_elements(draw, high_res_width, high_res_height, random.randint(2, 7))
 
-    final_image = image.resize((100, 100), Image.Resampling.LANCZOS)
+    np_image = np.array(image)
+
+    np_image = cv2.cvtColor(np_image, cv2.COLOR_RGB2BGR)
+    np_image = cv2.resize(np_image, (128, 128), interpolation=cv2.INTER_CUBIC)
+
+    final_image = Image.fromarray(np_image)
 
     # Calculate bounding box in original high-res dimensions
     bbox_x1 = paste_x + text_x
@@ -134,18 +143,18 @@ def create_images():
     combo_to_id = {combo: idx for idx, combo in enumerate(combinations)}
 
     start_time = time.time()
-    if not os.path.exists('../training_images'):
-        os.makedirs('../training_images')
+    if not os.path.exists('training_images'):
+        os.makedirs('training_images')
 
-    for i in range(100000):
+    for i in range(200000):
         img, text, x_center, y_center, bbox_width, bbox_height, class_id = create_image(combo_to_id)
         file_name = f"{text}_{i}.png"
-        img.save(os.path.join('../training_images', file_name))
+        img.save(os.path.join('training_images', file_name))
         print(f"Saved {file_name}")
 
         # Save the corresponding .txt file for YOLOv8
         txt_file_name = f"{text}_{i}.txt"
-        with open(os.path.join('../training_images', txt_file_name), 'w') as f:
+        with open(os.path.join('training_images', txt_file_name), 'w') as f:
             f.write(f"{class_id} {x_center} {y_center} {bbox_width} {bbox_height}\n")
 
     print(f'Done, {time.time() - start_time}')
