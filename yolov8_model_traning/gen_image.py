@@ -110,7 +110,7 @@ def create_image(combo_to_id):
         image.paste(rotated_text, (paste_x, paste_y), rotated_text)
     else:
         paste_x = (high_res_width - rotated_text.width) // 2 + random.randint(-10,10)
-        paste_y = (high_res_height - rotated_text.height) // 2 2 + random.randint(-10,10)
+        paste_y = (high_res_height - rotated_text.height) // 2 + random.randint(-10,10)
         image.paste(rotated_text, (paste_x, paste_y), rotated_text)
         draw_random_elements(draw, high_res_width, high_res_height, random.randint(2, 7))
 
