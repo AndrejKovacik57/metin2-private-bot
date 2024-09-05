@@ -226,7 +226,7 @@
             "weather": 9
         },
         {
-            "name": "Metin of Wrath",
+            "name": "Metin of Wrath - northeast",
             "mask": {
                 "hMin": 71,
                 "sMin": 0,
@@ -241,6 +241,23 @@
             "aspect_high": 78,
             "circularity": 409,
             "weather": 3
+        },
+        {
+            "name": "Metin of Wrath - north",
+            "mask": {
+                "hMin": 80,
+                "sMin": 0,
+                "vMin": 39,
+                "hMax": 183,
+                "sMax": 98,
+                "vMax": 95
+            },
+            "contourLow": 1170,
+            "contourHigh": 8000,
+            "aspect_low": 53,
+            "aspect_high": 89,
+            "circularity": 120,
+            "weather": 10
         }
     ]
 }

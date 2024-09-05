@@ -120,6 +120,11 @@ class ApplicationWindow:
         self.screenshot_button = tk.Button(self.root, text="Take Screenshot", command=self.take_screenshot)
         self.screenshot_button.grid(row=9, column=1, pady=10)
 
+        self.entry_circle_r = tk.Label(self.root, text="Circle radius (px):")
+        self.entry_circle_r.grid(row=8, column=2, pady=5)
+        self.text_circle_r = tk.Entry(self.root, width=30)
+        self.text_circle_r.grid(row=9, column=2, pady=5)
+
         self.set_metin_hp_bar_location = tk.Button(text="Set HP bar location",
                                                    command=self.apply_hp_bar_location)
         self.set_metin_hp_bar_location.grid(row=10, column=0, pady=10)
@@ -199,14 +204,23 @@ class ApplicationWindow:
             if 'metin_time' not in self.cfg_local:
                 self.cfg_local['metin_time'] = '0'
 
+            if 'circle_r' not in self.cfg_local:
+                self.cfg_local['circle_r'] = '50'
+
             self.load_cfg_local()
             self.metin.metin_time = int(cfg_local['metin_time']) if cfg_local['metin_time'].isdigit() else 0
+            self.metin.circle_r = int(cfg_local['circle_r']) if cfg_local['circle_r'].isdigit() else 50
             self.text_metin_time.insert(0, cfg_local['metin_time'])
+            self.text_circle_r.insert(0, cfg_local['circle_r'])
 
         else:
 
             self.cfg_local['information_locations'] = {}
+            self.cfg_local['metin_time'] = '0'
+            self.cfg_local['circle_r'] = '50'
             self.metin = Metin([], self.display_screenshot, debug_bot)
+            self.metin.metin_time = 0
+            self.metin.circle_r = 50
 
         self.metin.metin_stones = cfg['metin_stones']
         self.metin_options = [item['name'] for item in self.metin.metin_stones]
@@ -233,11 +247,14 @@ class ApplicationWindow:
         self.cfg_local['bio_cd'] = self.text_bio_cd.get()
         self.cfg_local['bio_item_num'] = self.text_bio_item_num.get()
         self.cfg_local['metin_time'] = self.text_metin_time.get()
+        self.cfg_local['circle_r'] = self.text_circle_r.get()
+
 
         self.metin.skills_cd = int(self.text_skills_cd.get()) if self.text_skills_cd.get().isdigit() else 0
         self.metin.bio_cd = (int(self.text_bio_cd.get()) if self.text_bio_cd.get().isdigit() else 0) * 60 + 15
         self.metin.bio_item_num = int(self.text_bio_item_num.get()) if self.text_bio_item_num.get().isdigit() else 0
         self.metin.metin_time = int(self.text_metin_time.get()) if self.text_metin_time.get().isdigit() else 0
+        self.metin.circle_r = int(self.text_circle_r.get()) if self.text_circle_r.get().isdigit() else 50
 
         self.load_cfg_local()
 
@@ -508,7 +525,7 @@ class Metin:
         self.weather = 0
         self.selected_weather = 0
         self.replacements = {}
-
+        self.circle_r = 50
         self.settings_options = None
         self.bot_check_bar = None
         self.restart = None
@@ -611,7 +628,7 @@ class Metin:
         box = 64
         space = 15
         np_image = np_image
-        location = locate_image(self.bot_check_bar, np_image, confidence=0.7)
+        location = locate_image(self.bot_check_bar, np_image, confidence=0.9)
 
         if location is not None:
             print('bot_solver')
@@ -756,7 +773,7 @@ class Metin:
         if (self.bio_timer == 0 and self.bio_item_num > 0 or self.bio_timer != 0 and self.bio_timer_diff >= self.bio_cd
                 + self.bio_cd_random and self.bio_item_num > 0):
             print('deliver_bio')
-            self.bio_cd_random = random.randint(10, 70)
+            self.bio_cd_random = random.randint(30, 300)
             self.bio_timer = time.time()
             self.bio_item_num -= 1
             bio_x, bio_y = self.bio_location[:2]
@@ -802,6 +819,7 @@ class Metin:
                 x = x1 + self.window_left + gloves.left + gloves.width / 2
                 y = y1 + self.window_top + gloves.top + gloves.height / 2
                 time.sleep(1)
+                print('right click glove')
                 mouse_right_click(x, y, self.window_title)
                 time.sleep(1)
 
@@ -835,9 +853,28 @@ class Metin:
             # no metin is being destroyed
             if not self.destroying_metin:
                 print('Click at metin')
+
+                mouse_right_click(metin_pos_x, metin_pos_y, self.window_title)
+                time.sleep(1)
+                np_image_check_hp = self.get_np_image()
+
+                pixel_x, pixel_y = self.hp_full_location[:2]
+                pixel_x += self.window_left
+                pixel_y += self.window_top
+
+                pixel_to_check = np_image_check_hp[pixel_y, pixel_x]
+                pixel_to_check = pixel_to_check[::-1]
+                # HERE I WANT TO display_screenshot(output_image)
+
+                print(f'pixel_to_check {pixel_to_check} target_pixel_value {target_pixel_value}')
+                if not np.all(np.abs(pixel_to_check - target_pixel_value) <= 5):
+                    self.cancel_metin_window(x_middle, y_middle)
+                    return image_to_display
+
                 press_button('z', self.window_title)
                 time.sleep(0.15)
                 press_button('y', self.window_title)
+
                 mouse_left_click(metin_pos_x, metin_pos_y, self.window_title)
                 self.destroying_metin = True
                 self.metin_destroying_time = time.time()
@@ -915,7 +952,6 @@ class Metin:
         selected_contour_pos = None
         min_distance = float('inf')
         # width, height = image.size
-        circle_r = 200
         if contours:
             for contour in contours:
                 if self.contour_high > cv2.contourArea(contour) > self.contour_low:  # 900
@@ -936,12 +972,12 @@ class Metin:
                                  (255, 190, 200), 2)
                         # Optionally, you can calculate the distance between the middle of the screenshot and the contour center
                         # Draw a circle around the point (x_middle, y_middle) with a radius of 300px
-                        cv2.circle(np_image, (x_middle, y_middle), circle_r, (255, 190, 200),
+                        cv2.circle(np_image, (x_middle, y_middle), self.circle_r, (255, 190, 200),
                                    2)  # The color is (255, 190, 200) and the thickness is 2
 
                         cur_distance = abs(x_middle - contour_center_x) + abs(y_middle - contour_center_y)
 
-                        if cur_distance <= circle_r:
+                        if cur_distance <= self.circle_r:
                             continue
 
                         if cur_distance < min_distance:
@@ -1081,7 +1117,7 @@ class Metin:
                     self.selected_weather = counter + 1
 
                 counter += 1
-        time.sleep(0.2)
+        time.sleep(1)
 
         mouse_left_click(cancel_x, cancel_y, self.window_title)
 
