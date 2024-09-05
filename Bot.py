@@ -17,7 +17,7 @@ import logging
 import os
 
 
-custom_config_text = r'--oem 3 --psm 6 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+custom_config_text = f'--oem 1 --psm 8 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
 
 
 # Configure logging
@@ -1177,54 +1177,29 @@ def preprocess_image(image):
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
     # Define the lower and upper range for the green color
-    lower_green = np.array([40, 40, 40])
-    upper_green = np.array([90, 255, 255])
+    lower_green = np.array([40, 100, 100])
+    upper_green = np.array([80, 255, 255])
 
     # Create a mask for green areas in the image
     mask = cv2.inRange(hsv, lower_green, upper_green)
 
     # Bitwise-AND the mask and the original image
-    result = cv2.bitwise_and(image, image, mask=mask)
+    image = cv2.bitwise_and(image, image, mask=mask)
 
-    # Convert the result to RGB for plotting with matplotlib
-    result_rgb = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
-    # Convert the image to grayscale for finding the non-black columns
-    gray = cv2.cvtColor(result_rgb, cv2.COLOR_RGB2GRAY)
+    # Find all non-black pixels in the mask (which should correspond to green)
+    coords = np.column_stack(np.where(mask > 0))
 
-    # Find the first and last column that contains non-black pixels
-    non_black_columns = np.where(gray.max(axis=0) > 0)[0]
-    if non_black_columns.size > 0:
-        # Calculate the difference between consecutive column indices
-        differences = np.diff(non_black_columns)
+    # Check if we found any green text
+    if len(coords) > 0:
+        # Get the bounding box of the non-black pixels
+        x, y, w, h = cv2.boundingRect(coords)
 
-        # Identify segments of continuous columns (no large gaps)
-        large_jump_indices = np.where(differences > 10)[0]  # Threshold for detecting gaps
+        # Crop the image using the bounding box
+        image = image[x - 1:x + w + 1, y - 1:y + h + 1]
+        image = cv2.resize(image, None, fx=3, fy=3, interpolation=cv2.INTER_LANCZOS4)
+        image = cv2.GaussianBlur(image, (5, 5), 0)
 
-        if large_jump_indices.size > 0:
-            # Focus on the largest continuous segment (between two large jumps)
-            segments = np.split(non_black_columns, large_jump_indices + 1)
-            longest_segment = max(segments, key=len)
-
-            # Set the left and right bounds to the start and end of the largest segment
-            left_bound = longest_segment[0]
-            right_bound = longest_segment[-1]
-        else:
-            # If there are no large jumps, consider the full range
-            left_bound = non_black_columns[0]
-            right_bound = non_black_columns[-1]
-
-        # Crop the image to remove black areas from left and right
-        cropped_image = result_rgb[:, left_bound - 5:right_bound + 5]
-    else:
-        # If no non-black pixels are found, return the original result_rgb
-        cropped_image = result_rgb
-
-    # Apply a binary threshold to make the text more distinct
-
-    # Optionally, resize the image to make the characters more distinguishable
-    resized_image = cv2.resize(cropped_image, None, fx=5, fy=5, interpolation=cv2.INTER_CUBIC)
-
-    return resized_image
+    return image
 
 
 def try_common_replacements(result, outputs, replacements):
