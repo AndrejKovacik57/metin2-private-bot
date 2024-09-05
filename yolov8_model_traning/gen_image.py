@@ -101,7 +101,7 @@ def create_image(combo_to_id):
     # Random rotation
     angle = random.uniform(-30, 30)
     rotated_text = text_image.rotate(angle, expand=1, resample=Image.Resampling.BICUBIC)
-
+    rotated_bbox = rotated_text.getbbox()
     # Randomly decide if elements should be drawn in front of or behind the text
     if random.choice(["behind", "in_front"]) == "behind":
         draw_random_elements(draw, high_res_width, high_res_height, random.randint(1, 7))
@@ -113,27 +113,27 @@ def create_image(combo_to_id):
         paste_y = (high_res_height - rotated_text.height) // 2 + random.randint(-10,10)
         image.paste(rotated_text, (paste_x, paste_y), rotated_text)
         draw_random_elements(draw, high_res_width, high_res_height, random.randint(2, 7))
+    # Scaling factors
+    #
+    # np_image = np.array(image)
+    # np_image = cv2.cvtColor(np_image, cv2.COLOR_RGB2BGR)
+    # np_image = cv2.resize(np_image, (128, 128), interpolation=cv2.INTER_CUBIC)
 
-    np_image = np.array(image)
+    x = (paste_x + rotated_bbox[0])*2
+    y = (paste_y + rotated_bbox[1])*2
+    w = (rotated_bbox[2] - rotated_bbox[0])*2
+    h = (rotated_bbox[3] - rotated_bbox[1])*2
 
-    np_image = cv2.cvtColor(np_image, cv2.COLOR_RGB2BGR)
-    np_image = cv2.resize(np_image, (128, 128), interpolation=cv2.INTER_CUBIC)
+    # cv2.rectangle(np_image, (x, y), (x+w, y+h), (0, 255, 255), 2)
 
-    final_image = Image.fromarray(np_image)
+    x_center = (x + w // 2)
+    y_center = (y + h // 2)
 
-    # Calculate bounding box in original high-res dimensions
-    bbox_x1 = paste_x + text_x
-    bbox_y1 = paste_y + text_y
-    bbox_x2 = bbox_x1 + text_width
-    bbox_y2 = bbox_y1 + text_height
 
-    # Normalize bounding box coordinates
-    x_center = ((bbox_x1 + bbox_x2) / 2) / high_res_width
-    y_center = ((bbox_y1 + bbox_y2) / 2) / high_res_height
-    bbox_width = (bbox_x2 - bbox_x1) / high_res_width
-    bbox_height = (bbox_y2 - bbox_y1) / high_res_height
+    # image = Image.fromarray(np_image)
 
-    return final_image, text, x_center, y_center, bbox_width, bbox_height, class_id
+    return image, text, x_center/128, y_center/128, w/128, h/128, class_id
+
 
 
 # Generate and save images
@@ -146,7 +146,7 @@ def create_images():
     if not os.path.exists('training_images'):
         os.makedirs('training_images')
 
-    for i in range(200000):
+    for i in range(100000):
         img, text, x_center, y_center, bbox_width, bbox_height, class_id = create_image(combo_to_id)
         file_name = f"{text}_{i}.png"
         img.save(os.path.join('training_images', file_name))
@@ -161,3 +161,5 @@ def create_images():
 
 
 create_images()
+
+# Example usage:

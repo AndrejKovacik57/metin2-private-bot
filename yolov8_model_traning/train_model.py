@@ -4,16 +4,42 @@ from multiprocessing import freeze_support
 import os
 from pathlib import Path
 import torch
+import gc
 
 
 def train():
+    if torch.cuda.is_available():
+        # Get the default GPU device
+        device = torch.device('cuda')
+
+        # Get total memory
+        total_memory = torch.cuda.get_device_properties(device).total_memory
+
+        # Get allocated memory
+        allocated_memory = torch.cuda.memory_allocated(device)
+
+        # Get cached memory (memory reserved by PyTorch)
+        reserved_memory = torch.cuda.memory_reserved(device)
+
+        # Get free memory
+        free_memory = total_memory - allocated_memory
+
+        print(f"Total GPU memory: {total_memory / 1e9:.2f} GB")
+        print(f"Allocated GPU memory: {allocated_memory / 1e9:.2f} GB")
+        print(f"Free GPU memory: {free_memory / 1e9:.2f} GB")
+        print(f"Reserved GPU memory: {reserved_memory / 1e9:.2f} GB")
+
+        print("GPU is not available")
+
+    gc.collect()
+
     torch.cuda.empty_cache()
     os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'expandable_segments:True'
     freeze_support()
     # Load the YOLOv8 model (you can choose different versions like yolov8n, yolov8s, yolov8m, yolov8l)
-    model = YOLO('../yolov8m.pt')
+    model = YOLO('../runs/detect/yolov8_custom/weights/last.pt')
     # Train the model
-    model.train(data='data.yaml', epochs=300, imgsz=128, batch=128, name='yolov8_custom', cache=False)
+    model.train(data='data.yaml', epochs=300, imgsz=128, batch=128, name='yolov8_custom', cache=False, resume=True)
 
 
 def predict():
@@ -41,7 +67,7 @@ def predict():
 def convert_onnx():
 
     # Load the YOLOv8 model
-    model = YOLO('../runs/detect/yolov8_custom9/weights/best.pt')
+    model = YOLO('../runs/detect/yolov8_custom/weights/best.pt')
 
     # Export the model to ONNX format
     model.export(format="onnx", imgsz=[128, 128], optimize=True)  # creates 'yolov8n.onnx'
@@ -88,4 +114,4 @@ def onnx_predict():
 
 
 if __name__ == "__main__":
-    train()
+    convert_onnx()
