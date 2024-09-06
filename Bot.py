@@ -15,6 +15,7 @@ import torch
 from ultralytics import YOLO
 import logging
 import os
+import hashlib
 
 
 custom_config_text = f'--oem 1 --psm 8 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
@@ -541,14 +542,15 @@ class Metin:
         self.thief_glove_5h = None
         self.inventory = None
         self.metin_hp_img = None
+        self.text_hash_map = None
 
         self.load_images()
 
         self.display_screenshot = display_screenshot
         self.lock = threading.Lock()
-        self.model_initialize()
+        self.initialize()
 
-    def model_initialize(self):
+    def initialize(self):
 
         path = 'models_yolov8/'
         characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -563,6 +565,9 @@ class Metin:
         combinations = [a + b for a in characters for b in characters]
         combo_to_id = {combo: idx for idx, combo in enumerate(combinations)}
         self.label_keys = list(combo_to_id.keys())
+
+        with open("hash_combinations.json", "r") as json_file:
+            self.text_hash_map = json.load(json_file)
 
     def load_images(self):
         self.settings_options = load_image('bot_images\\settings_options.png')
@@ -627,7 +632,6 @@ class Metin:
         # 433 x 280
         box = 64
         space = 15
-        np_image = np_image
         location = locate_image(self.bot_check_bar, np_image, confidence=0.9)
 
         if location is not None:
@@ -653,18 +657,23 @@ class Metin:
             np_image_text = np_image[y1: y2, x1: x2]
             if self.debug_bot == 1:
                 save_debug_image2(np_image_text)
-            np_image_text = preprocess_image(np_image_text)
 
-            result = pytesseract.image_to_string(np_image_text, config=custom_config_text)
-            result = result.strip()
+            np_image_text = preprocess_image(np_image_text)
+            image_hash = hashlib.md5(np_image_text).hexdigest()
+
+            if image_hash in self.text_hash_map:
+                logging.info(f'Hash found in hash map')
+                result = self.text_hash_map[image_hash]
+            else:
+                logging.info(f'Hash not found in hash map')
+                result = pytesseract.image_to_string(np_image_text, config=custom_config_text)
+                result = result.strip()
+
             print(f'text to find {result}')
             logging.info(f'Text to find: {result}')
             no_outputs = []
             outputs = []
-            found = False
             for row in range(2):
-                if found:
-                    break
                 for column in range(3):
                     x1, y1 = box * column + space * column, box * row + space * row  # z lava, z hore
                     x2, y2 = box * (column + 1) + space * column, box * (row + 1) + space * row  # z prava, z dola
@@ -682,22 +691,16 @@ class Metin:
                         logging.info(f'Output: {output}')
                         logging.info(f'{output} in {result} -> {output in result}')
                         print(f'{output} in {result} -> {output in result}')
-                        if output in result or output.lower() in result.lower():
-                            print('Bot protection bypassed')
-                            logging.info('Bot protection bypassed')
-                            x_to_click = self.window_left + location.left + 6 + x1 + (x2 - x1) / 2
-                            y_to_click = self.window_top + location.top + 28 + y1 + (y2 - y1) / 2
-                            mouse_left_click(x_to_click, y_to_click, self.window_title)
-                            # pyautogui.moveTo(x_to_click, y_to_click)
+                        if self.output_in_result(output, result, location, x1, x2, y1, y2):
+                            return
 
-                            self.bot_timer = 0
-                            self.bot_time_diff = time.time() - self.bot_timer
-                            found = True
-                            time.sleep(2)
-                            break
+            for output_tup in outputs:
+                output, coords = output_tup
+                output_reversed = output[::-1]
+                if self.output_in_result(output_reversed, result, location, x1, x2, y1, y2):
+                    return
 
-            # lower check
-            if len(no_outputs) > 0 and not found:
+            if len(no_outputs) > 0:
                 logging.info('No outputs found, random click')
                 print('No outputs found, random click')
                 x1, x2, y1, y2 = random.choice(no_outputs)
@@ -707,15 +710,13 @@ class Metin:
                 # pyautogui.moveTo(x_to_click, y_to_click)
                 self.bot_timer = 0
                 self.bot_time_diff = time.time() - self.bot_timer
-                found = True
                 if self.debug_bot == 1:
                     save_debug_image(np_image_captcha, np_image_text)
-                time.sleep(2)
+                return
 
-            if len(no_outputs) == 0 and not found:
+            else:
                 new_option, coords = try_common_replacements(result, outputs, self.replacements)
                 if new_option:
-                    found = True
                     x1, x2, y1, y2 = coords
                     print(f'Click after replacement: {new_option}')
                     logging.info(f'Click after replacement: {new_option}')
@@ -725,9 +726,9 @@ class Metin:
                     # pyautogui.moveTo(x_to_click, y_to_click)
                     self.bot_timer = 0
                     self.bot_time_diff = time.time() - self.bot_timer
-                time.sleep(2)
+                    return
 
-            if len(result) < 2 and not found:
+            if len(result) < 2:
                 for output_tup in outputs:
                     output, coords = output_tup
                     if result in output or result.lower() in output.lower():
@@ -740,21 +741,31 @@ class Metin:
                         # pyautogui.moveTo(x_to_click, y_to_click)
                         self.bot_timer = 0
                         self.bot_time_diff = time.time() - self.bot_timer
-                        found = True
-
                         if self.debug_bot == 1:
                             save_debug_image(np_image_captcha, np_image_text)
-                        time.sleep(2)
-            if self.bot_time_diff > 5 and not found:
-                print('Bot protection closed')
-                logging.info('Bot protection closed')
-                mouse_left_click(cancel_x, cancel_y, self.window_title)
-                # pyautogui.moveTo(cancel_x, cancel_y)
-                self.bot_timer = 0
-                if self.debug_bot == 1:
-                    save_debug_image(np_image_captcha, np_image_text)
+                        return
 
-                time.sleep(2)
+            print('Bot protection closed')
+            logging.info('Bot protection closed')
+            mouse_left_click(cancel_x, cancel_y, self.window_title)
+            # pyautogui.moveTo(cancel_x, cancel_y)
+            self.bot_timer = 0
+            if self.debug_bot == 1:
+                save_debug_image(np_image_captcha, np_image_text)
+
+    def output_in_result(self, output, result, location, x1, x2, y1, y2):
+        if output.lower() in result.lower():
+            print('Bot protection bypassed')
+            logging.info('Bot protection bypassed')
+            x_to_click = self.window_left + location.left + 6 + x1 + (x2 - x1) / 2
+            y_to_click = self.window_top + location.top + 28 + y1 + (y2 - y1) / 2
+            mouse_left_click(x_to_click, y_to_click, self.window_title)
+
+            self.bot_timer = 0
+            self.bot_time_diff = time.time() - self.bot_timer
+            return True
+
+        return False
 
     def death_check(self, np_image):
         self.respawn_timer_diff = time.time() - self.respawn_timer
@@ -908,7 +919,7 @@ class Metin:
                         print('Metin is not being destroyed, stopping')
                         self.cancel_metin_window(x_middle, y_middle)
 
-                    if self.metin_destroy_time_diff > 10:
+                    if self.metin_time != 0 and self.metin_destroy_time_diff > 8:
                         pixel_x, pixel_y = self.hp_full_location[:2]
                         pixel_x += self.window_left
                         pixel_y += self.window_top
@@ -1237,8 +1248,23 @@ def preprocess_image(image):
 
         # Crop the image using the bounding box
         image = image[x - 1:x + w + 1, y - 1:y + h + 1]
-        image = cv2.resize(image, None, fx=4, fy=4, interpolation=cv2.INTER_LANCZOS4)
-        image = cv2.GaussianBlur(image, (5, 5), 0)
+
+    # Define the color you want to replace (red 153, green 255, blue 51)
+    color_to_replace = np.array([51, 255, 153])  # OpenCV uses BGR format
+
+    # Define the tolerance for the color (you may adjust this if needed)
+    tolerance = 30
+
+    # Create a mask for the color to replace
+    lower_bound = np.maximum(color_to_replace - tolerance, 0)
+    upper_bound = np.minimum(color_to_replace + tolerance, 255)
+    mask = cv2.inRange(image, lower_bound, upper_bound)
+
+    # Replace the color with white (255, 255, 255)
+    image[mask != 0] = [255, 255, 255]
+
+    # Invert the colors (swap black and white)
+    image = cv2.bitwise_not(image)
 
     return image
 
@@ -1277,7 +1303,7 @@ def save_debug_image2(np_image, folder="debug-images"):
     if not os.path.exists(folder):
         os.makedirs(folder)
 
-    save_image(np_image, 'debug_desire%_non_proceessd', folder)
+    save_image(np_image, 'debug_desire_no_processed', folder)
 
 
 def save_image(img, name, folder):

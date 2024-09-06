@@ -1,6 +1,7 @@
 {
     "tesseract_path": "C:\\Program Files\\Tesseract-OCR\\tesseract.exe",
     "replacements": {
+        "e": ["F"],
         "0": [
             "O"
         ],
@@ -50,7 +51,8 @@
             "8"
         ],
         "F": [
-            "7"
+            "7",
+            "e"
         ],
         "7": [
             "F"
