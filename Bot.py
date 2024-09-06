@@ -538,6 +538,7 @@ class Metin:
         self.template = None
         self.image_to_display = None
         self.metin_hp_img = None
+        self.cancel_metin_img = None
         self.thief_glove_30m = None
         self.thief_glove_5h = None
         self.inventory = None
@@ -573,6 +574,7 @@ class Metin:
         self.settings_options = load_image('bot_images\\settings_options.png')
         self.bot_check_bar = load_image('bot_images\\bot_check_bar2.png')
         self.restart = load_image('bot_images\\restart_img.png')
+        self.cancel_metin_img = load_image('bot_images\\cancel_metin_button.png')
         self.bio_deliver = load_image('bot_images\\bio_deliver.png')
         self.system_options = load_image('bot_images\\system_options.png')
         self.options_menu = load_image('bot_images\\options_menu.png')
@@ -883,11 +885,10 @@ class Metin:
 
                 pixel_to_check = np_image_check_hp[pixel_y, pixel_x]
                 pixel_to_check = pixel_to_check[::-1]
-                # HERE I WANT TO display_screenshot(output_image)
 
                 print(f'pixel_to_check {pixel_to_check} target_pixel_value {target_pixel_value}')
                 if not np.all(np.abs(pixel_to_check - target_pixel_value) <= 5):
-                    self.cancel_metin_window(x_middle, y_middle)
+                    self.cancel_metin_window(np_image, x_middle, y_middle)
                     return image_to_display
 
 
@@ -917,7 +918,7 @@ class Metin:
 
                     if self.metin_time != 0 and self.metin_destroy_time_diff > self.metin_time:
                         print('Metin is not being destroyed, stopping')
-                        self.cancel_metin_window(x_middle, y_middle)
+                        self.cancel_metin_window(np_image, x_middle, y_middle)
 
                     if self.metin_time != 0 and self.metin_destroy_time_diff > 8:
                         pixel_x, pixel_y = self.hp_full_location[:2]
@@ -931,7 +932,7 @@ class Metin:
                         print(f'pixel_to_check {pixel_to_check} target_pixel_value {target_pixel_value}')
                         # check if after 10s metin is being destroyed or player is stuck
                         if np.all(np.abs(pixel_to_check - target_pixel_value) <= 5):
-                            self.cancel_metin_window(x_middle, y_middle)
+                            self.cancel_metin_window(np_image, x_middle, y_middle)
 
         else:
             # HERE I WANT TO display_screenshot(np_image_crop)
@@ -940,17 +941,20 @@ class Metin:
 
         return image_to_display
 
-    def cancel_metin_window(self, x_middle, y_middle):
+    def cancel_metin_window(self, np_image, x_middle, y_middle):
         print('zatvaram metin okno')
         choices = ['a', 'd']
         cancel_x1, cancel_y1, cancel_x2, cancel_y2 = self.cancel_location
+        cancel_area = np_image[cancel_y1:cancel_y2, cancel_y1:cancel_y2]
+        location = locate_image(self.cancel_metin_img, cancel_area)
 
-        x_to_cancel = (self.window_left + cancel_x1 + (cancel_x2 - cancel_x1) * 0.75)
-        y_to_cancel = (self.window_top + cancel_y1 + (cancel_y2 - cancel_y1) / 2)
+        x_to_cancel = self.window_left + cancel_x1 + location.left + location.width / 2
+        y_to_cancel = self.window_top + cancel_y1 + location.top + location.height / 2
 
+        mouse_left_click(x_to_cancel, y_to_cancel, self.window_title)
+        time.sleep(0.2)
         mouse_left_click(x_middle, y_middle, self.window_title)
         time.sleep(0.2)
-        mouse_left_click(x_to_cancel, y_to_cancel, self.window_title)
         press_button(random.choice(choices), self.window_title)
         time.sleep(0.2)
         press_button('q', self.window_title)
