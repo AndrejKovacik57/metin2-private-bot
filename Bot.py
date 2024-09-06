@@ -650,8 +650,11 @@ class Metin:
             x2 = x1 + 245
             y1 = self.window_top + location.top + 180
             y2 = y1 + 40
+            np_image_text = np_image[y1: y2, x1: x2]
+            if self.debug_bot == 1:
+                save_debug_image2(np_image_text)
+            np_image_text = preprocess_image(np_image_text)
 
-            np_image_text = preprocess_image(np_image[y1: y2, x1: x2])
             result = pytesseract.image_to_string(np_image_text, config=custom_config_text)
             result = result.strip()
             print(f'text to find {result}')
@@ -854,8 +857,13 @@ class Metin:
             if not self.destroying_metin:
                 print('Click at metin')
 
+                press_button('z', self.window_title)
+                time.sleep(0.15)
+                press_button('y', self.window_title)
+                
                 mouse_right_click(metin_pos_x, metin_pos_y, self.window_title)
-                time.sleep(1)
+                sleep_time = random.random() * (0.5 - 0.3) + 0.3
+                time.sleep(sleep_time)
                 np_image_check_hp = self.get_np_image()
 
                 pixel_x, pixel_y = self.hp_full_location[:2]
@@ -871,9 +879,6 @@ class Metin:
                     self.cancel_metin_window(x_middle, y_middle)
                     return image_to_display
 
-                press_button('z', self.window_title)
-                time.sleep(0.15)
-                press_button('y', self.window_title)
 
                 mouse_left_click(metin_pos_x, metin_pos_y, self.window_title)
                 self.destroying_metin = True
@@ -1232,7 +1237,7 @@ def preprocess_image(image):
 
         # Crop the image using the bounding box
         image = image[x - 1:x + w + 1, y - 1:y + h + 1]
-        image = cv2.resize(image, None, fx=3, fy=3, interpolation=cv2.INTER_LANCZOS4)
+        image = cv2.resize(image, None, fx=4, fy=4, interpolation=cv2.INTER_LANCZOS4)
         image = cv2.GaussianBlur(image, (5, 5), 0)
 
     return image
@@ -1266,6 +1271,13 @@ def save_debug_image(np_image_captcha, np_image_text, folder="debug-images"):
 
     save_image(np_image_captcha, 'debug_captcha', folder)
     save_image(np_image_text, 'debug_desire', folder)
+
+def save_debug_image2(np_image, folder="debug-images"):
+    # Ensure the folder exists
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+
+    save_image(np_image, 'debug_desire%_non_proceessd', folder)
 
 
 def save_image(img, name, folder):
