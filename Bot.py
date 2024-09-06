@@ -947,20 +947,20 @@ class Metin:
         cancel_x1, cancel_y1, cancel_x2, cancel_y2 = self.cancel_location
         cancel_area = np_image[cancel_y1:cancel_y2, cancel_x1:cancel_x2]
         location = locate_image(self.cancel_metin_img, cancel_area)
+        if location is not None:
+            x_to_cancel = self.window_left + cancel_x1 + location.left + location.width / 2
+            y_to_cancel = self.window_top + cancel_y1 + location.top + location.height / 2
 
-        x_to_cancel = self.window_left + cancel_x1 + location.left + location.width / 2
-        y_to_cancel = self.window_top + cancel_y1 + location.top + location.height / 2
-
-        mouse_left_click(x_to_cancel, y_to_cancel, self.window_title)
-        time.sleep(0.2)
-        mouse_left_click(x_middle, y_middle, self.window_title)
-        time.sleep(0.2)
-        press_button(random.choice(choices), self.window_title)
-        time.sleep(0.2)
-        press_button('q', self.window_title)
-        time.sleep(0.2)
-        press_button('q', self.window_title)
-        time.sleep(0.2)
+            mouse_left_click(x_to_cancel, y_to_cancel, self.window_title)
+            time.sleep(0.2)
+            mouse_left_click(x_middle, y_middle, self.window_title)
+            time.sleep(0.2)
+            press_button(random.choice(choices), self.window_title)
+            time.sleep(0.2)
+            press_button('q', self.window_title)
+            time.sleep(0.2)
+            press_button('q', self.window_title)
+            time.sleep(0.2)
 
     def locate_metin(self, np_image, x_middle, y_middle):
         # Convert the image to HSV
