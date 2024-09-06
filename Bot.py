@@ -603,7 +603,7 @@ class Metin:
         time.sleep(2)
         upper_limit = 0.5
         lower_limit = 0.1
-        self.choose_weather()
+        # self.choose_weather()
 
         while self.running:
             with self.lock:
@@ -613,16 +613,16 @@ class Metin:
 
                 np_image = self.get_np_image()
 
-                if self.running:
-                    self.bot_solver(np_image)
-                if self.running:
-                    self.death_check(np_image)
-                if self.running:
-                    self.deliver_bio()
-                if self.running:
-                    self.put_thief_glove(np_image)
-                if self.running:
-                    self.activate_skills()
+                # if self.running:
+                #     self.bot_solver(np_image)
+                # if self.running:
+                #     self.death_check(np_image)
+                # if self.running:
+                #     self.deliver_bio()
+                # if self.running:
+                #     self.put_thief_glove(np_image)
+                # if self.running:
+                #     self.activate_skills()
                 if self.running:
                     self.image_to_display = self.destroy_metin(np_image)
 
@@ -945,7 +945,7 @@ class Metin:
         print('zatvaram metin okno')
         choices = ['a', 'd']
         cancel_x1, cancel_y1, cancel_x2, cancel_y2 = self.cancel_location
-        cancel_area = np_image[cancel_y1:cancel_y2, cancel_y1:cancel_y2]
+        cancel_area = np_image[cancel_y1:cancel_y2, cancel_x1:cancel_x2]
         location = locate_image(self.cancel_metin_img, cancel_area)
 
         x_to_cancel = self.window_left + cancel_x1 + location.left + location.width / 2
