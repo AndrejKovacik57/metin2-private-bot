@@ -2,8 +2,8 @@
     "tesseract_path": "C:\\Program Files\\Tesseract-OCR\\tesseract.exe",
     "bot_test_img_path": "bot_ochrana2.png",
     "metin_hp_img_path": "metin_hp.png",
-    "window_title": "",
-    "skills_to_activate": "4",
+    "window_title": "EmtGen",
+    "skills_to_activate": "F4",
     "metin_stones": [
         {
             "name": "Metin kralovske skeble",

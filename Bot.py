@@ -814,7 +814,6 @@ class Metin:
         self.thief_glove_time_diff = time.time() - self.thief_glove_timer
         if self.thief_glove_timer == 0 or self.thief_glove_timer != 0 and self.thief_glove_time_diff >= self.thief_glove_cd:
             print('put_thief_glove')
-            self.thief_glove_timer = time.time()
 
             inventory = locate_image(self.inventory, np_image)
 
@@ -834,10 +833,11 @@ class Metin:
             if gloves is not None:
                 x = x1 + self.window_left + gloves.left + gloves.width / 2
                 y = y1 + self.window_top + gloves.top + gloves.height / 2
-                time.sleep(1)
                 print('right click glove')
                 mouse_right_click(x, y, self.window_title)
                 time.sleep(1)
+
+            self.thief_glove_timer = time.time()
 
     def activate_skills(self):
         self.skill_timer_diff = time.time() - self.skill_timer
