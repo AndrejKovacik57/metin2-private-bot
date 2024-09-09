@@ -249,15 +249,22 @@ class ApplicationWindow:
 
         selected_value = self.dropdown.get()
         metin_mask = {}
+        reverse = False
         for metin_config in self.metin_stones:
             if metin_config['name'] == selected_value:
                 metin_mask = metin_config
                 self.metin.contour_low = metin_config['contourLow']
                 self.metin.contour_high = metin_config['contourHigh']
+                self.metin.aspect_low = metin_config['aspect_low'] / 100.0
+                self.metin.aspect_high = metin_config['aspect_high'] / 100.0
+                self.metin.circularity = metin_config['circularity'] / 1000.0
+                reverse = metin_config['reverse']
         self.metin.lower, self.metin.upper = create_low_upp(metin_mask)
         upper_limit = 0.5
         lower_limit = 0.1
         target_pixel_value = np.array([187, 19, 19])
+        take_items_time = time.time()
+        time.sleep(2)
         while self.running:
             sleep_time = random.random() * (upper_limit - lower_limit) + lower_limit
             time.sleep(sleep_time)
@@ -275,6 +282,7 @@ class ApplicationWindow:
 
             np_image = np.array(screenshot)
             np_image_crop = np_image[y1: y2, x1: x2]
+
             x_middle = (x2 - x1) // 2
             y_middle = (y2 - y1) // 2
             if self.metin.skills_time == 0:
@@ -295,21 +303,35 @@ class ApplicationWindow:
 
             else:
                 god_buff_timer_diff = time.time() - self.metin.god_buff_cd
-                if god_buff_timer_diff > 300: #1810
-                    print(f'god buff2 {god_buff_timer_diff }')
+                if god_buff_timer_diff > 300 + random.randint(1, 30): #1810
+                    print(f'god buff2 {god_buff_timer_diff}')
                     press_button('F9')
                     self.metin.god_buff_cd = time.time()
 
-            if self.metin.capes_time == 0:
-                print('capes1')
-                self.metin.capes_time = time.time()
-                press_button('F4')
+            if take_items_time == 0:
+                print('item')
+                take_items_time = time.time()
+                press_button('z')
+                press_button('y')
+
             else:
-                capes_time = time.time() - self.metin.capes_time
-                if capes_time > 5 + random.random() * (2 - 0.1) + 0.1:
-                    print(f'capes1 {capes_time}')
-                    self.metin.capes_time = time.time()
-                    press_button('F4')
+                take_item_timer_diff = time.time() - take_items_time
+                if take_item_timer_diff > 3 + random.randint(1, 4): #1810
+                    print(f'item2 {take_item_timer_diff}')
+                    press_button('z')
+                    press_button('y')
+                    take_items_time = time.time()
+
+            # if self.metin.capes_time == 0:
+            #     print('capes1')
+            #     self.metin.capes_time = time.time()
+            #     press_button('F4')
+            # else:
+            #     capes_time = time.time() - self.metin.capes_time
+            #     if capes_time > 5 + random.random() * (2 - 0.1) + 0.1:
+            #         print(f'capes1 {capes_time}')
+            #         self.metin.capes_time = time.time()
+            #         press_button('F4')
 
             if self.metin.solved_at is not None:
                 time_diff = time.time() - self.metin.solved_at
@@ -331,6 +353,7 @@ class ApplicationWindow:
 
                 if not self.metin.destroying_metin:
                     press_button('z')
+                    press_button('y')
                     print('nenici sa metin')
 
                     mouse_click(metin_pos_x, metin_pos_y)
@@ -366,6 +389,15 @@ class ApplicationWindow:
 
                         if np.array_equal(center_pixel, target_pixel_value):
                             print("The pixel value matches [187, 19, 19].")
+                            # 850, 60
+                            x_to_cancel = self.metin.window_left + 850
+                            y_to_cancel = self.metin.window_top + 60
+
+                            mouse_click(x_to_cancel, y_to_cancel)
+                            press_button('a')
+
+                        elif metin_destroy_time_diff > 20:
+                            print("Metin is not bein destroyed")
                             # 850, 60
                             x_to_cancel = self.metin.window_left + 850
                             y_to_cancel = self.metin.window_top + 60
@@ -423,6 +455,9 @@ class Metin:
         self.solving_bot_check = False
         self.contour_low = 0
         self.contour_high = 0
+        self.aspect_low = 0
+        self.aspect_high = 0
+        self.circularity = 0
         self.metin_hp_img = metin_hp_img
         self.bot_img_path = bot_img_path
         self.destroying_metin = False
@@ -451,18 +486,24 @@ class Metin:
             for contour in contours:
                 if self.contour_high > cv2.contourArea(contour) > self.contour_low:  # 900
                     x, y, w, h = cv2.boundingRect(contour)
-                    cv2.rectangle(np_image, (x, y), (x + w, y + h), (0, 255, 0), 2)  # Draw rectangle
+                    aspect_ratio = float(w) / h
+                    area = cv2.contourArea(contour)
+                    perimeter = cv2.arcLength(contour, True)
+                    circularity = 4 * np.pi * (area / (perimeter * perimeter))
+                    if self.aspect_low < aspect_ratio < self.aspect_high and circularity > self.circularity:
 
-                    contour_center_x = x + w // 2
-                    contour_center_y = y + h // 2
+                        cv2.rectangle(np_image, (x, y), (x + w, y + h), (0, 255, 0), 2)  # Draw rectangle
 
-                    # Draw a line from the middle of the screenshot to the center of the contour
-                    cv2.line(np_image, (x_middle, y_middle), (contour_center_x, contour_center_y), (255, 190, 200), 2)
-                    # Optionally, you can calculate the distance between the middle of the screenshot and the contour center
-                    cur_distance = abs(x_middle - contour_center_x) + abs(y_middle - contour_center_y)
-                    if cur_distance < min_distance:
-                        min_distance = cur_distance
-                        selected_contour = contour
+                        contour_center_x = x + w // 2
+                        contour_center_y = y + h // 2
+
+                        # Draw a line from the middle of the screenshot to the center of the contour
+                        cv2.line(np_image, (x_middle, y_middle), (contour_center_x, contour_center_y), (255, 190, 200), 2)
+                        # Optionally, you can calculate the distance between the middle of the screenshot and the contour center
+                        cur_distance = abs(x_middle - contour_center_x) + abs(y_middle - contour_center_y)
+                        if cur_distance < min_distance:
+                            min_distance = cur_distance
+                            selected_contour = contour
 
         if selected_contour is not None:
             x, y, w, h = cv2.boundingRect(selected_contour)

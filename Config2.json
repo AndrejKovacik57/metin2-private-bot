@@ -1,0 +1,35 @@
+{
+    "tesseract_path": "C:\\Program Files\\Tesseract-OCR\\tesseract.exe",
+    "metin_stones": [
+        {
+            "name": "Kamen lesu",
+            "mask": {
+                "hMin": 28,
+                "sMin": 22,
+                "vMin": 0,
+                "hMax": 255,
+                "sMax": 255,
+                "vMax": 245
+            },
+            "contourLow": 1600,
+            "contourHigh": 10500,
+            "aspect_low": 58,
+            "aspect_high": 112,
+            "circularity": 228,
+            "weather": 9
+        },
+        {
+            "name": "Metin kralovske skeble",
+            "mask": {
+                "hMin": 60,
+                "sMin": 0,
+                "vMin": 0,
+                "hMax": 110,
+                "sMax": 255,
+                "vMax": 50
+            },
+            "contourLow": 1500,
+            "contourHigh": 7500
+        }
+    ]
+}
