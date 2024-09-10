@@ -117,6 +117,9 @@ class ApplicationWindow:
         self.set_metin_stack = tk.Button(text="Set metin stack location", command=self.apply_metin_stack_location)
         self.set_metin_stack.grid(row=11, column=2, pady=10)
 
+        self.set_bot_check = tk.Button(text="Set bot check location", command=self.apply_bot_check_location)
+        self.set_bot_check.grid(row=12, column=0, pady=10)
+
         # Create the Apply button and center it
         self.apply = tk.Button(self.root, text="Apply", command=self.apply_fields)
         self.apply.grid(row=13, column=0, columnspan=4, pady=10)
@@ -209,6 +212,9 @@ class ApplicationWindow:
             if 'metin_stack_location' in info_locs:
                 self.metin.metin_stack_location = info_locs['metin_stack_location']
 
+            if 'bot_check_location' in info_locs:
+                self.metin.bot_check_location = info_locs['bot_check_location']
+
             if 'respawn_button_location' in info_locs:
                 self.metin.respawn_location = info_locs['respawn_button_location']
 
@@ -256,6 +262,13 @@ class ApplicationWindow:
                       max(self.end_y, self.start_y)]
 
             self.cfg_local['information_locations']['metin_stack_location'] = output
+
+    def apply_bot_check_location(self):
+        if None not in [self.start_x, self.start_y, self.end_x, self.end_y]:
+            output = [min(self.start_x, self.end_x), min(self.end_y, self.start_y), max(self.start_x, self.end_x),
+                      max(self.end_y, self.start_y)]
+
+            self.cfg_local['information_locations']['bot_check_location'] = output
 
     def apply_scan_window_location(self):
         # z lava, z hora, z prava, z dola
@@ -436,6 +449,7 @@ class Metin:
         self.text_hash_map = None
         self.bot_img_path = None
         self.metin_stack_location = None
+        self.bot_check_location = None
         self.options = [
                 (35, 70, 80, 90),
                 (100, 70, 150, 90),
@@ -506,9 +520,9 @@ class Metin:
                     print(f'Iteration execution time {time.time() - loop_time}s')
 
     def bot_solver(self, np_image):
-        cropped_image_x1, cropped_image_y1 = 10, 80  # Top-left corner
-        cropped_image_x2, cropped_image_y2 = 190, 240  # Bottom-right corner
+        cropped_image_x1, cropped_image_y1, cropped_image_x2, cropped_image_y2 = self.bot_check_location
         cropped_image = np_image[cropped_image_y1:cropped_image_y2, cropped_image_x1:cropped_image_x2]
+
         location = locate_image(self.bot_img_path, cropped_image, confidence=0.60)
         cv2.imwrite('bottest/cropped_image.png', cropped_image)
         if location is not None:
@@ -526,17 +540,16 @@ class Metin:
             output = None
             smallest_difference_num = None
             exact_match = False
-            c = 0
             out_num = ''
             for option_tuple in self.options:
                 result_x1, result_y1, result_x2, result_y2 = option_tuple
                 option = cropped_image[result_y1:result_y2, result_x1:result_x2]
                 option_hash = hashlib.md5(preprocess_image(option)).hexdigest()
+
                 if option_hash in self.text_hash_map:
                     option_number = self.text_hash_map[option_hash]
                 else:
                     resized_option = resize_image(option)
-                    cv2.imwrite(f'bottest/option-{c}.png', cropped_image[result_y1:result_y2, result_x1:result_x2])
                     extracted_text_option = pytesseract.image_to_string(resized_option, config=custom_config)
                     option_number = extracted_text_option[:4]
                     logging.info(f'tesseract fallback')
@@ -547,8 +560,9 @@ class Metin:
                 result_center_x = result_x1 + (result_x2 - result_x1) // 2
                 result_center_y = result_y1 + (result_y2 - result_y1) // 2
 
-                pos_x = result_center_x + cropped_image_x1
-                pos_y = result_center_y + cropped_image_y1 + 10
+                pos_x = result_center_x + cropped_image_x1 + self.window_left
+                pos_y = result_center_y + cropped_image_y1 + self.window_top
+
                 if option_number == code_to_find_number:
                     print('found matching option')
                     logging.info(f'found matching option')
@@ -569,13 +583,10 @@ class Metin:
 
             logging.info(f'----------------------------------')
             logging.info(f'selected {out_num}')
-            pos_x, pos_y = output
-            to_click_x = pos_x + self.window_left
-            to_click_y = pos_y + self.window_top
+            to_click_x, to_click_y = output
             mouse_left_click(to_click_x, to_click_y, self.window_title)
-            pyautogui.moveTo(to_click_x, to_click_y)
-            # time.sleep(3)
-            # print('ggggg')
+            time.sleep(3)
+
     def death_check(self, np_image):
         self.respawn_timer_diff = time.time() - self.respawn_timer
         if self.respawn_timer == 0 or self.respawn_timer != 0 and self.respawn_timer_diff >= 5:
