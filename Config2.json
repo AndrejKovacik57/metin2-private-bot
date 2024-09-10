@@ -21,15 +21,19 @@
         {
             "name": "Metin kralovske skeble",
             "mask": {
-                "hMin": 60,
+                "hMin": 88,
                 "sMin": 0,
                 "vMin": 0,
-                "hMax": 110,
+                "hMax": 149,
                 "sMax": 255,
-                "vMax": 50
+                "vMax": 255
             },
-            "contourLow": 1500,
-            "contourHigh": 7500
+            "contourLow": 2447,
+            "contourHigh": 9321,
+            "aspect_low": 79,
+            "aspect_high": 136,
+            "circularity": 119,
+            "weather": 5
         }
     ]
 }

@@ -437,9 +437,9 @@ class Metin:
         self.bot_img_path = None
         self.metin_stack_location = None
         self.options = [
-                (25, 70, 80, 90),
+                (35, 70, 80, 90),
                 (100, 70, 150, 90),
-                (25, 100, 80, 120),
+                (35, 100, 80, 120),
                 (100, 100, 150, 120),
                 (70, 130, 120, 150)
             ]
@@ -481,7 +481,7 @@ class Metin:
 
         time.sleep(2)
         print('idem vybrat pocasie')
-        # self.choose_weather()
+        self.choose_weather()
         upper_limit = 0.5
         lower_limit = 0.1
 
@@ -510,11 +510,14 @@ class Metin:
         cropped_image_x2, cropped_image_y2 = 190, 240  # Bottom-right corner
         cropped_image = np_image[cropped_image_y1:cropped_image_y2, cropped_image_x1:cropped_image_x2]
         location = locate_image(self.bot_img_path, cropped_image, confidence=0.60)
+        cv2.imwrite('bottest/cropped_image.png', cropped_image)
         if location is not None:
             # code to find
             x1, y1 = 90, 30  # Top-left corner
             x2, y2 = 140, 60  # Bottom-right corner
             resized_code_to_find = resize_image(cropped_image[y1:y2, x1:x2])
+
+            cv2.imwrite('bottest/code_to_find.png', cropped_image[y1:y2, x1:x2])
             extracted_text_code_to_find = pytesseract.image_to_string(resized_code_to_find, config=custom_config)
             code_to_find_number = extracted_text_code_to_find[:4]
             print(f'code_to_find_number {code_to_find_number}')
@@ -523,11 +526,21 @@ class Metin:
             output = None
             smallest_difference_num = None
             exact_match = False
+            c = 0
+            out_num = ''
             for option_tuple in self.options:
                 result_x1, result_y1, result_x2, result_y2 = option_tuple
-                resized_option = resize_image(cropped_image[result_y1:result_y2, result_x1:result_x2])
-                extracted_text_option = pytesseract.image_to_string(resized_option, config=custom_config)
-                option_number = extracted_text_option[:4]
+                option = cropped_image[result_y1:result_y2, result_x1:result_x2]
+                option_hash = hashlib.md5(preprocess_image(option)).hexdigest()
+                if option_hash in self.text_hash_map:
+                    option_number = self.text_hash_map[option_hash]
+                else:
+                    resized_option = resize_image(option)
+                    cv2.imwrite(f'bottest/option-{c}.png', cropped_image[result_y1:result_y2, result_x1:result_x2])
+                    extracted_text_option = pytesseract.image_to_string(resized_option, config=custom_config)
+                    option_number = extracted_text_option[:4]
+                    logging.info(f'tesseract fallback')
+
                 print(f'option_number {option_number}')
                 logging.info(f'option_number {option_number}')
 
@@ -541,6 +554,7 @@ class Metin:
                     logging.info(f'found matching option')
                     output = pos_x, pos_y
                     exact_match = True
+                    out_num = option_number
                     break
                 else:
                     differences = sum(1 for a, b in zip(option_number, code_to_find_number) if a != b)
@@ -548,16 +562,20 @@ class Metin:
                         smallest_difference_num = option_number
                         smallest_difference = differences
                         output = pos_x, pos_y
+                        out_num = option_number
 
             if smallest_difference_num is not None and not exact_match:
                 logging.info(f'using smallest difference on {smallest_difference_num}')
 
             logging.info(f'----------------------------------')
+            logging.info(f'selected {out_num}')
             pos_x, pos_y = output
             to_click_x = pos_x + self.window_left
             to_click_y = pos_y + self.window_top
             mouse_left_click(to_click_x, to_click_y, self.window_title)
-
+            pyautogui.moveTo(to_click_x, to_click_y)
+            # time.sleep(3)
+            # print('ggggg')
     def death_check(self, np_image):
         self.respawn_timer_diff = time.time() - self.respawn_timer
         if self.respawn_timer == 0 or self.respawn_timer != 0 and self.respawn_timer_diff >= 5:
@@ -609,6 +627,7 @@ class Metin:
             self.running = False
             self.destroying_metins = False
             self.not_destroying_metin = 0
+            print('bot stop')
             return np_image_crop
 
         hp_bar_x1, hp_bar_y1, hp_bar_x2, hp_bar_y2 = self.hp_bar_location
