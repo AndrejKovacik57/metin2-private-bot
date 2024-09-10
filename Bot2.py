@@ -608,15 +608,19 @@ class Metin:
     def activate_skills(self):
         self.skill_timer_diff = time.time() - self.skill_timer
         if self.skill_timer == 0 or self.skill_timer != 0 and self.skill_timer_diff >= self.skills_cd:
+            time.sleep(2)
             print('activate_skills')
             self.skill_timer = time.time()
+            print('zosadam')
             press_button_multiple('ctrl+g', self.window_title)
             time.sleep(0.15)
 
             for skill in self.skills_to_activate:
+                print(f'skill {skill}')
                 press_button(skill, self.window_title)
                 time.sleep(2)
             press_button_multiple('ctrl+g', self.window_title)
+            print('nasadam')
 
     def activate_buffs(self):
         self.buff_timer_diff = time.time() - self.buff_timer
