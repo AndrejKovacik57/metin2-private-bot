@@ -560,8 +560,8 @@ class Metin:
                 result_center_x = result_x1 + (result_x2 - result_x1) // 2
                 result_center_y = result_y1 + (result_y2 - result_y1) // 2
 
-                pos_x = result_center_x + cropped_image_x1 + self.window_left
-                pos_y = result_center_y + cropped_image_y1 + self.window_top
+                pos_x = result_center_x + cropped_image_x1 + self.window_left + 5
+                pos_y = result_center_y + cropped_image_y1 + self.window_top + 1
 
                 if option_number == code_to_find_number:
                     print('found matching option')
