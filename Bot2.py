@@ -611,7 +611,7 @@ class Metin:
         self.buff_timer_diff = time.time() - self.buff_timer
         if self.buff_timer >= 0 and self.skill_timer_diff >= self.buff_cd:
             print('activate_skills')
-            self.buff_cd = 30 * 60 + random.randint(1, 30)
+            self.buff_cd = 60 + random.randint(1, 30)
             self.skill_timer = time.time()
             press_button('F9', self.window_title)
             time.sleep(0.15)
