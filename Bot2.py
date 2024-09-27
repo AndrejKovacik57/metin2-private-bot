@@ -391,6 +391,7 @@ class ApplicationWindow:
 
     def stop_bot_loop(self):
         self.metin.running = False
+        self.metin.not_destroying_metin = 0
         self.metin.destroying_metins = False
 
     def run(self):
