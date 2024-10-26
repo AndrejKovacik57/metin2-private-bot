@@ -32,8 +32,7 @@
                     "contourHigh": 10500,
                     "aspect_low": 82,
                     "aspect_high": 187,
-                    "circularity": 126,
-                    "weather": 9
+                    "circularity": 126
                 }
             ]
         },
@@ -52,7 +51,25 @@
             "aspect_low": 79,
             "aspect_high": 136,
             "circularity": 119,
-            "weather": 5
+            "weather": 5,
+            "event_stones": [
+                {
+                    "name": "Tekvica",
+                    "mask": {
+                        "hMin": 8,
+                        "sMin": 120,
+                        "vMin": 0,
+                        "hMax": 18,
+                        "sMax": 255,
+                        "vMax": 255
+                    },
+                    "contourLow": 756,
+                    "contourHigh": 10500,
+                    "aspect_low": 81,
+                    "aspect_high": 128,
+                    "circularity": 67
+                }
+            ]
         }
     ]
 }

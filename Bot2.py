@@ -428,7 +428,7 @@ class Metin:
         self.scan_window_location = None
         self.cancel_location = None
         self.respawn_location = None
-        self.skills_cd = 60 * 60 + 10
+        self.skills_cd = 60 * 60 * 2 + 10
         self.running = False
         self.metin_stones = []
         self.selected_metin = None
