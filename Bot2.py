@@ -673,13 +673,19 @@ class Metin:
         self.not_destroying_metin_diff = time.time() - self.not_destroying_metin if self.not_destroying_metin else 0
 
         if self.not_destroying_metin_diff > 10:
+            keyboard.press(' ')
+            time.sleep(5)
+            keyboard.release(' ')
+            return np_image_crop
+
+        elif self.not_destroying_metin_diff > 25:
             self.running = False
             self.destroying_metins = False
             self.not_destroying_metin = 0
             formatted_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
-
             print(f' {formatted_time}')
             return np_image_crop
+
 
         hp_bar_x1, hp_bar_y1, hp_bar_x2, hp_bar_y2 = self.hp_bar_location
         hp_bar = np_image[hp_bar_y1: hp_bar_y2, hp_bar_x1: hp_bar_x2]
@@ -755,8 +761,6 @@ class Metin:
         metin_positions, image_to_display = self.locate_metin(np_image_crop, metin_num, x_middle, y_middle, self.lower,
                                                               self.upper, self.contour_high, self.contour_low,
                                                               self.aspect_low, self.aspect_high, self.circularity)
-        # there are metins on screen
-        print("METIN POZICIE SU NEJAKE?")
 
         if metin_positions is not None and metin_num > 0:
             print('Metin Found')
