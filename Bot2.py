@@ -672,7 +672,7 @@ class Metin:
         y_middle = self.window_top + (y2 - y1) // 2
         self.not_destroying_metin_diff = time.time() - self.not_destroying_metin if self.not_destroying_metin else 0
 
-        if self.not_destroying_metin_diff > 10:
+        if 15 > self.not_destroying_metin_diff > 10 :
             keyboard.press(' ')
             time.sleep(5)
             keyboard.release(' ')
