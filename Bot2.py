@@ -714,9 +714,7 @@ class Metin:
         self.event_timer_diff = time.time() - self.event_timer
 
         if self.event_timer == 0 or self.event_timer != 0 and self.event_timer_diff >= 10:
-            print(f'EVENTUJEM')
-            print(f'EVENTUJEM')
-            print(f'EVENTUJEM')
+            print(f'hladam event kamen')
             self.event_timer = time.time()
             metin_positions_event, image_to_display_event = self.locate_metin(np_image_crop, metin_num, x_middle, y_middle,
                                                                               self.lower_event, self.upper_event,
@@ -724,13 +722,12 @@ class Metin:
                                                                               self.aspect_low_event, self.aspect_high_event,
                                                                               self.circularity_event)
             if metin_positions_event is not None:
-                print(f'NASIEL SA EVENT METIN')
-                print(f'NASIEL SA EVENT METIN')
-                print(f'NASIEL SA EVENT METIN')
+                print(f'nasiel sa event kamen')
                 print(f'metin_positions_event {len(metin_positions_event)}')
                 # cancel stack
-                press_button('w', self.window_title)
-                time.sleep(0.15)
+                if metin_num == 0:
+                    press_button('w', self.window_title)
+                    time.sleep(0.15)
                 for metin_event_pos in metin_positions_event:
                     metin_pos_x, metin_pos_y = metin_event_pos
 
