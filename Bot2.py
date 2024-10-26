@@ -727,9 +727,8 @@ class Metin:
                 print(f'nasiel sa event kamen')
                 print(f'metin_positions_event {len(metin_positions_event)}')
                 # cancel stack
-                if metin_num == 0:
-                    press_button('w', self.window_title)
-                    time.sleep(0.15)
+                press_button('w', self.window_title)
+                time.sleep(0.15)
                 for metin_event_pos in metin_positions_event:
                     metin_pos_x, metin_pos_y = metin_event_pos
 
