@@ -676,7 +676,9 @@ class Metin:
             self.running = False
             self.destroying_metins = False
             self.not_destroying_metin = 0
-            print(f'bot stop {time.time()}')
+            formatted_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
+
+            print(f' {formatted_time}')
             return np_image_crop
 
         hp_bar_x1, hp_bar_y1, hp_bar_x2, hp_bar_y2 = self.hp_bar_location
