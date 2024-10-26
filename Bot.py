@@ -893,7 +893,6 @@ class Metin:
                     self.cancel_metin_window(np_image, x_middle, y_middle)
                     return image_to_display
 
-
                 mouse_left_click(metin_pos_x, metin_pos_y, self.window_title)
                 self.destroying_metin = True
                 self.metin_destroying_time = time.time()

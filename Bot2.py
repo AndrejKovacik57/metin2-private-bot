@@ -45,6 +45,7 @@ class ApplicationWindow:
         self.root.grid_columnconfigure(2, weight=1)
 
         self.display_images_var = tk.BooleanVar()
+        self.destroy_event_stones = tk.BooleanVar()
 
         # Add the "Display" checkbox on the left side of the input field for "Window name"
         self.display_checkbox = tk.Checkbutton(self.root, text="Display", variable=self.display_images_var)
@@ -86,6 +87,11 @@ class ApplicationWindow:
         self.dropdown.grid(row=5, column=2, pady=5)
         # Bind event to the dropdown
         self.dropdown.bind("<<ComboboxSelected>>", self.save_selected_option_metins)
+
+        self.event_checkbox = tk.Checkbutton(self.root, text="Event stone", variable=self.destroy_event_stones)
+        self.event_checkbox.grid(row=8, column=0, padx=5, pady=5)
+
+        self.destroy_event_stones.trace_add("write", self.toggle_destroy_event_stones)
 
         self.reset_skill = tk.Button(self.root, text="Reset skill", command=self.reset_skill)
         self.reset_skill.grid(row=8, column=1, pady=10)
@@ -232,6 +238,12 @@ class ApplicationWindow:
         else:
             print("Image display is disabled.")
             self.metin.show_img = False
+
+    def toggle_destroy_event_stones(self, *args):
+        if self.display_images_var.get() == 1:
+            self.metin.destroy_event_stones = True
+        else:
+            self.metin.destroy_event_stones = False
 
     def apply_hp_bar_location(self):
         if None not in [self.start_x, self.start_y, self.end_x, self.end_y]:
@@ -406,10 +418,6 @@ class Metin:
         self.window_right = None
         self.window_bottom = None
         self.metin_window = None
-        self.lower = None
-        self.upper = None
-        self.contour_low = 0
-        self.contour_high = 0
         self.window_title = None
         self.skill_timer = 0
         self.skills_to_activate = skills_to_activate
@@ -430,19 +438,33 @@ class Metin:
         self.not_destroying_metin_diff = 0
         self.buff_timer = 0
         self.buff_timer_diff = 0
+        self.event_timer = 0
+        self.event_timer_diff = 0
         self.buff_cd = 30 * 60
         self.destroying_metins = False
         self.show_img = False
+        self.lower = None
+        self.upper = None
+        self.contour_low = 0
+        self.contour_high = 0
         self.aspect_low = 0
         self.aspect_high = 0
         self.circularity = 0
         self.weather = 0
+        self.lower_event = None
+        self.upper_event = None
+        self.contour_low_event = 0
+        self.contour_high_event = 0
+        self.aspect_low_event = 0
+        self.aspect_high_event = 0
+        self.circularity_event = 0
         self.selected_weather = 999
         self.circle_r = 50
         self.settings_options = None
         self.game_settings = None
         self.sky_settings = None
         self.restart = None
+        self.destroy_event_stones = False
         self.image_to_display = None
         self.cancel_img = None
         self.metin_hp_img = None
@@ -451,14 +473,14 @@ class Metin:
         self.bot_img_path = None
         self.metin_stack_location = None
         self.bot_check_location = None
-        self.options = [
+        self.options = [ # coords for options menu buttons
                 (35, 70, 80, 90),
                 (100, 70, 150, 90),
                 (35, 100, 80, 120),
                 (100, 100, 150, 120),
                 (70, 130, 120, 150)
             ]
-        self.premium = False
+        self.premium = True
 
         self.load_images()
 
@@ -482,6 +504,7 @@ class Metin:
 
     def bot_loop(self):
         metin_mask = {}
+        event_mask = {}
         for metin_config in self.metin_stones:
             if metin_config['name'] == self.selected_metin:
                 metin_mask = metin_config
@@ -491,8 +514,18 @@ class Metin:
                 self.aspect_high = metin_config['aspect_high'] / 100.0
                 self.circularity = metin_config['circularity'] / 1000.0
                 self.weather = metin_config['weather']
+
+                event_config = metin_config['event_stones'][0]
+                event_mask = event_config
+                self.contour_low_event = event_config['contourLow']
+                self.contour_high_event = event_config['contourHigh']
+                self.aspect_low_event = event_config['aspect_low'] / 100.0
+                self.aspect_high_event = event_config['aspect_high'] / 100.0
+                self.circularity_event =  event_config['circularity'] / 1000.0
+
                 break
         self.lower, self.upper = create_low_upp(metin_mask)
+        self.lower_event, self.upper_event = create_low_upp(event_mask)
 
         time.sleep(2)
         print('idem vybrat pocasie')
@@ -525,7 +558,7 @@ class Metin:
         cropped_image = np_image[cropped_image_y1:cropped_image_y2, cropped_image_x1:cropped_image_x2]
 
         location = locate_image(self.bot_img_path, cropped_image, confidence=0.60)
-        cv2.imwrite('bottest/cropped_image.png', cropped_image)
+        # cv2.imwrite('bottest/cropped_image.png', cropped_image)
         if location is not None:
             # code to find
             x1, y1 = 90, 30  # Top-left corner
@@ -660,10 +693,10 @@ class Metin:
             self.not_destroying_metin = 0
 
         stack_x1, stack_y1, stack_x2, stack_y2 = self.metin_stack_location
-        metin_stack1 = np_image[stack_y1:  stack_y2, stack_x1:  stack_x2]
-        metin_stack = preprocess_image(metin_stack1)
+        metin_stack_img = np_image[stack_y1:  stack_y2, stack_x1:  stack_x2]
+        metin_stack_img_processed = preprocess_image(metin_stack_img)
 
-        metin_stack_hash = hashlib.md5(metin_stack).hexdigest()
+        metin_stack_hash = hashlib.md5(metin_stack_img_processed).hexdigest()
 
         if metin_stack_hash in self.text_hash_map:
             metin_stack_string = self.text_hash_map[metin_stack_hash]
@@ -678,8 +711,54 @@ class Metin:
                 return np_image_crop
             print('nenasiel sa metin hash')
             metin_num = 1
-        metin_positions, image_to_display = self.locate_metin(np_image_crop, metin_num, x_middle, y_middle)
+        self.event_timer_diff = time.time() - self.event_timer
+
+        if self.event_timer == 0 or self.event_timer != 0 and self.event_timer_diff >= 10:
+            print(f'EVENTUJEM')
+            print(f'EVENTUJEM')
+            print(f'EVENTUJEM')
+            self.event_timer = time.time()
+            metin_positions_event, image_to_display_event = self.locate_metin(np_image_crop, metin_num, x_middle, y_middle,
+                                                                              self.lower_event, self.upper_event,
+                                                                              self.contour_high_event, self.contour_low_event,
+                                                                              self.aspect_low_event, self.aspect_high_event,
+                                                                              self.circularity_event)
+            if metin_positions_event is not None:
+                print(f'NASIEL SA EVENT METIN')
+                print(f'NASIEL SA EVENT METIN')
+                print(f'NASIEL SA EVENT METIN')
+                print(f'metin_positions_event {len(metin_positions_event)}')
+                # cancel stack
+                press_button('w', self.window_title)
+                time.sleep(0.15)
+                for metin_event_pos in metin_positions_event:
+                    metin_pos_x, metin_pos_y = metin_event_pos
+
+                    metin_pos_x += self.window_left + x1
+                    metin_pos_y += self.window_top + y1
+
+                    # no metin is being destroyed
+                    print('Click at event metin')
+
+                    if not self.premium:
+                        press_button('z', self.window_title)
+                        time.sleep(0.15)
+                        press_button('y', self.window_title)
+
+                    mouse_left_click(metin_pos_x, metin_pos_y, self.window_title)
+                    self.destroying_metins = True
+                    sleep_time = random.random() * (0.3 - 0.15) + 0.15
+                    time.sleep(sleep_time)
+
+                    return image_to_display_event
+
+
+        # return np_image_crop
+        metin_positions, image_to_display = self.locate_metin(np_image_crop, metin_num, x_middle, y_middle, self.lower,
+                                                              self.upper, self.contour_high, self.contour_low,
+                                                              self.aspect_low, self.aspect_high, self.circularity)
         # there are metins on screen
+        print("METIN POZICIE SU NEJAKE?")
 
         if metin_positions is not None and metin_num > 0:
             print('Metin Found')
@@ -729,21 +808,22 @@ class Metin:
             press_button('q', self.window_title)
             time.sleep(0.2)
 
-    def locate_metin(self, np_image, metin_num, x_middle, y_middle):
+    def locate_metin(self, np_image, metin_num, x_middle, y_middle, lower, upper, contour_high,
+                     contour_low, aspect_low, aspect_high, circularity, use_circle_r=True):
         # Convert the image to HSV
         hsv = cv2.cvtColor(np_image, cv2.COLOR_BGR2HSV)
-        mask = cv2.inRange(hsv, self.lower, self.upper)
+        mask = cv2.inRange(hsv, lower, upper)
         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         contour_list = []
         if contours:
             for contour in contours:
-                if self.contour_high > cv2.contourArea(contour) > self.contour_low:  # 900
+                if contour_high > cv2.contourArea(contour) > contour_low:  # 900
                     x, y, w, h = cv2.boundingRect(contour)
                     aspect_ratio = float(w) / h
                     area = cv2.contourArea(contour)
                     perimeter = cv2.arcLength(contour, True)
-                    circularity = 4 * np.pi * (area / (perimeter * perimeter))
-                    if self.aspect_low < aspect_ratio < self.aspect_high and circularity > self.circularity:
+                    circularity_obj = 4 * np.pi * (area / (perimeter * perimeter))
+                    if aspect_low < aspect_ratio < aspect_high and circularity_obj > circularity:
 
                         cv2.rectangle(np_image, (x, y), (x + w, y + h), (0, 255, 0), 2)  # Draw rectangle
 
@@ -753,15 +833,15 @@ class Metin:
                         # Draw a line from the middle of the screenshot to the center of the contour
                         cv2.line(np_image, (x_middle, y_middle), (contour_center_x, contour_center_y),
                                  (255, 190, 200), 2)
-                        # Optionally, you can calculate the distance between the middle of the screenshot and the contour center
-                        # Draw a circle around the point (x_middle, y_middle) with a radius of 300px
-                        cv2.circle(np_image, (x_middle, y_middle), self.circle_r, (255, 190, 200),
-                                   2)  # The color is (255, 190, 200) and the thickness is 2
-
                         cur_distance = abs(x_middle - contour_center_x) + abs(y_middle - contour_center_y)
 
-                        if cur_distance <= self.circle_r:
-                            continue
+                        if use_circle_r:
+                            # Draw a circle around the point (x_middle, y_middle) with a radius of 300px
+                            cv2.circle(np_image, (x_middle, y_middle), self.circle_r, (255, 190, 200),
+                                       2)  # The color is (255, 190, 200) and the thickness is 2
+                            if cur_distance <= self.circle_r:
+                                continue
+
                         a = cur_distance, contour
                         contour_list.append(a)
 
