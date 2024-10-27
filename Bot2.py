@@ -240,10 +240,12 @@ class ApplicationWindow:
             self.metin.show_img = False
 
     def toggle_destroy_event_stones(self, *args):
-        if self.display_images_var.get() == 1:
+        if self.destroy_event_stones.get() == 1:
             self.metin.destroy_event_stones = True
+            print(f'metin.destroy_event_stones T {self.metin.destroy_event_stones}')
         else:
             self.metin.destroy_event_stones = False
+            print(f'metin.destroy_event_stones F {self.metin.destroy_event_stones}')
 
     def apply_hp_bar_location(self):
         if None not in [self.start_x, self.start_y, self.end_x, self.end_y]:
@@ -713,8 +715,8 @@ class Metin:
                 return np_image_crop
             print('nenasiel sa metin hash')
             metin_num = 1
-        self.event_timer_diff = time.time() - self.event_timer
         if self.destroy_event_stones:
+            self.event_timer_diff = time.time() - self.event_timer
             if self.event_timer == 0 or self.event_timer != 0 and self.event_timer_diff >= 10:
                 print(f'hladam event kamen')
                 print(f'hladam event kamen')
