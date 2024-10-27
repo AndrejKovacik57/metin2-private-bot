@@ -710,17 +710,18 @@ class Metin:
             metin_num = stack - metins_in_stack
             print('nasiel sa metin hash')
         else:
-            if not metin_is_alive and self.not_destroying_metin and self.destroying_metins:
-                time.sleep(2)
-                return np_image_crop
+            # if not metin_is_alive and self.not_destroying_metin and self.destroying_metins:
+            #     press_button('q', self.window_title)
+            #     time.sleep(0.2)
+            #     press_button('q', self.window_title)
+            #     time.sleep(0.2)
+            #     return np_image_crop
             print('nenasiel sa metin hash')
             metin_num = 1
         if self.destroy_event_stones:
             self.event_timer_diff = time.time() - self.event_timer
             if self.event_timer == 0 or self.event_timer != 0 and self.event_timer_diff >= 10:
-                print(f'hladam event kamen')
-                print(f'hladam event kamen')
-                print(f'hladam event kamen')
+                print(f'hladam event kamen!!')
                 self.event_timer = time.time()
                 metin_positions_event, image_to_display_event = self.locate_metin(np_image_crop, metin_num, x_middle, y_middle,
                                                                                   self.lower_event, self.upper_event,
@@ -728,9 +729,7 @@ class Metin:
                                                                                   self.aspect_low_event, self.aspect_high_event,
                                                                                   self.circularity_event)
                 if metin_positions_event is not None:
-                    print(f'nasiel sa event kamen')
-                    print(f'nasiel sa event kamen')
-                    print(f'nasiel sa event kamen')
+                    print(f'nasiel sa event kamen!!')
                     print(f'metin_positions_event {len(metin_positions_event)}')
                     # cancel stack
                     press_button('w', self.window_title)
