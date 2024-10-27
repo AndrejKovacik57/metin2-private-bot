@@ -539,14 +539,14 @@ class Metin:
                 sleep_time = random.random() * (upper_limit - lower_limit) + lower_limit
                 time.sleep(sleep_time)
                 np_image = self.get_np_image()
-                if self.running:
-                    self.bot_solver(np_image)
-                if self.running:
-                    self.death_check(np_image)
-                if self.running:
-                    self.activate_skills()
-                if self.running:
-                    self.activate_buffs()
+                # if self.running:
+                #     self.bot_solver(np_image)
+                # if self.running:
+                #     self.death_check(np_image)
+                # if self.running:
+                #     self.activate_skills()
+                # if self.running:
+                #     self.activate_buffs()
                 if self.running:
                     self.image_to_display = self.destroy_metin(np_image)
                     if self.show_img:
@@ -672,13 +672,8 @@ class Metin:
         y_middle = self.window_top + (y2 - y1) // 2
         self.not_destroying_metin_diff = time.time() - self.not_destroying_metin if self.not_destroying_metin else 0
 
-        if 15 > self.not_destroying_metin_diff > 10 :
-            keyboard.press(' ')
-            time.sleep(5)
-            keyboard.release(' ')
-            return np_image_crop
 
-        elif self.not_destroying_metin_diff > 25:
+        if self.not_destroying_metin_diff > 15:
             self.running = False
             self.destroying_metins = False
             self.not_destroying_metin = 0
@@ -712,7 +707,6 @@ class Metin:
             metins_in_stack = int(metin_stack_string[1])
             metin_num = stack - metins_in_stack
             print('nasiel sa metin hash')
-            print(f'{stack} - {metins_in_stack} = {metin_num}')
         else:
             if not metin_is_alive and self.not_destroying_metin and self.destroying_metins:
                 time.sleep(2)
@@ -720,41 +714,47 @@ class Metin:
             print('nenasiel sa metin hash')
             metin_num = 1
         self.event_timer_diff = time.time() - self.event_timer
+        if self.destroy_event_stones:
+            if self.event_timer == 0 or self.event_timer != 0 and self.event_timer_diff >= 10:
+                print(f'hladam event kamen')
+                print(f'hladam event kamen')
+                print(f'hladam event kamen')
+                self.event_timer = time.time()
+                metin_positions_event, image_to_display_event = self.locate_metin(np_image_crop, metin_num, x_middle, y_middle,
+                                                                                  self.lower_event, self.upper_event,
+                                                                                  self.contour_high_event, self.contour_low_event,
+                                                                                  self.aspect_low_event, self.aspect_high_event,
+                                                                                  self.circularity_event)
+                if metin_positions_event is not None:
+                    print(f'nasiel sa event kamen')
+                    print(f'nasiel sa event kamen')
+                    print(f'nasiel sa event kamen')
+                    print(f'metin_positions_event {len(metin_positions_event)}')
+                    # cancel stack
+                    press_button('w', self.window_title)
+                    time.sleep(0.15)
+                    for metin_event_pos in metin_positions_event:
+                        metin_pos_x, metin_pos_y = metin_event_pos
 
-        if self.event_timer == 0 or self.event_timer != 0 and self.event_timer_diff >= 10:
-            print(f'hladam event kamen')
-            self.event_timer = time.time()
-            metin_positions_event, image_to_display_event = self.locate_metin(np_image_crop, metin_num, x_middle, y_middle,
-                                                                              self.lower_event, self.upper_event,
-                                                                              self.contour_high_event, self.contour_low_event,
-                                                                              self.aspect_low_event, self.aspect_high_event,
-                                                                              self.circularity_event)
-            if metin_positions_event is not None:
-                print(f'nasiel sa event kamen')
-                print(f'metin_positions_event {len(metin_positions_event)}')
-                # cancel stack
-                press_button('w', self.window_title)
-                time.sleep(0.15)
-                for metin_event_pos in metin_positions_event:
-                    metin_pos_x, metin_pos_y = metin_event_pos
+                        if np.all(np_image_crop[metin_pos_y, metin_pos_x] == [0, 0, 0]):
+                            print("The pixel is black.")
+                        else:
+                            print("The pixel is not black.")
+                            # no metin is being destroyed
+                            print('Click at event metin')
+                            metin_pos_x += self.window_left + x1
+                            metin_pos_y += self.window_top + y1
+                            if not self.premium:
+                                press_button('z', self.window_title)
+                                time.sleep(0.15)
+                                press_button('y', self.window_title)
 
-                    metin_pos_x += self.window_left + x1
-                    metin_pos_y += self.window_top + y1
+                            mouse_left_click(metin_pos_x, metin_pos_y, self.window_title)
+                            self.destroying_metins = True
+                            sleep_time = random.random() * (0.3 - 0.15) + 0.15
+                            time.sleep(sleep_time)
 
-                    # no metin is being destroyed
-                    print('Click at event metin')
-
-                    if not self.premium:
-                        press_button('z', self.window_title)
-                        time.sleep(0.15)
-                        press_button('y', self.window_title)
-
-                    mouse_left_click(metin_pos_x, metin_pos_y, self.window_title)
-                    self.destroying_metins = True
-                    sleep_time = random.random() * (0.3 - 0.15) + 0.15
-                    time.sleep(sleep_time)
-
-                    return image_to_display_event
+                            return image_to_display_event
 
 
         # return np_image_crop
@@ -767,21 +767,22 @@ class Metin:
             for metin_pos in metin_positions:
                 metin_pos_x, metin_pos_y = metin_pos
 
-                metin_pos_x += self.window_left + x1
-                metin_pos_y += self.window_top + y1
+                if np.all(np_image_crop[metin_pos_y, metin_pos_x] == [0, 0, 0]):
+                    print("The pixel is black.")
+                else:
+                    # no metin is being destroyed
+                    print('Click at metin')
+                    metin_pos_x += self.window_left + x1
+                    metin_pos_y += self.window_top + y1
+                    if not self.premium:
+                        press_button('z', self.window_title)
+                        time.sleep(0.15)
+                        press_button('y', self.window_title)
 
-                # no metin is being destroyed
-                print('Click at metin')
-
-                if not self.premium:
-                    press_button('z', self.window_title)
-                    time.sleep(0.15)
-                    press_button('y', self.window_title)
-
-                mouse_left_click(metin_pos_x, metin_pos_y, self.window_title)
-                self.destroying_metins = True
-                sleep_time = random.random() * (0.3 - 0.15) + 0.15
-                time.sleep(sleep_time)
+                    mouse_left_click(metin_pos_x, metin_pos_y, self.window_title)
+                    self.destroying_metins = True
+                    sleep_time = random.random() * (0.3 - 0.15) + 0.15
+                    time.sleep(sleep_time)
 
         else:
             press_button('q', self.window_title)
