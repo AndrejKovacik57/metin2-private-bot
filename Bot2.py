@@ -674,6 +674,9 @@ class Metin:
         y_middle = self.window_top + (y2 - y1) // 2
         self.not_destroying_metin_diff = time.time() - self.not_destroying_metin if self.not_destroying_metin else 0
 
+        if 15 > self.not_destroying_metin_diff > 5:
+            press_button('w', self.window_title)
+            time.sleep(0.15)
 
         if self.not_destroying_metin_diff > 15:
             self.running = False
