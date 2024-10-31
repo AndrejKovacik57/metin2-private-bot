@@ -774,8 +774,9 @@ class Metin:
             print('Metin Found')
             for metin_pos in metin_positions:
                 metin_pos_x, metin_pos_y = metin_pos
-
-                if np.all(np_image_crop[metin_pos_y, metin_pos_x] == [0, 0, 0]):
+                np_image_mob_check = self.get_np_image()
+                np_image_mob_check = np_image_mob_check[y1: y2, x1: x2]
+                if np.all(np_image_mob_check[metin_pos_y, metin_pos_x] == [0, 0, 0]):
                     print("The pixel is black.")
                 else:
                     # no metin is being destroyed
