@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 import time
 import pygetwindow as gw
+import pyscreeze
 from PIL import ImageGrab, Image, ImageTk
 import json
 import tkinter as tk
@@ -475,6 +476,7 @@ class Metin:
         self.bot_img_path = None
         self.metin_stack_location = None
         self.bot_check_location = None
+        self.event_search_timer = 10
         self.options = [ # coords for options menu buttons
                 (35, 70, 80, 90),
                 (100, 70, 150, 90),
@@ -674,9 +676,6 @@ class Metin:
         y_middle = self.window_top + (y2 - y1) // 2
         self.not_destroying_metin_diff = time.time() - self.not_destroying_metin if self.not_destroying_metin else 0
 
-        if 15 > self.not_destroying_metin_diff > 5:
-            press_button('w', self.window_title)
-            time.sleep(0.15)
 
         if self.not_destroying_metin_diff > 15:
             self.running = False
@@ -713,25 +712,28 @@ class Metin:
             metin_num = stack - metins_in_stack
             print('nasiel sa metin hash')
         else:
-            # if not metin_is_alive and self.not_destroying_metin and self.destroying_metins:
-            #     press_button('q', self.window_title)
-            #     time.sleep(0.2)
-            #     press_button('q', self.window_title)
-            #     time.sleep(0.2)
-            #     return np_image_crop
+            if metin_is_alive: # clicked at mob
+                print('nenasla sa fronta pri hp bare, rusim frontu')
+                press_button('w', self.window_title)
+                time.sleep(0.15)
+                np_image = self.get_np_image()
+                self.cancel_all(np_image)
+
             print('nenasiel sa metin hash')
             metin_num = 1
         if self.destroy_event_stones:
             self.event_timer_diff = time.time() - self.event_timer
-            if self.event_timer == 0 or self.event_timer != 0 and self.event_timer_diff >= 10:
+            if self.event_timer == 0 or self.event_timer != 0 and self.event_timer_diff >= self.event_search_timer:
                 print(f'hladam event kamen!!')
                 self.event_timer = time.time()
+                self.event_search_timer = 2
                 metin_positions_event, image_to_display_event = self.locate_metin(np_image_crop, metin_num, x_middle, y_middle,
                                                                                   self.lower_event, self.upper_event,
                                                                                   self.contour_high_event, self.contour_low_event,
                                                                                   self.aspect_low_event, self.aspect_high_event,
                                                                                   self.circularity_event)
                 if metin_positions_event is not None:
+                    self.event_search_timer = 10
                     print(f'nasiel sa event kamen!!')
                     print(f'metin_positions_event {len(metin_positions_event)}')
                     # cancel stack
@@ -740,7 +742,9 @@ class Metin:
                     for metin_event_pos in metin_positions_event:
                         metin_pos_x, metin_pos_y = metin_event_pos
 
-                        if np.all(np_image_crop[metin_pos_y, metin_pos_x] == [0, 0, 0]):
+                        np_image_mob_check = self.get_np_image()
+                        np_image_mob_check = np_image_mob_check[y1: y2, x1: x2]
+                        if np.all(np_image_mob_check[metin_pos_y, metin_pos_x] == [0, 0, 0]):
                             print("The pixel is black.")
                         else:
                             print("The pixel is not black.")
@@ -941,15 +945,22 @@ class Metin:
                 counter += 1
 
         time.sleep(0.5)
-        try:
-            locations = pyautogui.locateAll(self.cancel_img, np_image, confidence=0.9)
-        except pyautogui.ImageNotFoundException:
-            locations = None
-        if locations is not None:
-            for location in locations:
-                self.click_location_middle(location)
-                time.sleep(0.5)
+        self.cancel_all(np_image)
 
+    def cancel_all(self, np_image):
+        try:
+            locations = pyautogui.locateAll(self.cancel_img, np_image, confidence=0.8)
+        except (pyautogui.ImageNotFoundException, pyscreeze.ImageNotFoundException) as e:
+            locations = None
+
+        if locations is not None:
+            try:
+                for location in locations:
+                    self.click_location_middle(location)
+                    time.sleep(0.5)
+            except (pyautogui.ImageNotFoundException, pyscreeze.ImageNotFoundException) as e:
+               print("fix")
+                
     def click_location_middle(self, location):
         x = self.window_left + location.left + location.width / 2
         y = self.window_top + location.top + location.height / 2
