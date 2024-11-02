@@ -596,6 +596,9 @@ class Metin:
         self.metin_stuck_time = 18
         self.metin_stuck_timer = 0
         self.metin_stuck_timer_diff = 0
+        self.clicked_at_mob_timer = 0
+        self.clicked_at_mob_diff = 0
+        self.clicked_at_mob_duration = 3
         self.buff_timer = 0
         self.buff_timer_diff = 0
         self.event_timer = 0
@@ -881,6 +884,8 @@ class Metin:
         metin_stack_hash = hashlib.md5(metin_stack_img_processed).hexdigest()
 
         if metin_stack_hash in self.text_hash_map:
+            self.clicked_at_mob_timer = 0
+            self.clicked_at_mob_diff = 0
             metin_stack_string = self.text_hash_map[metin_stack_hash]
             stack = int(metin_stack_string[3])
             metins_in_stack = int(metin_stack_string[1])
@@ -889,14 +894,20 @@ class Metin:
 
         else:
             if metin_is_alive: # clicked at mob
-                print('nenasla sa fronta pri hp bare, rusim frontu')
-                keyboard.press('space')
-                time.sleep(0.15)
-                press_button('w', self.window_title)
-                keyboard.release('space')
-                time.sleep(0.15)
-                np_image = self.get_np_image()
-                self.cancel_all(np_image)
+                if self.clicked_at_mob_timer == 0:
+                    self.clicked_at_mob_timer = time.time()
+                else:
+                    self.clicked_at_mob_diff = time.time() - self.clicked_at_mob_timer
+
+                if self.clicked_at_mob_diff >= self.clicked_at_mob_duration:
+                    print('nenasla sa fronta pri hp bare, rusim frontu')
+                    keyboard.press('space')
+                    time.sleep(0.15)
+                    press_button('w', self.window_title)
+                    keyboard.release('space')
+                    time.sleep(0.15)
+                    np_image = self.get_np_image()
+                    self.cancel_all(np_image)
 
             print('nenasiel sa metin hash')
             metin_num = 1
