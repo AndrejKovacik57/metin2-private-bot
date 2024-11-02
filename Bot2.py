@@ -8,7 +8,7 @@ import pyscreeze
 from PIL import ImageGrab, Image, ImageTk
 import json
 import tkinter as tk
-from tkinter import ttk, Canvas
+from tkinter import ttk, Canvas, messagebox
 import threading
 import pytesseract
 import keyboard
@@ -75,10 +75,12 @@ class ApplicationWindow:
         self.text_tesseract_path = tk.Entry(self.root, width=20)
         self.text_tesseract_path.grid(row=5, column=0, pady=5)
 
-        self.entry_skills_check = tk.Label(self.root, text="Skills to Activate:")
-        self.entry_skills_check.grid(row=4, column=1, pady=5)
-        self.text_skills_check = tk.Entry(self.root, width=20)
-        self.text_skills_check.grid(row=5, column=1, pady=5)
+        # self.entry_skills_check = tk.Label(self.root, text="Skills to Activate:")
+        # self.entry_skills_check.grid(row=4, column=1, pady=5)
+        # self.text_skills_check = tk.Entry(self.root, width=20)
+        # self.text_skills_check.grid(row=5, column=1, pady=5)
+        self.reset_skill = tk.Button(self.root, text="Set skills", command=self.set_skills)
+        self.reset_skill.grid(row=5, column=1, pady=10)
 
 
         self.dropdown_label = tk.Label(self.root, text="Choose Metin Stone:")
@@ -92,14 +94,31 @@ class ApplicationWindow:
         self.event_checkbox = tk.Checkbutton(self.root, text="Event stone", variable=self.destroy_event_stones)
         self.event_checkbox.grid(row=8, column=0, padx=5, pady=5)
 
-        self.destroy_event_stones.trace_add("write", self.toggle_destroy_event_stones)
+        self.entry_metin_time_treshold = tk.Label(self.root, text="Metin destroy time MAX:")
+        self.entry_metin_time_treshold.grid(row=8, column=1, columnspan=1, pady=5)
+        self.text_metin_time_treshold = tk.Entry(self.root, width=15)
+        self.text_metin_time_treshold.grid(row=9, column=1, columnspan=1, pady=5)
 
-        self.reset_skill = tk.Button(self.root, text="Reset skill", command=self.reset_skill)
-        self.reset_skill.grid(row=8, column=1, pady=10)
+        self.destroy_event_stones.trace_add("write", self.toggle_destroy_event_stones)
+        # self.reset_skill = tk.Button(self.root, text="Reset skill", command=self.reset_skill)
+        # self.reset_skill.grid(row=8, column=1, pady=10)
+        self.class_skills = {"War-Mental":{"Silne telo":'bot_images\\War-Silne-Telo.png'}, "Sura-Weapon": {"Cepel":'bot_images\\Sura-Cepel.png', "Zacarovane brnenie": 'bot_images\\Sura-ZacBrn.png', "Strach":'bot_images\\Sura-Strach.png'}, "Shaman-Buff":{"Kritik": 'bot_images\\Saman-Krit.png'}}
+        self.dropdown_class_label = tk.Label(self.root, text="Choose class:")
+        self.dropdown_class_label.grid(row=8, column=2, columnspan=1, pady=5)
+        self.dropdown_class = ttk.Combobox(self.root, values=list(self.class_skills.keys()), state="readonly")
+        self.dropdown_class.grid(row=9, column=2, pady=5)
+        # Bind event to the dropdown
+        self.dropdown_class.bind("<<ComboboxSelected>>", self.save_selected_option_class)
+
+
+        self.entry_turn_off_bot = tk.Label(self.root, text="Stuck time MAX:")
+        self.entry_turn_off_bot.grid(row=10, column=0, columnspan=1, pady=5)
+        self.text_turn_off_bot  = tk.Entry(self.root, width=15)
+        self.text_turn_off_bot.grid(row=11, column=0, columnspan=1, pady=5)
 
         # Create a button to take a screenshot and center it
         self.screenshot_button = tk.Button(self.root, text="Take Screenshot", command=self.take_screenshot)
-        self.screenshot_button.grid(row=9, column=1, pady=10)
+        self.screenshot_button.grid(row=13, column=1, pady=10)
 
         # self.entry_circle_r = tk.Label(self.root, text="Circle radius (px):")
         # self.entry_circle_r.grid(row=8, column=2, pady=5)
@@ -107,29 +126,29 @@ class ApplicationWindow:
         # self.text_circle_r.grid(row=9, column=2, pady=5)
 
         self.set_metin_hp_bar_location = tk.Button(text="Set HP bar location", command=self.apply_hp_bar_location)
-        self.set_metin_hp_bar_location.grid(row=10, column=0, pady=10)
+        self.set_metin_hp_bar_location.grid(row=14, column=0, pady=10)
 
         self.set_metin_hp_full_location = tk.Button(text="Set full HP location", command=self.apply_hp_full_location)
-        self.set_metin_hp_full_location.grid(row=10, column=1, pady=10)
+        self.set_metin_hp_full_location.grid(row=14, column=1, pady=10)
 
         self.set_respawn_button_location = tk.Button(text="Set respawn location", command=self.apply_respawn_button_location)
-        self.set_respawn_button_location.grid(row=10, column=2, pady=9)
+        self.set_respawn_button_location.grid(row=14, column=2, pady=9)
 
         self.set_cancel_location = tk.Button(text="Set cancel location", command=self.apply_cancel_location)
-        self.set_cancel_location.grid(row=11, column=0, pady=10)
+        self.set_cancel_location.grid(row=15, column=0, pady=10)
 
         self.set_scan_window = tk.Button(text="Set scan window", command=self.apply_scan_window_location)
-        self.set_scan_window.grid(row=11, column=1, pady=10)
+        self.set_scan_window.grid(row=15, column=1, pady=10)
 
         self.set_metin_stack = tk.Button(text="Set metin stack location", command=self.apply_metin_stack_location)
-        self.set_metin_stack.grid(row=11, column=2, pady=10)
+        self.set_metin_stack.grid(row=15, column=2, pady=10)
 
         self.set_bot_check = tk.Button(text="Set bot check location", command=self.apply_bot_check_location)
-        self.set_bot_check.grid(row=12, column=0, pady=10)
+        self.set_bot_check.grid(row=16, column=0, pady=10)
 
         # Create the Apply button and center it
         self.apply = tk.Button(self.root, text="Apply", command=self.apply_fields)
-        self.apply.grid(row=13, column=0, columnspan=4, pady=10)
+        self.apply.grid(row=17, column=0, columnspan=4, pady=10)
 
         self.cfg = {}
         self.cfg_local = {}
@@ -137,6 +156,7 @@ class ApplicationWindow:
 
         self.metin = None
         self.tesseract_path = ''
+
         self.canvas = None
         self.screenshot_image = None
         self.rect = None
@@ -162,43 +182,54 @@ class ApplicationWindow:
         self.text_tesseract_path.insert(0, cfg['tesseract_path'])
 
         if cfg_local:
-            self.metin = Metin(cfg_local['skills_to_activate'].split(), self.display_screenshot, debug_bot)
+            self.metin = Metin(self.display_screenshot, debug_bot)
             self.metin.window_title = self.cfg_local['window_name']
-            self.text_skills_check.insert(0, cfg_local['skills_to_activate'])
+            # self.text_skills_check.insert(0, cfg_local['skills_to_activate'])
             self.text_window_name.insert(0, cfg_local['window_name'])
-            if 'information_locations' not in self.cfg_local:
-                self.cfg_local['information_locations'] = {}
 
             self.load_cfg_local()
 
         else:
             self.cfg_local['information_locations'] = {}
-            self.metin = Metin([], self.display_screenshot, debug_bot)
+            self.cfg_local['classes'] = {}
+            for class_option in self.class_skills.keys():
+                self.cfg_local['classes'][class_option] = []
+                for skill_option in self.class_skills[class_option]:
+                    self.cfg_local['classes'][class_option][skill_option] = ""
+
+            self.metin = Metin(self.display_screenshot, debug_bot)
 
         self.metin.metin_stones = cfg['metin_stones']
         self.metin_options = [item['name'] for item in self.metin.metin_stones]
+
 
         self.dropdown['values'] = self.metin_options
         if self.metin_options:
             self.dropdown.set(self.metin_options[0])
             self.metin.selected_metin = self.metin_options[0]
 
+        classes = list(self.class_skills.keys())
+        self.dropdown_class['values'] = classes
+        if self.class_skills:
+            self.dropdown_class.set(classes[0])
+
+            self.metin.selected_class = classes[0]
+
     def apply_fields(self):
         pytesseract.pytesseract.tesseract_cmd = self.text_tesseract_path.get()
         self.metin.window_title = self.text_window_name.get()
 
         self.cfg['tesseract_path'] = self.text_tesseract_path.get()
-        self.cfg_local['skills_to_activate'] = self.text_skills_check.get()
-        self.cfg_local['window_name'] = self.text_window_name.get()
 
         self.load_cfg_local()
 
-        self.metin.skills_to_activate = self.cfg_local['skills_to_activate'].split()
         save_config(self.cfg, 'Config2.json')
         save_config(self.cfg_local, 'Config-local2.json')
 
     def load_cfg_local(self):
-        if 'information_locations' in self.cfg_local:
+        if 'information_locations' not in self.cfg_local:
+            self.cfg_local['information_locations'] = {}
+        else:
             info_locs = self.cfg_local['information_locations']
 
             if 'hp_bar_location' in info_locs:
@@ -225,12 +256,131 @@ class ApplicationWindow:
             if 'respawn_button_location' in info_locs:
                 self.metin.respawn_location = info_locs['respawn_button_location']
 
+        if 'classes' not in self.cfg_local:
+            self.cfg_local['classes'] = {}
+            for class_option in self.class_skills.keys():
+                if class_option not in self.cfg_local['classes']:
+                    self.cfg_local['classes'][class_option] = {}
+                for skill_option in self.class_skills[class_option]:
+                    if skill_option not in self.cfg_local['classes'][class_option]:
+                        path = self.class_skills[class_option][skill_option]
+                        self.cfg_local['classes'][class_option][skill_option] = {'key_bind': "",
+                                                                                 'skill_active_img_path': path}
+        self.metin.skills_cfg = self.cfg_local['classes']
+        self.cfg_local['window_name'] = self.text_window_name.get()
+
+        if 'turn_off' in self.cfg_local:
+            if self.text_turn_off_bot.get() == '':
+                self.text_turn_off_bot.insert(0, self.cfg_local['turn_off'])
+            turn_off_str = self.text_turn_off_bot.get()
+            self.cfg_local['turn_off'] = turn_off_str
+            self.metin.metin_stuck_time = int(turn_off_str) if turn_off_str.isdigit() else 15
+        else:
+            self.cfg_local['turn_off'] = '15'
+
+        if 'metin_treshold' in self.cfg_local:
+            if self.text_metin_time_treshold.get() == '':
+                self.text_metin_time_treshold.insert(0, self.cfg_local['metin_treshold'])
+            not_destroying_metin_treshold = self.text_metin_time_treshold.get()
+            self.cfg_local['metin_treshold'] = not_destroying_metin_treshold
+            self.metin.not_destroying_metin_treshold = int(not_destroying_metin_treshold) if not_destroying_metin_treshold.isdigit() else 18
+        else:
+            self.cfg_local['metin_treshold'] = '30'
 
     def reset_skill(self):
         self.metin.skill_timer = 0
 
+    def set_skills(self):
+        selected_class = self.dropdown_class.get()
+
+        # Create a new window for setting skills
+        self.skill_window = tk.Toplevel(self.root)
+        self.skill_window.title("Set Skills")
+
+        # Containers to keep track of rows
+        self.skill_labels = []
+        self.keyboard_entries = []
+
+        # Initial row with labels and entry fields
+        for skill in self.class_skills[selected_class]:
+            skill_key = self.cfg_local['classes'][selected_class][skill]['key_bind']
+            self.create_row(skill, skill_key)
+
+        # Apply button to save entries to dictionary
+        apply_button = tk.Button(self.skill_window, text="Apply", command=self.apply_skills)
+        apply_button.grid(row=101, column=0, columnspan=2, pady=10)
+
+    def create_row(self, skill_name="", skill_key=""):
+        # Skill Name label (read-only)
+        skill_label = tk.Label(self.skill_window, text=skill_name)
+        skill_label.grid(row=len(self.skill_labels) + 1, column=0, padx=10, pady=5)
+
+        # Keyboard Button entry
+        keyboard_entry = tk.Entry(self.skill_window)
+        keyboard_entry.grid(row=len(self.keyboard_entries) + 1, column=1, padx=10, pady=5)
+        keyboard_entry.insert(tk.END, skill_key)
+
+        # Append to lists for tracking
+        self.skill_labels.append(skill_label)
+        self.keyboard_entries.append(keyboard_entry)
+
+
+    def apply_skills(self):
+        # Save the skills to a dictionary and show in messagebox
+        selected_class = self.dropdown_class.get()
+        for skill_label, keyboard_entry in zip(self.skill_labels, self.keyboard_entries):
+            skill_name = skill_label.cget("text").strip()
+            keyboard_button = keyboard_entry.get().strip()
+
+            if skill_name and keyboard_button:
+                self.cfg_local['classes'][selected_class][skill_name]["key_bind"] = keyboard_button
+
+        # Display the dictionary in a messagebox (or you could do other processing)
+        print(f"Skills Saved: {self.cfg_local['classes']}")
+
+    def build_error_msg(self):
+        error_msg = []
+        info_locs = self.cfg_local['information_locations']
+        if 'hp_bar_location' not in info_locs:
+            error_msg.append('hp_bar_location')
+
+        if 'hp_full_location' not in info_locs:
+            error_msg.append('hp_full_location')
+
+        if 'hp_full_pixel_colour' not in info_locs:
+            error_msg.append('hp_full_pixel_colour')
+
+        if 'scan_window_location' not in info_locs:
+            error_msg.append('scan_window_location')
+
+        if 'cancel_location' not in info_locs:
+            error_msg.append('cancel_location')
+
+        if 'metin_stack_location' not in info_locs:
+            error_msg.append('metin_stack_location')
+
+        if 'bot_check_location' not in info_locs:
+            error_msg.append('bot_check_location')
+
+        if 'respawn_button_location' not in info_locs:
+            error_msg.append('respawn_button_location')
+
+        if 'turn_off' not in self.cfg_local:
+            error_msg.append('turn_off')
+
+        if 'metin_treshold' not in self.cfg_local:
+            error_msg.append('metin_treshold')
+
+        if error_msg:
+            return ', '.join(error_msg)
+        else:
+            return ''
+
     def save_selected_option_metins(self, event):
         self.metin.selected_metin = self.dropdown.get()
+
+    def save_selected_option_class(self, event):
+        self.metin.selected_class = self.dropdown_class.get()
 
     def toggle_display_images(self, *args):
         if self.display_images_var.get() == 1:
@@ -311,8 +461,12 @@ class ApplicationWindow:
 
     def start_bot_loop_thread(self):
         if not self.metin.running:  # Prevent starting multiple threads
-            self.metin.running = True
-            threading.Thread(target=self.metin.bot_loop, daemon=True).start()
+            error_msg = self.build_error_msg()
+            if not error_msg:
+                self.metin.running = True
+                threading.Thread(target=self.metin.bot_loop, daemon=True).start()
+            else:
+                messagebox.showerror("Pred spustenim treba vyplnit:", error_msg)
 
     def take_screenshot(self):
         # Capture the screenshot of the entire screen
@@ -414,7 +568,7 @@ class ApplicationWindow:
 
 
 class Metin:
-    def __init__(self, skills_to_activate, display_screenshot, debug_bot):
+    def __init__(self, display_screenshot, debug_bot):
         self.debug_bot = debug_bot
         self.window_top = None
         self.window_left = None
@@ -423,7 +577,6 @@ class Metin:
         self.metin_window = None
         self.window_title = None
         self.skill_timer = 0
-        self.skills_to_activate = skills_to_activate
         self.respawn_timer = 0
         self.hp_bar_location = None
         self.hp_full_location = None
@@ -431,7 +584,7 @@ class Metin:
         self.scan_window_location = None
         self.cancel_location = None
         self.respawn_location = None
-        self.skills_cd = 60 * 60 * 2 + 10
+        self.skills_cd = 30
         self.running = False
         self.metin_stones = []
         self.selected_metin = None
@@ -439,6 +592,10 @@ class Metin:
         self.respawn_timer_diff = 0
         self.not_destroying_metin = 0
         self.not_destroying_metin_diff = 0
+        self.not_destroying_metin_treshold = 15
+        self.metin_stuck_time = 18
+        self.metin_stuck_timer = 0
+        self.metin_stuck_timer_diff = 0
         self.buff_timer = 0
         self.buff_timer_diff = 0
         self.event_timer = 0
@@ -456,6 +613,7 @@ class Metin:
         self.weather = 0
         self.lower_event = None
         self.upper_event = None
+        self.last_num_in_stack = 0
         self.contour_low_event = 0
         self.contour_high_event = 0
         self.aspect_low_event = 0
@@ -474,9 +632,10 @@ class Metin:
         self.weather_image = None
         self.text_hash_map = None
         self.bot_img_path = None
+        self.skill_temp = None
         self.metin_stack_location = None
         self.bot_check_location = None
-        self.event_search_timer = 10
+        self.event_search_timer = 2
         self.options = [ # coords for options menu buttons
                 (35, 70, 80, 90),
                 (100, 70, 150, 90),
@@ -485,6 +644,8 @@ class Metin:
                 (70, 130, 120, 150)
             ]
         self.premium = True
+        self.selected_class = None
+        self.skills_cfg = {}
 
         self.load_images()
 
@@ -627,7 +788,7 @@ class Metin:
 
     def death_check(self, np_image):
         self.respawn_timer_diff = time.time() - self.respawn_timer
-        if self.respawn_timer == 0 or self.respawn_timer != 0 and self.respawn_timer_diff >= 5:
+        if self.respawn_timer == 0 or self.respawn_timer != 0 and self.respawn_timer_diff >= 10:
             print('death_check')
             self.respawn_timer = time.time()
 
@@ -641,24 +802,38 @@ class Metin:
                 time.sleep(0.2)
                 pyautogui.click()
                 time.sleep(1)
-                press_button_multiple('ctrl+g', self.window_title)
+                # press_button_multiple('ctrl+g', self.window_title)
 
     def activate_skills(self):
+        horse_flag = False
         self.skill_timer_diff = time.time() - self.skill_timer
         if self.skill_timer == 0 or self.skill_timer != 0 and self.skill_timer_diff >= self.skills_cd:
-            time.sleep(2)
-            print('activate_skills')
-            self.skill_timer = time.time()
-            print('zosadam')
-            press_button_multiple('ctrl+g', self.window_title)
-            time.sleep(0.15)
+            np_img = self.get_np_image()
+            class_skills = self.skills_cfg[self.selected_class]
 
-            for skill in self.skills_to_activate:
-                print(f'skill {skill}')
-                press_button(skill, self.window_title)
-                time.sleep(2)
-            press_button_multiple('ctrl+g', self.window_title)
-            print('nasadam')
+            for skill in class_skills.keys():
+                path = class_skills[skill]['skill_active_img_path']
+                skill_key_bind = class_skills[skill]['key_bind'].strip()
+                if skill_key_bind == '':
+                    continue
+
+                location = locate_image(path, np_img)
+                if location is None:
+                    print(f'Zapinam {skill}')
+                    if not horse_flag:
+                        horse_flag = True
+                        self.skill_timer = time.time()
+                        print('zosadam z kona')
+                        press_button_multiple('ctrl+g', self.window_title)
+                        time.sleep(0.15)
+
+                    press_button(skill_key_bind, self.window_title)
+                    time.sleep(2)
+                else:
+                    print('skill je aktivny')
+            if horse_flag:
+                press_button_multiple('ctrl+g', self.window_title)
+                print('nasadam na kona')
 
     def activate_buffs(self):
         self.buff_timer_diff = time.time() - self.buff_timer
@@ -677,7 +852,7 @@ class Metin:
         self.not_destroying_metin_diff = time.time() - self.not_destroying_metin if self.not_destroying_metin else 0
 
 
-        if self.not_destroying_metin_diff > 15:
+        if self.not_destroying_metin_diff > self.not_destroying_metin_treshold:
             self.running = False
             self.destroying_metins = False
             self.not_destroying_metin = 0
@@ -711,22 +886,47 @@ class Metin:
             metins_in_stack = int(metin_stack_string[1])
             metin_num = stack - metins_in_stack
             print('nasiel sa metin hash')
+
         else:
             if metin_is_alive: # clicked at mob
                 print('nenasla sa fronta pri hp bare, rusim frontu')
+                keyboard.press('space')
+                time.sleep(0.15)
                 press_button('w', self.window_title)
+                keyboard.release('space')
                 time.sleep(0.15)
                 np_image = self.get_np_image()
                 self.cancel_all(np_image)
 
             print('nenasiel sa metin hash')
             metin_num = 1
+            metins_in_stack = 0
+
+        if metins_in_stack == self.last_num_in_stack:
+            if self.metin_stuck_timer == 0:
+                self.metin_stuck_timer = time.time()
+            else:
+                self.metin_stuck_timer_diff = time.time() - self.metin_stuck_timer
+                if self.metin_stuck_timer_diff >= self.metin_stuck_time:
+                    # metin is not being destroyed
+                    keyboard.press('space')
+                    time.sleep(0.15)
+                    press_button('w', self.window_title)
+                    keyboard.release('space')
+                    time.sleep(0.15)
+                    np_image = self.get_np_image()
+                    self.cancel_all(np_image)
+        else:
+            self.metin_stuck_timer = 0
+
+        self.last_num_in_stack = metins_in_stack
+
         if self.destroy_event_stones:
             self.event_timer_diff = time.time() - self.event_timer
             if self.event_timer == 0 or self.event_timer != 0 and self.event_timer_diff >= self.event_search_timer:
                 print(f'hladam event kamen!!')
                 self.event_timer = time.time()
-                self.event_search_timer = 2
+
                 metin_positions_event, image_to_display_event = self.locate_metin(np_image_crop, metin_num, x_middle, y_middle,
                                                                                   self.lower_event, self.upper_event,
                                                                                   self.contour_high_event, self.contour_low_event,
@@ -737,14 +937,18 @@ class Metin:
                     print(f'nasiel sa event kamen!!')
                     print(f'metin_positions_event {len(metin_positions_event)}')
                     # cancel stack
+                    keyboard.press('space')
+                    time.sleep(0.15)
                     press_button('w', self.window_title)
+                    keyboard.release('space')
                     time.sleep(0.15)
                     for metin_event_pos in metin_positions_event:
                         metin_pos_x, metin_pos_y = metin_event_pos
 
                         np_image_mob_check = self.get_np_image()
                         np_image_mob_check = np_image_mob_check[y1: y2, x1: x2]
-                        if np.all(np_image_mob_check[metin_pos_y, metin_pos_x] == [0, 0, 0]):
+                        pixel_to_check = np_image_mob_check[metin_pos_y, metin_pos_x]
+                        if np.all(np.all(np.abs(pixel_to_check - [0, 0, 0]) <= 5)):
                             print("The pixel is black.")
                         else:
                             print("The pixel is not black.")
@@ -757,15 +961,18 @@ class Metin:
                                 time.sleep(0.15)
                                 press_button('y', self.window_title)
 
+
                             mouse_left_click(metin_pos_x, metin_pos_y, self.window_title)
                             self.destroying_metins = True
-                            sleep_time = random.random() * (0.3 - 0.15) + 0.15
+
+                            sleep_time = random.random() * (1.5 - 2.1) + 2.1
+
                             time.sleep(sleep_time)
 
-                            return image_to_display_event
+                    return image_to_display_event
+                else:
+                    self.event_search_timer = 2
 
-
-        # return np_image_crop
         metin_positions, image_to_display = self.locate_metin(np_image_crop, metin_num, x_middle, y_middle, self.lower,
                                                               self.upper, self.contour_high, self.contour_low,
                                                               self.aspect_low, self.aspect_high, self.circularity)
@@ -774,9 +981,11 @@ class Metin:
             print('Metin Found')
             for metin_pos in metin_positions:
                 metin_pos_x, metin_pos_y = metin_pos
+
                 np_image_mob_check = self.get_np_image()
                 np_image_mob_check = np_image_mob_check[y1: y2, x1: x2]
-                if np.all(np_image_mob_check[metin_pos_y, metin_pos_x] == [0, 0, 0]):
+                pixel_to_check = np_image_mob_check[metin_pos_y, metin_pos_x]
+                if np.all(np.all(np.abs(pixel_to_check - [0, 0, 0]) <= 5)):
                     print("The pixel is black.")
                 else:
                     # no metin is being destroyed
@@ -788,8 +997,17 @@ class Metin:
                         time.sleep(0.15)
                         press_button('y', self.window_title)
 
-                    mouse_left_click(metin_pos_x, metin_pos_y, self.window_title)
-                    self.destroying_metins = True
+                    metin_is_alive = self.locate_metin_hp(hp_bar)
+                    print(f'metin_is_alive {metin_is_alive} not_destroying_metin_diff {self.not_destroying_metin_diff}')
+                    if not metin_is_alive and self.not_destroying_metin_diff > 3:
+                        mouse_left_click(metin_pos_x, metin_pos_y, self.window_title)
+                        self.destroying_metins = True
+                    elif not metin_is_alive and self.not_destroying_metin_diff == 0:
+                        self.not_destroying_metin = time.time()
+                    elif metin_is_alive:
+                        mouse_left_click(metin_pos_x, metin_pos_y, self.window_title)
+                        self.destroying_metins = True
+
                     sleep_time = random.random() * (0.3 - 0.15) + 0.15
                     time.sleep(sleep_time)
 
