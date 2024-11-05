@@ -116,6 +116,16 @@ class ApplicationWindow:
         self.text_turn_off_bot  = tk.Entry(self.root, width=15)
         self.text_turn_off_bot.grid(row=11, column=0, columnspan=1, pady=5)
 
+        self.entry_cape = tk.Label(self.root, text="Cape time:")
+        self.entry_cape.grid(row=10, column=1, columnspan=1, pady=5)
+        self.text_entry_cape  = tk.Entry(self.root, width=15)
+        self.text_entry_cape.grid(row=11, column=1, columnspan=1, pady=5)
+
+        self.entry_cape_key = tk.Label(self.root, text="Cape key:")
+        self.entry_cape_key.grid(row=10, column=2, columnspan=1, pady=5)
+        self.text_entry_cape_key  = tk.Entry(self.root, width=15)
+        self.text_entry_cape_key.grid(row=11, column=2, columnspan=1, pady=5)
+
         # Create a button to take a screenshot and center it
         self.screenshot_button = tk.Button(self.root, text="Take Screenshot", command=self.take_screenshot)
         self.screenshot_button.grid(row=13, column=1, pady=10)
@@ -268,6 +278,37 @@ class ApplicationWindow:
                                                                                  'skill_active_img_path': path}
         self.metin.skills_cfg = self.cfg_local['classes']
         self.cfg_local['window_name'] = self.text_window_name.get()
+
+        if 'cape_time' in self.cfg_local:
+            if self.text_entry_cape.get() == '':
+                self.text_entry_cape.insert(0, self.cfg_local['cape_time'])
+
+            cape_time = self.text_entry_cape.get()
+            self.cfg_local['cape_time'] = cape_time
+
+            if ',' in cape_time:
+                cape_time_list = cape_time.split(',')
+                cape_time_min = cape_time_list[0].strip()
+                cape_time_max = cape_time_list[1].strip()
+            else:
+                cape_time_min = cape_time.strip()
+                cape_time_max = ''
+
+            self.metin.cape_time_min = float(cape_time_min) if cape_time_min.isdigit() else 0
+            self.metin.cape_time_max = float(cape_time_max) if cape_time_max.isdigit() else 0
+        else:
+            self.cfg_local['cape_time'] = ''
+
+        if 'cape_key' in self.cfg_local:
+            if self.text_entry_cape_key.get() == '':
+                self.text_entry_cape_key.insert(0, self.cfg_local['cape_key'])
+
+            cape_key = self.text_entry_cape_key.get()
+            self.cfg_local['cape_key'] = cape_key
+            self.metin.cape_key = cape_key
+        else:
+            self.cfg_local['cape_key'] = ''
+
 
         if 'turn_off' in self.cfg_local:
             if self.text_turn_off_bot.get() == '':
@@ -623,6 +664,11 @@ class Metin:
         self.aspect_high_event = 0
         self.circularity_event = 0
         self.selected_weather = 999
+        self.cape_time_min = 0
+        self.cape_time_max = 0
+        self.randomized_cape_time = 0.0
+        self.cape_timer = 0
+        self.cape_key = ''
         self.circle_r = 50
         self.settings_options = None
         self.game_settings = None
@@ -719,7 +765,9 @@ class Metin:
                     self.image_to_display = self.destroy_metin(np_image)
                     if self.show_img:
                         self.display_screenshot()
-                    print(f'Iteration execution time {time.time() - loop_time}s')
+                if self.running:
+                    self.use_cape()
+                print(f'Iteration execution time {time.time() - loop_time}s')
 
     def bot_solver(self, np_image):
         cropped_image_x1, cropped_image_y1, cropped_image_x2, cropped_image_y2 = self.bot_check_location
@@ -788,6 +836,31 @@ class Metin:
             to_click_x, to_click_y = output
             mouse_left_click(to_click_x, to_click_y, self.window_title)
             time.sleep(3)
+
+    def use_cape(self):
+        cape_timer_diff = time.time() - self.cape_timer
+        if self.cape_time_min != 0 and self.cape_time_max != 0:
+            if not self.randomized_cape_time:
+                self.randomized_cape_time = random.random() * (self.cape_time_min - self.cape_time_max) + self.cape_time_max
+
+            if self.cape_timer != 0 and cape_timer_diff >= self.randomized_cape_time:
+                self.cape_timer = time.time()
+                self.randomized_cape_time = random.random() * (self.cape_time_min - self.cape_time_max) + self.cape_time_max
+
+                print('Plastujem')
+                press_button(self.cape_key, self.window_title)
+                time.sleep(0.5)
+
+        if self.cape_time_min != 0:
+            if self.cape_timer == 0 or self.cape_timer != 0 and cape_timer_diff >= self.cape_time_min:
+                self.cape_timer = time.time()
+
+                print('Plastujem')
+                press_button(self.cape_key, self.window_title)
+                time.sleep(0.5)
+
+
+
 
     def death_check(self, np_image):
         self.respawn_timer_diff = time.time() - self.respawn_timer
