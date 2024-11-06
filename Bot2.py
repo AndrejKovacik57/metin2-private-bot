@@ -864,7 +864,7 @@ class Metin:
 
     def death_check(self, np_image):
         self.respawn_timer_diff = time.time() - self.respawn_timer
-        if self.respawn_timer == 0 or self.respawn_timer != 0 and self.respawn_timer_diff >= 10:
+        if self.respawn_timer == 0 or self.respawn_timer != 0 and self.respawn_timer_diff >= 2:
             print('death_check')
             self.respawn_timer = time.time()
 
@@ -877,7 +877,7 @@ class Metin:
                 pyautogui.moveTo(respawn_x, respawn_y)
                 time.sleep(0.2)
                 pyautogui.click()
-                time.sleep(1)
+                time.sleep(0.2)
                 # press_button_multiple('ctrl+g', self.window_title)
 
     def activate_skills(self):
