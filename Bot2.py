@@ -207,8 +207,9 @@ class ApplicationWindow:
             for class_option in self.class_skills.keys():
                 self.cfg_local['classes'][class_option] = {}
                 for skill_option in self.class_skills[class_option]:
-                    self.cfg_local['classes'][class_option][skill_option] = {"key_bind":"", "skill_active_img_path":""}
-
+                    path = self.class_skills[class_option][skill_option]
+                    self.cfg_local['classes'][class_option][skill_option] = {'key_bind': "",
+                                                                             'skill_active_img_path': path}
             self.metin = Metin(self.display_screenshot, debug_bot)
 
         self.metin.metin_stones = cfg['metin_stones']
@@ -585,7 +586,8 @@ class ApplicationWindow:
     def on_mouse_drag(self, event, canvas):
         # Update the rectangle as the user drags the mouse
         cur_x, cur_y = (event.x, event.y)
-        canvas.coords(self.rect, self.start_x, self.start_y, cur_x, cur_y)
+        if self.rect:
+            canvas.coords(self.rect, self.start_x, self.start_y, cur_x, cur_y)
 
     def on_button_release(self, event):
         # Finalize the rectangle and print/save the coordinates
