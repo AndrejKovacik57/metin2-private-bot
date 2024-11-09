@@ -71,5 +71,20 @@
                 }
             ]
         }
-    ]
+    ],
+    "fishing": {
+        "mask": {
+            "hMin": 0,
+            "sMin": 66,
+            "vMin": 88,
+            "hMax": 18,
+            "sMax": 148,
+            "vMax": 142
+        },
+        "contourLow": 30,
+        "contourHigh": 10500,
+        "aspect_low": 75,
+        "aspect_high": 119,
+        "circularity": 263
+    }
 }

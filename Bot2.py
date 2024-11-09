@@ -1,4 +1,6 @@
 import random
+from turtledemo.penrose import start
+
 import pyautogui
 import cv2
 import numpy as np
@@ -203,13 +205,14 @@ class ApplicationWindow:
             self.cfg_local['information_locations'] = {}
             self.cfg_local['classes'] = {}
             for class_option in self.class_skills.keys():
-                self.cfg_local['classes'][class_option] = []
+                self.cfg_local['classes'][class_option] = {}
                 for skill_option in self.class_skills[class_option]:
                     self.cfg_local['classes'][class_option][skill_option] = ""
 
             self.metin = Metin(self.display_screenshot, debug_bot)
 
         self.metin.metin_stones = cfg['metin_stones']
+        self.metin.fish_options = cfg['fishing']
         self.metin_options = [item['name'] for item in self.metin.metin_stones]
 
 
@@ -678,12 +681,15 @@ class Metin:
         self.image_to_display = None
         self.cancel_img = None
         self.metin_hp_img = None
+        self.fishing_img = None
         self.weather_image = None
         self.text_hash_map = None
         self.bot_img_path = None
         self.skill_temp = None
         self.metin_stack_location = None
         self.bot_check_location = None
+        self.start_fishing_flag = False
+        self.is_fishing_flag = False
         self.event_search_timer = 2
         self.options = [ # coords for options menu buttons
                 (35, 70, 80, 90),
@@ -694,6 +700,14 @@ class Metin:
             ]
         self.premium = True
         self.selected_class = None
+        self.fish_options = {}
+        self.lower_fishing = None
+        self.upper_fishing = None
+        self.contour_low_fishing = None
+        self.contour_high_fishing = None
+        self.aspect_low_fishing = None
+        self.aspect_high_fishing = None
+        self.circularity_fishing = None
         self.skills_cfg = {}
 
         self.load_images()
@@ -715,6 +729,7 @@ class Metin:
         self.bot_img_path = load_image('bot_images\\bot_ochrana.png')
         self.cancel_img = load_image('bot_images\\cancel_metin_button.png')
         self.metin_hp_img = load_image('bot_images\\metin_hp2.png')
+        self.fishing_img = load_image('bot_images\\Fishing.png')
 
     def bot_loop(self):
         metin_mask = {}
@@ -738,7 +753,14 @@ class Metin:
                 self.circularity_event =  event_config['circularity'] / 1000.0
 
                 break
+        self.contour_low_fishing = self.fish_options['contourLow']
+        self.contour_high_fishing = self.fish_options['contourHigh']
+        self.aspect_low_fishing = self.fish_options['aspect_low'] / 100.0
+        self.aspect_high_fishing = self.fish_options['aspect_high'] / 100.0
+        self.circularity_fishing = self.fish_options['circularity'] / 1000.0
+
         self.lower, self.upper = create_low_upp(metin_mask)
+        self.lower_fishing, self.upper_fishing = create_low_upp(self.fish_options)
         self.lower_event, self.upper_event = create_low_upp(event_mask)
 
         time.sleep(2)
@@ -767,6 +789,8 @@ class Metin:
                         self.display_screenshot()
                 if self.running:
                     self.use_cape()
+                # if self.running:
+                #     self.fish_bot()
                 print(f'Iteration execution time {time.time() - loop_time}s')
 
     def bot_solver(self, np_image):
@@ -1178,7 +1202,7 @@ class Metin:
     def locate_metin_hp(self, np_image_hp_bar):
         return is_subimage(np_image_hp_bar, self.metin_hp_img)
 
-    def get_np_image(self):
+    def get_np_image(self, convert_color=True):
         metin_window = gw.getWindowsWithTitle(self.window_title)[0]
         screenshot = get_window_screenshot(metin_window)
         self.window_left = metin_window.left
@@ -1188,8 +1212,8 @@ class Metin:
         self.metin_window = metin_window
 
         np_image = np.array(screenshot)
-
-        np_image = cv2.cvtColor(np_image, cv2.COLOR_RGB2BGR)
+        if convert_color:
+            np_image = cv2.cvtColor(np_image, cv2.COLOR_RGB2BGR)
         return np_image
 
     def choose_weather(self):
@@ -1249,6 +1273,84 @@ class Metin:
 
         time.sleep(0.5)
         self.cancel_all(np_image)
+
+    def fish_bot(self):
+        np_image = self.get_np_image(convert_color=False)
+        location = locate_image(self.fishing_img, np_image, 0.9)
+        if location is not None:
+            self.is_fishing_flag = True
+            self.start_fishing_flag = False
+            y1 = location.top
+            y2 = location.top + location.height + 230
+            x1 = location.left
+            x2 = location.left + location.width
+            np_image = np_image[y1: y2, x1: x2]
+            height, width = np_image.shape[:2]
+            height2 = height//2
+            red_pixel_img = np_image[height2:height2+5, 80:85]
+
+            red_pixels = (red_pixel_img[:, :, 0] == 255) & (red_pixel_img[:, :, 1] == 0) & (red_pixel_img[:, :, 2] == 0)
+
+            # Check if any such pixel exists
+            if not np.any(red_pixels):
+                print('ryba nieje v kruhu')
+                return
+
+            np_image = self.get_np_image(convert_color=False)
+            fish_timer = time.time()
+            np_image = np_image[y1: y2, x1: x2]
+            hsv = cv2.cvtColor(np_image, cv2.COLOR_BGR2HSV)
+            print('ryba je v kruhu')
+
+            # Create a mask based on the HSV range
+            mask = cv2.inRange(hsv, self.lower_fishing, self.upper_fishing)
+            selected_contour = None
+            np_image = cv2.bitwise_and(np_image, np_image, mask=mask)
+            contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            if contours:
+                for contour in contours:
+                    if self.contour_high_fishing > cv2.contourArea(contour) > self.contour_low_fishing:  # 900
+                        x, y, w, h = cv2.boundingRect(contour)
+                        aspect_ratio = float(w) / h
+                        area = cv2.contourArea(contour)
+                        perimeter = cv2.arcLength(contour, True)
+                        circularity = 4 * np.pi * (area / (perimeter * perimeter))
+
+                        # Adjust the thresholds based on your observations
+                        if self.aspect_low_fishing < aspect_ratio < self.aspect_high_fishing and circularity > self.circularity_fishing:
+                            selected_contour = contour
+
+            if selected_contour is not None:
+                print('mam ryby')
+                x, y, w, h = cv2.boundingRect(selected_contour)
+                selected_contour_pos = (x + w / 2, y + h / 2)
+                cv2.rectangle(np_image, (x, y), (x + w, y + h), (255, 0, 0), 2)
+                #
+                # cv2.imshow('fishing', np_image)
+                x_pos, y_pos = selected_contour_pos
+                x_click =  self.window_left + x1 + x_pos
+                y_click = self.window_top +  y1 + y_pos
+                mouse_left_click(x_click, y_click, self.window_title)
+                sleep_time = random.random() * (0.5 - 0.9) + 0.9
+                print(f'fish timer {time.time() - fish_timer}')
+                time.sleep(sleep_time)
+            else:
+                print('nemam ryby')
+        else:
+            if self.start_fishing_flag == True and self.is_fishing_flag == False:
+                print("davam navnadu")
+                press_button('ľ', self.window_title)
+                sleep_time = random.random() * (0.7 - 1.1) + 1.1
+                time.sleep(sleep_time)
+            self.is_fishing_flag = False
+            sleep_time = random.random() * (1.9 - 5.1) + 5.1
+            time.sleep(sleep_time)
+            press_button('space', self.window_title)
+            sleep_time = random.random() * (0.7 - 1.1) + 1.1
+            time.sleep(sleep_time)
+            self.start_fishing_flag = True
+
+
 
     def cancel_all(self, np_image):
         try:
