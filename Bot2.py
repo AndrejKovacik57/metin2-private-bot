@@ -207,7 +207,7 @@ class ApplicationWindow:
             for class_option in self.class_skills.keys():
                 self.cfg_local['classes'][class_option] = {}
                 for skill_option in self.class_skills[class_option]:
-                    self.cfg_local['classes'][class_option][skill_option] = ""
+                    self.cfg_local['classes'][class_option][skill_option] = {"key_bind":"", "skill_active_img_path":""}
 
             self.metin = Metin(self.display_screenshot, debug_bot)
 
