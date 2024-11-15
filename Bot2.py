@@ -66,8 +66,8 @@ class ApplicationWindow:
         self.start_bot_loop_button = tk.Button(self.root, text="Start bot_loop", command=self.start_bot_loop_thread)
         self.start_bot_loop_button.grid(row=2, column=0, pady=10, padx=10)
 
-        self.stop_bot_loop_button = tk.Button(self.root, text="Start mining", command=self.stop_bot_loop)
-        self.stop_bot_loop_button.grid(row=2, column=1, pady=10, padx=10)
+        self.start_fishbot_button = tk.Button(self.root, text="Start fishbot", command=self.start_fishbot_thread)
+        self.start_fishbot_button.grid(row=2, column=1, pady=10, padx=10)
 
         self.stop_bot_loop_button = tk.Button(self.root, text="Stop bot", command=self.stop_bot_loop)
         self.stop_bot_loop_button.grid(row=2, column=2, pady=10, padx=10)
@@ -513,6 +513,15 @@ class ApplicationWindow:
             else:
                 messagebox.showerror("Pred spustenim treba vyplnit:", error_msg)
 
+    def start_fishbot_thread(self):
+        if not self.metin.running:  # Prevent starting multiple threads
+            error_msg = self.build_error_msg()
+            if not error_msg:
+                self.metin.running = True
+                threading.Thread(target=self.metin.fishbot, daemon=True).start()
+            else:
+                messagebox.showerror("Pred spustenim treba vyplnit:", error_msg)
+
     def take_screenshot(self):
         # Capture the screenshot of the entire screen
         metin_window = gw.getWindowsWithTitle(self.metin.window_title)[0]
@@ -710,6 +719,7 @@ class Metin:
         self.aspect_low_fishing = None
         self.aspect_high_fishing = None
         self.circularity_fishing = None
+        self.fish_counter = 0
         self.skills_cfg = {}
 
         self.load_images()
@@ -767,7 +777,7 @@ class Metin:
 
         time.sleep(2)
         print('idem vybrat pocasie')
-        self.choose_weather()
+        # self.choose_weather()
         upper_limit = 0.5
         lower_limit = 0.1
 
@@ -791,8 +801,31 @@ class Metin:
                         self.display_screenshot()
                 if self.running:
                     self.use_cape()
-                # if self.running:
-                #     self.fish_bot()
+                print(f'Iteration execution time {time.time() - loop_time}s')
+
+    def fishbot(self):
+        self.contour_low_fishing = self.fish_options['contourLow']
+        self.contour_high_fishing = self.fish_options['contourHigh']
+        self.aspect_low_fishing = self.fish_options['aspect_low'] / 100.0
+        self.aspect_high_fishing = self.fish_options['aspect_high'] / 100.0
+        self.circularity_fishing = self.fish_options['circularity'] / 1000.0
+
+        self.lower_fishing, self.upper_fishing = create_low_upp(self.fish_options)
+
+        time.sleep(2)
+
+        upper_limit = 0.5
+        lower_limit = 0.1
+        while self.running:
+            with self.lock:
+                loop_time = time.time()
+                sleep_time = random.random() * (upper_limit - lower_limit) + lower_limit
+                time.sleep(sleep_time)
+                np_image = self.get_np_image()
+                if self.running:
+                    self.bot_solver(np_image)
+                if self.running:
+                    self.fish_bot()
                 print(f'Iteration execution time {time.time() - loop_time}s')
 
     def bot_solver(self, np_image):
@@ -812,6 +845,9 @@ class Metin:
             code_to_find_number = extracted_text_code_to_find[:4]
             print(f'code_to_find_number {code_to_find_number}')
             logging.info(f'code_to_find_number {code_to_find_number}')
+            if len(code_to_find_number) < 4:
+                logging.info(f'code_to_find_number is not length of 4')
+                return
             smallest_difference = 999
             output = None
             smallest_difference_num = None
@@ -840,8 +876,8 @@ class Metin:
                 pos_y = result_center_y + cropped_image_y1 + self.window_top + 1
 
                 if option_number == code_to_find_number:
-                    print('found matching option')
-                    logging.info(f'found matching option')
+                    print(f'found matching option {option_number}')
+                    logging.info(f'found matching option {option_number}')
                     output = pos_x, pos_y
                     exact_match = True
                     out_num = option_number
@@ -1282,6 +1318,7 @@ class Metin:
         if location is not None:
             self.is_fishing_flag = True
             self.start_fishing_flag = False
+            self.fish_counter = 0
             y1 = location.top
             y2 = location.top + location.height + 230
             x1 = location.left
@@ -1339,14 +1376,22 @@ class Metin:
             else:
                 print('nemam ryby')
         else:
-            if self.start_fishing_flag == True and self.is_fishing_flag == False:
+            if self.start_fishing_flag == True and self.is_fishing_flag == False and self.fish_counter == 5:
                 print("davam navnadu")
-                press_button('ľ', self.window_title)
+                self.fish_counter = 0
+                press_button('F1', self.window_title)
                 sleep_time = random.random() * (0.7 - 1.1) + 1.1
                 time.sleep(sleep_time)
+            if self.start_fishing_flag == True and self.is_fishing_flag == False and self.fish_counter < 5:
+                self.fish_counter += 1
+                sleep_time = random.random() * (1.1 - 1.5) + 1.5
+                time.sleep(sleep_time)
+                print("skusam chytat")
+
             self.is_fishing_flag = False
             sleep_time = random.random() * (1.9 - 5.1) + 5.1
             time.sleep(sleep_time)
+            print('nahadzujem')
             press_button('space', self.window_title)
             sleep_time = random.random() * (0.7 - 1.1) + 1.1
             time.sleep(sleep_time)
