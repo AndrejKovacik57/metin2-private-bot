@@ -266,8 +266,16 @@ class ApplicationWindow:
             cape_time_list = re.split(r'[ ,/|-]', cape_time)
             cape_time_min = int(cape_time_list[0])
             cape_time_max = int(cape_time_list[1])
-        metin_treshold = int(self.cfg_local['metin_treshold'])
-        metin_turn_off = int(self.cfg_local['metin_turn_off'])
+        metin_treshold_val = self.cfg_local['metin_treshold']
+        if metin_treshold_val == '':
+            metin_treshold = 0
+        else:
+            metin_treshold = int(self.cfg_local['metin_treshold'])
+        metin_turn_off_val = self.cfg_local['metin_turn_off']
+        if metin_turn_off_val  == '':
+            metin_turn_off = 0
+        else:
+            metin_turn_off = int(self.cfg_local['metin_turn_off'])
 
 
 
