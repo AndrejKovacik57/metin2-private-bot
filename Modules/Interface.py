@@ -1,3 +1,5 @@
+from curses.ascii import isdigit
+
 import numpy as np
 import pygetwindow as gw
 from PIL import Image, ImageTk
@@ -264,10 +266,13 @@ class ApplicationWindow:
         if cape_time in ['0', '']:
             cape_time_min = 0
             cape_time_max = 0
+        elif isdigit(cape_time):
+            cape_time_min = int(cape_time)
+            cape_time_max = 0
         else:
             cape_time_list = re.split(r'[ ,/|-]', cape_time)
-            cape_time_min = int(cape_time_list[0])
-            cape_time_max = int(cape_time_list[1])
+            cape_time_min = int(cape_time_list[0].strip())
+            cape_time_max = int(cape_time_list[1].strip())
         metin_treshold_val = self.cfg_local['metin_treshold']
         if metin_treshold_val == '':
             metin_treshold = 0

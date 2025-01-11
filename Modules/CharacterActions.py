@@ -67,7 +67,7 @@ class CharacterActions:
     def activate_skills(self):
         horse_flag = False
         self.skill_timer_diff = time.time() - self.skill_timer
-        if self.skill_timer == 0 or self.skill_timer != 0 and self.skill_timer_diff >= self.skills_cd:
+        if self.skill_timer == 0 or self.skill_timer_diff >= self.skills_cd:
             np_img = self.game_window.get_np_image()
             class_skills = self.skills_cfg[self.selected_class]
 
@@ -97,10 +97,10 @@ class CharacterActions:
 
     def activate_buffs(self):
         self.buff_timer_diff = time.time() - self.buff_timer
-        if self.buff_timer >= 0 and self.skill_timer_diff >= self.buff_cd:
+        if self.buff_timer == 0 and self.buff_timer_diff >= self.buff_cd:
             print('activate_skills')
             self.buff_cd = 60 + random.randint(1, 30)
-            self.skill_timer = time.time()
+            self.buff_timer = time.time()
             press_button('F9', self.game_window.window_name)
             time.sleep(0.15)
 

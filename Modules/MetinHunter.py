@@ -130,8 +130,9 @@ class MetinHunter:
         if image_to_display is not None: return image_to_display
 
     def __handle_boss_check_timer(self, np_image:np.ndarray) -> bool:
-        boss_check_time_diff = time.time() - self.boss_check_time if self.boss_check_time else 0
-        if boss_check_time_diff > self.boss_check_timer:
+        boss_check_time_diff = time.time() - self.boss_check_time
+        if self.boss_check_time == 0 or boss_check_time_diff >= self.boss_check_timer:
+            self.boss_check_time = time.time()
             boss_exists = self.__boss_check(np_image)
             if boss_exists:
                 self.not_destroying_metin = 0
