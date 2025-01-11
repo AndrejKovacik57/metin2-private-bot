@@ -1,6 +1,4 @@
 import random
-from turtledemo.penrose import start
-
 import pyautogui
 import cv2
 import numpy as np
@@ -777,7 +775,7 @@ class Metin:
 
         time.sleep(2)
         print('idem vybrat pocasie')
-        # self.choose_weather()
+        self.choose_weather()
         upper_limit = 0.5
         lower_limit = 0.1
 

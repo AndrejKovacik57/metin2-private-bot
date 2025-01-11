@@ -1,271 +1,105 @@
 {
     "tesseract_path": "C:\\Program Files\\Tesseract-OCR\\tesseract.exe",
-    "replacements": {
-        "e": [
-            "F"
-        ],
-        "0": [
-            "O"
-        ],
-        "O": [
-            "0"
-        ],
-        "1": [
-            "I",
-            "l",
-            "i"
-        ],
-        "I": [
-            "1",
-            "J",
-            "l"
-        ],
-        "i": [
-            "1"
-        ],
-        "l": [
-            "1",
-            "I"
-        ],
-        "L": [
-            "1"
-        ],
-        "5": [
-            "S"
-        ],
-        "S": [
-            "5",
-            "3"
-        ],
-        "2": [
-            "Z"
-        ],
-        "Z": [
-            "2"
-        ],
-        "6": [
-            "G"
-        ],
-        "G": [
-            "6"
-        ],
-        "8": [
-            "B",
-            "3"
-        ],
-        "B": [
-            "8"
-        ],
-        "F": [
-            "7",
-            "e"
-        ],
-        "7": [
-            "F"
-        ],
-        "3": [
-            "S",
-            "8"
-        ],
-        "V": [
-            "y",
-            "Y"
-        ],
-        "y": [
-            "V"
-        ],
-        "h": [
-            "A"
-        ],
-        "A": [
-            "h"
-        ],
-        "Y": [
-            "V"
-        ],
-        "J": [
-            "I"
-        ]
-    },
-    "information_locations": {
-        "hp_bar_location": [
-            1320,
-            53,
-            1335,
-            67
-        ],
-        "hp_full_location": [
-            1434,
-            59,
-            1434,
-            59
-        ],
-        "cancel_location": [
-            1471,
-            52,
-            1485,
-            68
-        ],
-        "scan_window_location": [
-            275,
-            194,
-            2360,
-            1238
-        ],
-        "hp_full_pixel_colour": [
-            182,
-            193,
-            255
-        ],
-        "respawn_button_location": [
-            67,
-            94,
-            246,
-            124
-        ],
-        "bio_location": [
-            2439,
-            108,
-            2439,
-            108
-        ]
-    },
     "metin_stones": [
         {
-            "name": "Metin of shadow",
+            "name": "Kamen lesu",
             "mask": {
-                "hMin": 74,
-                "sMin": 23,
-                "vMin": 0,
+                "hMin": 35,
+                "sMin": 22,
+                "vMin": 30,
                 "hMax": 255,
                 "sMax": 255,
-                "vMax": 137
+                "vMax": 244
             },
-            "contourLow": 1054,
-            "contourHigh": 7371,
-            "aspect_low": 55,
-            "aspect_high": 113,
-            "circularity": 82,
-            "weather": 1
+            "contourLow": 1600,
+            "contourHigh": 10500,
+            "aspect_low": 58,
+            "aspect_high": 112,
+            "circularity": 228,
+            "weather": 9,
+            "event_stones": [
+                {
+                    "name": "Tekvica",
+                    "mask": {
+                        "hMin": 13,
+                        "sMin": 155,
+                        "vMin": 79,
+                        "hMax": 27,
+                        "sMax": 255,
+                        "vMax": 255
+                    },
+                    "contourLow": 1112,
+                    "contourHigh": 10500,
+                    "aspect_low": 82,
+                    "aspect_high": 187,
+                    "circularity": 126
+                }
+            ]
         },
         {
-            "name": "Metin of fall",
+            "name": "Metin kralovske skeble",
             "mask": {
-                "hMin": 2,
-                "sMin": 91,
-                "vMin": 0,
-                "hMax": 11,
-                "sMax": 176,
-                "vMax": 255
-            },
-            "contourLow": 1155,
-            "contourHigh": 8037,
-            "aspect_low": 67,
-            "aspect_high": 131,
-            "circularity": 144,
-            "weather": 9
-        },
-        {
-            "name": "Metin of death",
-            "mask": {
-                "hMin": 0,
-                "sMin": 53,
-                "vMin": 0,
-                "hMax": 10,
-                "sMax": 473,
-                "vMax": 10000
-            },
-            "contourLow": 1155,
-            "contourHigh": 8037,
-            "aspect_low": 67,
-            "aspect_high": 131,
-            "circularity": 144,
-            "weather": 9
-        },
-        {
-            "name": "Metin of murder",
-            "mask": {
-                "hMin": 162,
+                "hMin": 88,
                 "sMin": 0,
                 "vMin": 0,
-                "hMax": 255,
-                "sMax": 255,
-                "vMax": 101
-            },
-            "contourLow": 688,
-            "contourHigh": 8000,
-            "aspect_low": 65,
-            "aspect_high": 98,
-            "circularity": 100,
-            "weather": 1
-        },
-        {
-            "name": "Metin Tu-Young",
-            "mask": {
-                "hMin": 0,
-                "sMin": 0,
-                "vMin": 87,
-                "hMax": 14,
+                "hMax": 149,
                 "sMax": 255,
                 "vMax": 255
             },
-            "contourLow": 558,
-            "contourHigh": 8000,
-            "aspect_low": 42,
-            "aspect_high": 132,
-            "circularity": 275,
-            "weather": 3
-        },
-        {
-            "name": "Metin Jeon-Un",
-            "mask": {
-                "hMin": 7,
-                "sMin": 98,
-                "vMin": 37,
-                "hMax": 9,
-                "sMax": 210,
-                "vMax": 255
-            },
-            "contourLow": 338,
-            "contourHigh": 8000,
-            "aspect_low": 63,
-            "aspect_high": 104,
-            "circularity": 183,
-            "weather": 9
-        },
-        {
-            "name": "Metin of Wrath - northeast",
-            "mask": {
-                "hMin": 71,
-                "sMin": 0,
-                "vMin": 23,
-                "hMax": 180,
-                "sMax": 171,
-                "vMax": 158
-            },
-            "contourLow": 1170,
-            "contourHigh": 8000,
-            "aspect_low": 54,
-            "aspect_high": 78,
-            "circularity": 409,
-            "weather": 3
-        },
-        {
-            "name": "Metin of Wrath - north",
-            "mask": {
-                "hMin": 80,
-                "sMin": 0,
-                "vMin": 39,
-                "hMax": 183,
-                "sMax": 98,
-                "vMax": 95
-            },
-            "contourLow": 1170,
-            "contourHigh": 8000,
-            "aspect_low": 53,
-            "aspect_high": 89,
-            "circularity": 120,
-            "weather": 10
+            "contourLow": 9000,
+            "contourHigh": 17000,
+            "aspect_low": 86,
+            "aspect_high": 155,
+            "circularity": 41,
+            "weather": 5,
+            "event_stones": [
+                {
+                    "name": "Tekvica",
+                    "mask": {
+                        "hMin": 8,
+                        "sMin": 120,
+                        "vMin": 0,
+                        "hMax": 18,
+                        "sMax": 255,
+                        "vMax": 255
+                    },
+                    "contourLow": 756,
+                    "contourHigh": 10500,
+                    "aspect_low": 81,
+                    "aspect_high": 128,
+                    "circularity": 67
+                }
+            ]
         }
-    ]
+    ],
+    "fishing": {
+        "mask": {
+            "hMin": 0,
+            "sMin": 66,
+            "vMin": 88,
+            "hMax": 18,
+            "sMax": 148,
+            "vMax": 142
+        },
+        "contourLow": 30,
+        "contourHigh": 10500,
+        "aspect_low": 75,
+        "aspect_high": 119,
+        "circularity": 263
+    },
+    "skebli": {
+                    "mask": {
+                "hMin": 88,
+                "sMin": 0,
+                "vMin": 0,
+                "hMax": 149,
+                "sMax": 255,
+                "vMax": 255
+            },
+            "contourLow": 2447,
+            "contourHigh": 9321,
+            "aspect_low": 79,
+            "aspect_high": 136,
+            "circularity": 119
+    }
 }
