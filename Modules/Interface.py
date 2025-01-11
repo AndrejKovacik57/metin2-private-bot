@@ -206,6 +206,9 @@ class ApplicationWindow:
                         self.cfg_local['classes'][class_option][skill_option] = {'key_bind': "",
                                                                                  'skill_active_img_path': path}
 
+        if 'window_name' not in self.cfg_local:
+            self.cfg_local['window_name'] = ''
+
         if 'cape_time' not in self.cfg_local:
             self.cfg_local['cape_time'] = ''
 
