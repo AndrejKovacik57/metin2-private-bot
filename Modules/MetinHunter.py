@@ -139,6 +139,7 @@ class MetinHunter:
                 self.not_destroying_metin = 0
                 self.metin_stuck_timer = 0
                 self.__attack_boss()
+                self.killing_boss = True
                 return True
 
         return False
@@ -180,16 +181,14 @@ class MetinHunter:
 
                         if aspect_low < aspect_ratio < aspect_high and item_circularity > circularity:
                             # found boss
-                            self.killing_boss = True
                             return True
         self.killing_boss = False
         return False
 
     def __attack_boss(self):
-        press_button('w', self.game_window.window_name)
-        time.sleep(0.15)
-        press_button(self.cape_key, self.game_window.window_name)
-        time.sleep(0.15)
+        if not self.killing_boss:
+            press_button(self.cape_key, self.game_window.window_name)
+            time.sleep(0.15)
 
         keyboard.press('space')
         time.sleep(5)
