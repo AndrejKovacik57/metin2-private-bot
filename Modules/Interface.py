@@ -138,6 +138,8 @@ class ApplicationWindow:
         self.apply = tk.Button(self.root, text="Apply", command=self.apply_fields)
         self.apply.grid(row=16, column=0, columnspan=4, pady=10)
 
+        self.last_row = 17
+
         self.cfg = {}
         self.cfg_local = {}
         self.information_locations = {}
@@ -505,7 +507,7 @@ class ApplicationWindow:
             else:
                 # Create the label and place it at the bottom of the grid
                 self.image_label = tk.Label(self.root, image=self.screenshot_img)
-                self.image_label.grid(row=14, column=0, columnspan=4, pady=10)
+                self.image_label.grid(row=self.last_row, column=0, columnspan=4, pady=10)
 
         # Use `after` to safely update the GUI from the main thread
         self.root.after(0, update_image)
