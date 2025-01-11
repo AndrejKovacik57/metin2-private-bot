@@ -64,6 +64,7 @@ class MetinHunter:
         self.cape_key = ''
         self.boss_check_timer = 5
         self.boss_check_time = 0
+        self.killing_boss = False
 
         self.metin_hp_img = load_image('../bot_images/metin_hp2.png')
         self.cancel_img = load_image('../bot_images/cancel_metin_button.png')
@@ -131,7 +132,7 @@ class MetinHunter:
 
     def __handle_boss_check_timer(self, np_image:np.ndarray) -> bool:
         boss_check_time_diff = time.time() - self.boss_check_time
-        if self.boss_check_time == 0 or boss_check_time_diff >= self.boss_check_timer:
+        if self.killing_boss or self.boss_check_time == 0 or boss_check_time_diff >= self.boss_check_timer:
             self.boss_check_time = time.time()
             boss_exists = self.__boss_check(np_image)
             if boss_exists:
@@ -179,7 +180,9 @@ class MetinHunter:
 
                         if aspect_low < aspect_ratio < aspect_high and item_circularity > circularity:
                             # found boss
+                            self.killing_boss = True
                             return True
+        self.killing_boss = False
         return False
 
     def __attack_boss(self):

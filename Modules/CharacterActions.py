@@ -97,7 +97,8 @@ class CharacterActions:
 
     def activate_buffs(self):
         self.buff_timer_diff = time.time() - self.buff_timer
-        if self.buff_timer == 0 and self.buff_timer_diff >= self.buff_cd:
+        print(f'self.buff_timer_diff {self.buff_timer_diff}')
+        if self.buff_timer == 0 or self.buff_timer_diff >= self.buff_cd:
             print('activate_skills')
             self.buff_cd = 60 + random.randint(1, 30)
             self.buff_timer = time.time()
