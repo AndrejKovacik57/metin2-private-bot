@@ -56,7 +56,8 @@ class BotManager:
         self.game_window.window_name = window_name
         self.character_actions.load_values(skills_cfg, selected_class, cape_time_min, cape_time_max, cape_key)
         self.anti_bot.load_values(tesseract_path, bot_check_location)
-        self.metin_hunter.load_values(scan_window_location, hp_bar_location, metin_stack_location, not_destroying_metin_treshold, selected_metin, metin_treshold)
+        self.metin_hunter.load_values(scan_window_location, hp_bar_location, metin_stack_location, not_destroying_metin_treshold,
+                                      selected_metin, metin_treshold, cape_key)
 
 
 

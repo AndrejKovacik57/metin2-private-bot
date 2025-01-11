@@ -60,18 +60,24 @@ class MetinHunter:
         self.aspect_high_event = 0
         self.circularity_event = 0
 
+        self.bosses = []
+        self.cape_key = ''
+        self.boss_check_timer = 5
+        self.boss_check_time = 0
 
         self.metin_hp_img = load_image('../bot_images/metin_hp2.png')
         self.cancel_img = load_image('../bot_images/cancel_metin_button.png')
 
 
-    def load_values(self, scan_window_location, hp_bar_location, metin_stack_location, not_destroying_metin_treshold, selected_metin, metin_treshold):
+    def load_values(self, scan_window_location, hp_bar_location, metin_stack_location, not_destroying_metin_treshold,
+                    selected_metin, metin_treshold, cape_key):
         self.scan_window_location = scan_window_location
         self.hp_bar_location = hp_bar_location
         self.metin_stack_location = metin_stack_location
         self.not_destroying_metin_treshold = not_destroying_metin_treshold
         self.selected_metin = selected_metin
         self.metin_stuck_time = metin_treshold
+        self.cape_key = cape_key
 
     def initialize_contour_parameters(self, metin_stones):
         for metin_config in metin_stones:
@@ -92,16 +98,21 @@ class MetinHunter:
                 self.lower, self.upper = create_low_upp(metin_config)
                 self.lower_event, self.upper_event = create_low_upp(event_config)
 
+                self.bosses = metin_config['bosses']
+
                 return metin_config['weather']
 
     def hunt_metin(self, np_image:np.ndarray):
         np_image_crop = crop_image(np_image, self.scan_window_location)
         scan_x1, scan_y1, scan_x2, scan_y2 = self.scan_window_location
-        x_middle = self.game_window.window_left + scan_x1 + (scan_x2 - scan_x1) // 2
-        y_middle = self.game_window.window_top + scan_y1 + (scan_y2 - scan_y1) // 2
+        x_middle = self.game_window.window_left + scan_x1 + scan_x2 // 2
+        y_middle = self.game_window.window_top + scan_y1 + scan_y2  // 2
 
         stop_bot = self.__handle_metin_destruction_timer()
         if stop_bot: return np_image_crop
+
+        boss_exists = self.__handle_boss_check_timer(np_image)
+        if boss_exists: return np_image_crop
 
         hp_bar = crop_image(np_image, self.hp_bar_location)
         metin_is_alive = self.__locate_metin_hp(hp_bar)   # check if metin was destroyed
@@ -117,8 +128,17 @@ class MetinHunter:
         image_to_display = self.__handle_metin_stones(np_image_crop, hp_bar, metin_num, x_middle, y_middle)
         if image_to_display is not None: return image_to_display
 
+    def __handle_boss_check_timer(self, np_image:np.ndarray) -> bool:
+        boss_check_time_diff = time.time() - self.boss_check_time if self.boss_check_time else 0
+        if boss_check_time_diff > self.boss_check_timer:
+            boss_exists = self.__boss_check(np_image)
+            if boss_exists:
+                self.not_destroying_metin = 0
+                self.metin_stuck_timer = 0
+                self.__attack_boss()
+                return True
 
-
+        return False
 
     def __handle_metin_destruction_timer(self) -> bool:
         self.not_destroying_metin_diff = time.time() - self.not_destroying_metin if self.not_destroying_metin else 0
@@ -131,6 +151,44 @@ class MetinHunter:
             return True
 
         return False
+
+    def __boss_check(self, np_image:np.ndarray) -> bool:
+        hsv = cv2.cvtColor(np_image, cv2.COLOR_BGR2HSV)
+
+        for boss in self.bosses:
+            lower, upper = create_low_upp(boss)
+            contour_low = boss['contourLow']
+            contour_high = boss['contourHigh']
+            aspect_low = boss['aspect_low'] / 100.0
+            aspect_high = boss['aspect_high'] / 100.0
+            circularity = boss['circularity'] / 1000.0
+
+            mask = cv2.inRange(hsv, lower, upper)
+            np_image = cv2.bitwise_and(np_image, np_image, mask=mask)
+            contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            if contours:
+                for contour in contours:
+                    if contour_high > cv2.contourArea(contour) > contour_low:
+                        x, y, w, h = cv2.boundingRect(contour)
+                        aspect_ratio = float(w) / h
+                        area = cv2.contourArea(contour)
+                        perimeter = cv2.arcLength(contour, True)
+                        item_circularity = 4 * np.pi * (area / (perimeter * perimeter))
+
+                        if aspect_low < aspect_ratio < aspect_high and item_circularity > circularity:
+                            # found boss
+                            return True
+        return False
+
+    def __attack_boss(self):
+        press_button('w', self.game_window.window_name)
+        time.sleep(0.15)
+        press_button(self.cape_key, self.game_window.window_name)
+        time.sleep(0.15)
+
+        keyboard.press('space')
+        time.sleep(5)
+        keyboard.release('space')
 
     def __update_metin_status(self, metin_is_alive:bool) -> None:
         if not metin_is_alive and not self.not_destroying_metin and self.destroying_metins:

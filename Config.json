@@ -69,6 +69,23 @@
                     "aspect_high": 128,
                     "circularity": 67
                 }
+            ],
+            "bosses": [
+                {
+                    "name": "Cerveny",
+                    "mask": {
+                        "hMin": 115,
+                        "sMin": 71,
+                        "vMin": 0,
+                        "hMax": 255,
+                        "sMax": 255,
+                        "vMax": 255
+                    },
+                    "contourLow": 10000,
+                    "contourHigh": 200000,
+                    "aspect_low": 0,
+                    "aspect_high": 300,
+                    "circularity": 0}
             ]
         }
     ],
