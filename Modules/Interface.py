@@ -1,5 +1,3 @@
-from curses.ascii import isdigit
-
 import numpy as np
 import pygetwindow as gw
 from PIL import Image, ImageTk
@@ -266,7 +264,7 @@ class ApplicationWindow:
         if cape_time in ['0', '']:
             cape_time_min = 0
             cape_time_max = 0
-        elif isdigit(cape_time):
+        elif cape_time.isdigit():
             cape_time_min = int(cape_time)
             cape_time_max = 0
         else:
