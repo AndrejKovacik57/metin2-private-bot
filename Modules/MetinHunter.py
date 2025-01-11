@@ -398,7 +398,7 @@ class MetinHunter:
 
                         if use_circle_r:
                             # Draw a circle around the point (x_middle, y_middle) with a radius of 300px
-                            cv2.circle(np_image, (x_middle, y_middle), self.circle_r, (255, 190, 200),
+                            cv2.circle(np_image, (y_middle, x_middle), self.circle_r, (255, 190, 200),
                                        2)  # The color is (255, 190, 200) and the thickness is 2
                             if cur_distance <= self.circle_r:
                                 continue
