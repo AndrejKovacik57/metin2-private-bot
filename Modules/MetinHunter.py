@@ -104,9 +104,10 @@ class MetinHunter:
 
     def hunt_metin(self, np_image:np.ndarray):
         np_image_crop = crop_image(np_image, self.scan_window_location)
-        scan_x1, scan_y1, scan_x2, scan_y2 = self.scan_window_location
-        x_middle = self.game_window.window_left + scan_x1 + scan_x2 // 2
-        y_middle = self.game_window.window_top + scan_y1 + scan_y2  // 2
+        width, height = np_image.shape[:2]
+        scan_x1, scan_y1, _, _ = self.scan_window_location
+        x_middle = self.game_window.window_left + (width // 2) - scan_x1
+        y_middle = self.game_window.window_top + (height // 2) - scan_y1
 
         stop_bot = self.__handle_metin_destruction_timer()
         if stop_bot: return np_image_crop
@@ -398,7 +399,7 @@ class MetinHunter:
 
                         if use_circle_r:
                             # Draw a circle around the point (x_middle, y_middle) with a radius of 300px
-                            cv2.circle(np_image, (y_middle, x_middle), self.circle_r, (255, 190, 200),
+                            cv2.circle(np_image, (x_middle, y_middle), self.circle_r, (255, 190, 200),
                                        2)  # The color is (255, 190, 200) and the thickness is 2
                             if cur_distance <= self.circle_r:
                                 continue
@@ -418,8 +419,6 @@ class MetinHunter:
             selected_contour_positions.append((contour_center_x, contour_center_y))
 
         if not closest_contours:
-            cv2.circle(np_image, (x_middle, y_middle), self.circle_r, (255, 190, 200),
-                       2)
             return None, np_image
 
         # Return the positions of the 5 closest contours and the image
