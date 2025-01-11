@@ -13,13 +13,7 @@ class AntiBot:
         self.bot_img_path = None
         self.bot_check_location = None
         self.text_hash_map = text_hash_map
-        self.options = [ # coords for options menu buttons
-                (35, 80, 80, 95),
-                (100, 80, 150, 95),
-                (35, 110, 80, 125),
-                (100, 110, 150, 125),
-                (70, 140, 120, 155)
-            ]
+
         self.game_window = game_window
 
         self.custom_config = r'--oem 3 --psm 6 outputbase digits'
@@ -49,13 +43,19 @@ class AntiBot:
         cropped_image = np_image[cropped_image_y1:cropped_image_y2, cropped_image_x1:cropped_image_x2]
         location = locate_image(self.bot_img_path, cropped_image, confidence=0.70)
         if location is not None:
+            options = [  # coords for options menu buttons
+                (location.left, location.top, location.left + location.width // 2, location.top + location.height // 3), # lavo,hore, lavo+polka sirky, hore+ tretina vrchu
+                (location.left + location.width // 2, location.top, location.left + location.width, location.top + location.height // 3),# lavo + pola sirky,hore, lavo+polka sirky + sirka, hore+ tretina vrchu
+                (location.left, location.top + location.height // 3, location.left + location.width // 2, location.top + 2* (location.height // 3)),
+                (location.left + location.width // 2, location.top + location.height // 3, location.left + location.width, location.top + 2* (location.height // 3)),
+                (location.left + location.width // 4, location.top + 2* (location.height // 3), location.left + (location.width // 4) + 2 * (location.width // 4), location.top + 3 *(location.height // 3))
+            ]
             # code to find
             x_find = location.left + location.width//2 # middle
             x_find_width = x_find + 55   # width i would like to have
             y_find = location.top - 34 # top location of what i want
             y_find_height = y_find + 20 # its height
             resized_code_to_find = resize_image(cropped_image[y_find:y_find_height, x_find:x_find_width])
-            cv2.imshow('resized_code_to_find', resized_code_to_find)
             extracted_text_code_to_find = pytesseract.image_to_string(resized_code_to_find, config=self.custom_config)
             code_to_find_number = extracted_text_code_to_find[:4]
             print(f'code_to_find_number {code_to_find_number}')
@@ -68,7 +68,7 @@ class AntiBot:
             smallest_difference_num = None
             exact_match = False
             out_num = ''
-            for option_tuple in self.options:
+            for option_tuple in options:
                 result_x1, result_y1, result_x2, result_y2 = option_tuple
                 option = cropped_image[result_y1:result_y2, result_x1:result_x2]
                 option_hash = hashlib.md5(preprocess_image(option)).hexdigest()
