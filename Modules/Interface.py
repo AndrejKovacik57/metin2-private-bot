@@ -259,7 +259,7 @@ class ApplicationWindow:
         selected_class = self.dropdown_class.get()
         selected_metin = self.dropdown_metin.get()
         cape_time = self.text_entry_cape.get()
-        if cape_time == '0':
+        if cape_time in ['0', '']:
             cape_time_min = 0
             cape_time_max = 0
         else:
