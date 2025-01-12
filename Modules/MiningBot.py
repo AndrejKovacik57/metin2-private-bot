@@ -39,6 +39,11 @@ class MiningBot:
                 self.ore_check_time = time.time()
                 print(f'idem spat na {self.ore_check_timer+self.randomized_ore_time}s')
                 self.__click_at_ore(ore_x, ore_y)
+        else:
+            if self.ore_check_time == 0 or ore_check_time_diff >= self.ore_check_timer:
+                self.ore_check_time = time.time()
+                print(f'idem spat na {self.ore_check_timer + self.randomized_ore_time}s')
+                self.__click_at_ore(ore_x, ore_y)
         return np_image_out
 
     def __click_at_ore(self, ore_x:int, ore_y:int):
