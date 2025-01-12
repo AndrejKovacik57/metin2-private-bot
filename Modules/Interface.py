@@ -55,7 +55,7 @@ class ApplicationWindow:
         self.text_window_name = tk.Entry(self.root, width=15)
         self.text_window_name.grid(row=1, column=0, columnspan=4, pady=5)
 
-        self.dropdown_bot_label = tk.Label(self.root, text="Choose Metin Stone:")
+        self.dropdown_bot_label = tk.Label(self.root, text="Choose Bot:")
         self.dropdown_bot_label.grid(row=1, column=0, pady=5)
         self.bot_options = ["Metin bot", "Fish bot", "Mining bot"]
         self.dropdown_bot = ttk.Combobox(self.root, values=self.bot_options, state="readonly")
