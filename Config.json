@@ -104,19 +104,21 @@
         "aspect_high": 119,
         "circularity": 263
     },
-    "skebli": {
-                    "mask": {
-                "hMin": 88,
-                "sMin": 0,
-                "vMin": 0,
-                "hMax": 149,
-                "sMax": 255,
+
+    "mining": {
+         "mask": {
+                "hMin": 0,
+                "sMin": 56,
+                "vMin": 50,
+                "hMax": 44,
+                "sMax": 141,
                 "vMax": 255
-            },
-            "contourLow": 2447,
-            "contourHigh": 9321,
-            "aspect_low": 79,
-            "aspect_high": 136,
-            "circularity": 119
+         },
+        "contourLow": 10006,
+        "contourHigh": 50000,
+        "aspect_low": 65,
+        "aspect_high": 90,
+        "circularity": 85,
+        "weather": 2
     }
 }

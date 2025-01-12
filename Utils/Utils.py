@@ -9,7 +9,7 @@ import pygetwindow as gw
 import os
 import keyboard
 from Modules import GameWindow
-
+import re
 
 def resize_image(image):
     height, width = image.shape[:2]
@@ -195,3 +195,18 @@ def click_location_middle(location, game_window:GameWindow) -> None:
 def crop_image(image:np.ndarray, location:list[int]):
     x1, y1, x2, y2 = location
     return image[y1: y2, x1: x2]
+
+def process_possible_double_values(value:str) -> (int, int):
+    value = value.strip()
+    if value == '':
+        value_min = 0
+        value_max = 0
+    elif value.isdigit():
+        value_min = int(value)
+        value_max = 0
+    else:
+        value_list = re.split(r'[ ,/|-]', value)
+        value_min = int(value_list[0].strip())
+        value_max = int(value_list[1].strip())
+
+    return value_min, value_max

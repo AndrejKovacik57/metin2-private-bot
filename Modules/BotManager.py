@@ -6,6 +6,7 @@ from Modules.AntiBot import AntiBot
 from Modules.Respawn import Respawn
 from Modules.MetinHunter import MetinHunter
 from Modules.FishBot import FishBot
+from Modules.MiningBot import MiningBot
 import random
 import json
 import os
@@ -13,7 +14,7 @@ import os
 
 class BotManager:
 
-    def __init__(self, display_screenshot, metin_config:dict, fishing_config:dict, show_img=False):
+    def __init__(self, display_screenshot, metin_config:dict, fishing_config:dict, mining_config:dict, show_img=False):
 
         self.running = False
         self.lock = threading.Lock()
@@ -27,10 +28,10 @@ class BotManager:
         self.game_window = GameWindow()
         self.character_actions = CharacterActions(self.game_window)
         self.anti_bot = AntiBot(self.text_hash_map, self.game_window)
-
         self.respawn = Respawn(self.game_window)
         self.metin_hunter = MetinHunter(self.game_window,self.text_hash_map, self.__stop_running)
         self.fish_bot = FishBot(self.game_window, fishing_config)
+        self.mining_bot = MiningBot(mining_config, self.game_window)
 
 
         self.show_img = show_img
@@ -51,13 +52,17 @@ class BotManager:
                     not_destroying_metin_treshold:int,
                     selected_metin:str,
                     cape_key:str,
-                    metin_treshold:int):
+                    metin_treshold:int,
+                    ore_check_location:tuple[int, int, int, int],
+                    mining_wait_time_min:int,
+                    mining_wait_time_max:int):
 
         self.game_window.window_name = window_name
         self.character_actions.load_values(skills_cfg, selected_class, cape_time_min, cape_time_max, cape_key)
         self.anti_bot.load_values(tesseract_path, bot_check_location)
         self.metin_hunter.load_values(scan_window_location, hp_bar_location, metin_stack_location, not_destroying_metin_treshold,
                                       selected_metin, metin_treshold, cape_key)
+        self.mining_bot.load_values(ore_check_location, mining_wait_time_min, mining_wait_time_max)
 
 
 
@@ -118,3 +123,20 @@ class BotManager:
                 if self.running:
                     self.fish_bot.catch_fish()
                 print(f'Iteration execution time {time.time() - loop_time}s')
+
+    def run_miner_bot(self):
+        self.character_actions.choose_weather(self.mining_bot.weather)
+        time.sleep(2)
+        upper_limit = 0.5
+        lower_limit = 0.1
+        while self.running:
+            with self.lock:
+                sleep_time = random.random() * (upper_limit - lower_limit) + lower_limit
+                time.sleep(sleep_time)
+                np_image = self.game_window.get_np_image()
+                if self.running:
+                    self.anti_bot.bot_solver(np_image)
+                if self.running:
+                    self.image_to_display = self.mining_bot.mine_ore(np_image)
+                    if self.show_img:
+                        self.display_screenshot()

@@ -168,7 +168,7 @@ class MetinHunter:
             circularity = boss['circularity'] / 1000.0
 
             mask = cv2.inRange(hsv, lower, upper)
-            np_image = cv2.bitwise_and(np_image, np_image, mask=mask)
+            # np_image = cv2.bitwise_and(np_image, np_image, mask=mask)
             contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             if contours:
                 for contour in contours:
