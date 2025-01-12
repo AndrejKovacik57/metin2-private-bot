@@ -106,6 +106,7 @@ class CharacterActions:
             time.sleep(0.15)
 
     def choose_weather(self, weather):
+        print(f'weather num {weather}')
         if self.selected_weather == weather:
             print('weather none0')
             return

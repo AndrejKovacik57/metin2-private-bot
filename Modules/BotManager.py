@@ -125,8 +125,9 @@ class BotManager:
                 print(f'Iteration execution time {time.time() - loop_time}s')
 
     def run_miner_bot(self):
-        self.character_actions.choose_weather(self.mining_bot.weather)
         time.sleep(2)
+        self.character_actions.choose_weather(self.mining_bot.weather)
+
         upper_limit = 0.5
         lower_limit = 0.1
         while self.running:
