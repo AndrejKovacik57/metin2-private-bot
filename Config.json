@@ -86,7 +86,46 @@
                     "contourHigh": 200000,
                     "aspect_low": 0,
                     "aspect_high": 300,
-                    "circularity": 0}
+                    "circularity": 0
+                }
+            ]
+        },
+        {
+            "name": "Kamen staroveke dzungle",
+            "mask": {
+                "hMin": 0,
+                "sMin": 0,
+                "vMin": 0,
+                "hMax": 255,
+                "sMax": 61,
+                "vMax": 255
+            },
+            "contourLow": 8697,
+            "contourHigh": 25069,
+            "aspect_low": 70,
+            "aspect_high": 109,
+            "circularity": 121,
+            "weather": 9,
+            "event_stones": [
+
+            ],
+            "bosses": [
+                {
+                    "name": "Kamenny",
+                    "mask": {
+                        "hMin": 0,
+                        "sMin": 0,
+                        "vMin": 0,
+                        "hMax": 255,
+                        "sMax": 126,
+                        "vMax": 83
+                    },
+                    "contourLow": 20000,
+                    "contourHigh": 200000,
+                    "aspect_low": 70,
+                    "aspect_high": 140,
+                    "circularity": 0
+                }
             ]
         }
     ],
