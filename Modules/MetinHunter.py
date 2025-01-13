@@ -43,6 +43,7 @@ class MetinHunter:
         self.premium = False
         self.destroy_event_stones = False
         self.selected_metin = None
+        self.is_event_stone_selected = False
 
         self.lower = None
         self.upper = None
@@ -88,16 +89,19 @@ class MetinHunter:
                 self.aspect_low = metin_config['aspect_low'] / 100.0
                 self.aspect_high = metin_config['aspect_high'] / 100.0
                 self.circularity = metin_config['circularity'] / 1000.0
-
-                event_config = metin_config['event_stones'][0]
-                self.contour_low_event = event_config['contourLow']
-                self.contour_high_event = event_config['contourHigh']
-                self.aspect_low_event = event_config['aspect_low'] / 100.0
-                self.aspect_high_event = event_config['aspect_high'] / 100.0
-                self.circularity_event = event_config['circularity'] / 1000.0
+                if metin_config['event_stones']:
+                    self.is_event_stone_selected = self.is_event_stone_selected = True
+                    event_config = metin_config['event_stones'][0]
+                    self.contour_low_event = event_config['contourLow']
+                    self.contour_high_event = event_config['contourHigh']
+                    self.aspect_low_event = event_config['aspect_low'] / 100.0
+                    self.aspect_high_event = event_config['aspect_high'] / 100.0
+                    self.circularity_event = event_config['circularity'] / 1000.0
+                    self.lower_event, self.upper_event = create_low_upp(event_config)
+                else:
+                    self.is_event_stone_selected = False
 
                 self.lower, self.upper = create_low_upp(metin_config)
-                self.lower_event, self.upper_event = create_low_upp(event_config)
 
                 self.bosses = metin_config['bosses']
 
@@ -124,8 +128,10 @@ class MetinHunter:
 
         self.__check_metin_destruction_stuck(metins_in_stack)
 
-        image_to_display_event = self.__handle_event_stones(np_image_crop, metin_num, x_middle, y_middle)
-        if image_to_display_event is not None: return image_to_display_event
+        if self.is_event_stone_selected:
+            image_to_display_event = self.__handle_event_stones(np_image_crop, metin_num, x_middle, y_middle)
+            if image_to_display_event is not None: return image_to_display_event
+
         print(f'METIN NUM: {metin_num}')
         image_to_display = self.__handle_metin_stones(np_image_crop, hp_bar, metin_num, x_middle, y_middle)
         if image_to_display is not None: return image_to_display
