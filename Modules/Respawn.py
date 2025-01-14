@@ -7,7 +7,6 @@ from Utils.Utils import locate_image, load_image
 
 
 class Respawn:
-    print("Respawn module loaded1")
     def __init__(self, game_window:GameWindow):
         self.respawn_timer_diff = 0
         self.respawn_timer = 0

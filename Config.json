@@ -120,7 +120,7 @@
                         "sMax": 126,
                         "vMax": 83
                     },
-                    "contourLow": 20000,
+                    "contourLow": 100000,
                     "contourHigh": 200000,
                     "aspect_low": 70,
                     "aspect_high": 140,
