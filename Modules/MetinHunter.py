@@ -117,8 +117,8 @@ class MetinHunter:
         stop_bot = self.__handle_metin_destruction_timer()
         if stop_bot: return np_image_crop
 
-        boss_exists = self.__handle_boss_check_timer(np_image)
-        if boss_exists: return np_image_crop
+        # boss_exists = self.__handle_boss_check_timer(np_image)
+        # if boss_exists: return np_image_crop
 
         hp_bar = crop_image(np_image, self.hp_bar_location)
         metin_is_alive = self.__locate_metin_hp(hp_bar)   # check if metin was destroyed
@@ -146,6 +146,10 @@ class MetinHunter:
                 self.metin_stuck_timer = 0
                 self.__attack_boss()
                 self.killing_boss = True
+                print('NASIEL SA BOSS')
+                print('NASIEL SA BOSS')
+                print('NASIEL SA BOSS')
+                print('NASIEL SA BOSS')
                 return True
 
         return False
@@ -407,9 +411,7 @@ class MetinHunter:
                         cur_distance = abs(x_middle - contour_center_x) + abs(y_middle - contour_center_y)
 
                         if use_circle_r:
-                            # Draw a circle around the point (x_middle, y_middle) with a radius of 300px
-                            cv2.circle(np_image, (x_middle, y_middle), self.circle_r, (255, 190, 200),
-                                       2)  # The color is (255, 190, 200) and the thickness is 2
+
                             if cur_distance <= self.circle_r:
                                 continue
 
@@ -430,8 +432,8 @@ class MetinHunter:
         if not closest_contours:
             return None, np_image
 
-        # Return the positions of the 5 closest contours and the image
-
+        cv2.circle(np_image, (x_middle, y_middle), self.circle_r, (255, 190, 200),
+                   2)  # The color is (255, 190, 200) and the thickness is 2
         print(f'posielam pocet { len(selected_contour_positions) }')
         return selected_contour_positions, np_image
 
