@@ -63,6 +63,7 @@ class BotManager:
         self.metin_hunter.load_values(scan_window_location, hp_bar_location, metin_stack_location, not_destroying_metin_treshold,
                                       selected_metin, metin_treshold, cape_key)
         self.mining_bot.load_values(ore_check_location, mining_wait_time_min, mining_wait_time_max)
+        self.respawn.reset_not_destroying_metin_callback = self.metin_hunter.reset_not_destroying_metin_callback
 
 
 
@@ -107,7 +108,7 @@ class BotManager:
                     self.character_actions.use_cape()
 
                 print(f'Iteration execution time {time.time() - loop_time}s')
-
+    # todo kontrola stromu
     def run_fish_bot(self):
         time.sleep(2)
         upper_limit = 0.5

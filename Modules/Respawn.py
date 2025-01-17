@@ -12,6 +12,7 @@ class Respawn:
         self.respawn_timer = 0
         self.restart_img = load_image('../bot_images/restart_img.png')
         self.game_window = game_window
+        self.reset_not_destroying_metin_callback = placeholder
 
     def death_check(self, np_image:np.ndarray) -> None:
         self.respawn_timer_diff = time.time() - self.respawn_timer
@@ -29,3 +30,7 @@ class Respawn:
                 time.sleep(0.2)
                 pyautogui.click()
                 time.sleep(0.2)
+                self.reset_not_destroying_metin_callback()
+
+def placeholder():
+    pass

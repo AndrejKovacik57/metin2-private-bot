@@ -107,6 +107,9 @@ class MetinHunter:
 
                 return metin_config['weather']
 
+    def reset_not_destroying_metin_callback(self):
+        self.not_destroying_metin = 0
+
     def hunt_metin(self, np_image:np.ndarray):
         np_image_crop = crop_image(np_image, self.scan_window_location)
         height, width  = np_image.shape[:2]
