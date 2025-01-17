@@ -109,7 +109,7 @@ class MetinHunter:
 
     def hunt_metin(self, np_image:np.ndarray):
         np_image_crop = crop_image(np_image, self.scan_window_location)
-        width, height = np_image.shape[:2]
+        height, width  = np_image.shape[:2]
         scan_x1, scan_y1, _, _ = self.scan_window_location
         x_middle = self.game_window.window_left + (width // 2) - scan_x1
         y_middle = self.game_window.window_top + (height // 2) - scan_y1
