@@ -117,7 +117,14 @@ def preprocess_image(image):
         x, y, w, h = cv2.boundingRect(coords)
 
         # Crop the image using the bounding box
-        image = image[x - 1:x + w + 1, y - 1:y + h + 1]
+        # image = image[x - 1:x + w + 1, y - 1:y + h + 1]
+        x_start = max(0, x - 1)
+        y_start = max(0, y - 1)
+        x_end = min(image.shape[0], x + w + 1)
+        y_end = min(image.shape[1], y + h + 1)
+        image = image[x_start:x_end, y_start:y_end]
+    else:
+        return image
 
     color_to_replace = np.array([199, 199, 199])  # OpenCV uses BGR format
 
