@@ -148,17 +148,17 @@
     "mining": {
          "mask": {
                 "hMin": 0,
-                "sMin": 56,
-                "vMin": 50,
-                "hMax": 44,
-                "sMax": 141,
-                "vMax": 255
+                "sMin": 13,
+                "vMin": 0,
+                "hMax": 40,
+                "sMax": 118,
+                "vMax": 229
          },
-        "contourLow": 7000,
-        "contourHigh": 50000,
-        "aspect_low": 65,
-        "aspect_high": 90,
-        "circularity": 85,
+        "contourLow": 4100,
+        "contourHigh": 70000,
+        "aspect_low": 47,
+        "aspect_high": 97,
+        "circularity": 262,
         "weather": 3
     }
 }

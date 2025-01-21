@@ -14,6 +14,7 @@ class MiningBot:
         self.scan_window_location = None
         self.game_window = game_window
         self.weather = mining_config['weather']
+        self.is_mining = False
 
         self.ore_check_time = 0
         self.ore_check_timer = 25
@@ -26,10 +27,12 @@ class MiningBot:
         self.mining_wait_time_min = mining_wait_time_min
         self.mining_wait_time_max = mining_wait_time_max
 
-    def mine_ore(self, np_image:np.ndarray):
+    def mine_ore_old(self, np_image:np.ndarray):
         ore_check_time_diff = time.time() - self.ore_check_time
         np_image_crop = crop_image(np_image, self.scan_window_location)
+
         ore_x, ore_y, np_image_out = self.__ore_check(np_image_crop)
+
         if self.mining_wait_time_min != 0 and self.mining_wait_time_max != 0:
             if not self.randomized_ore_time:
                 self.randomized_ore_time = random.random() * (self.mining_wait_time_min - self.mining_wait_time_max) + self.mining_wait_time_max
@@ -46,13 +49,41 @@ class MiningBot:
                 self.__click_at_ore(ore_x, ore_y)
         return np_image_out
 
-    def __click_at_ore(self, ore_x:int, ore_y:int):
-        if ore_x is not None and ore_y is not None:
-            scan_x1, scan_y1, _, _ = self.scan_window_location
-            ore_x += self.game_window.window_left + scan_x1
-            ore_y += self.game_window.window_top + scan_y1
+    def mine_ore(self, np_image:np.ndarray):
+        np_image_crop = crop_image(np_image, self.scan_window_location)
+        if not self.randomized_ore_time:
+            self.randomized_ore_time = random.random() * (self.mining_wait_time_min - self.mining_wait_time_max) + self.mining_wait_time_max
 
-            mouse_left_click(ore_x, ore_y, self.game_window.window_name)
+        ore_x, ore_y, np_image_out = self.__ore_check(np_image_crop)
+
+        if self.is_mining:
+            ore_check_time_diff = time.time() - self.ore_check_time
+            print(f'Tazim {ore_check_time_diff}s')
+            if self.mining_wait_time_min != 0 and self.mining_wait_time_max != 0:
+                if ore_check_time_diff >= self.ore_check_timer + self.randomized_ore_time:
+                    self.is_mining = False
+                    print('Koniec tazby')
+            else:
+                if ore_check_time_diff >= self.ore_check_timer:
+                    self.is_mining = False
+                    print('Koniec tazby')
+        else:
+
+            if ore_x is not None and ore_y is not None:
+                self.__click_at_ore(ore_x, ore_y)
+                self.ore_check_time = time.time()
+                self.randomized_ore_time = random.random() * (self.mining_wait_time_min - self.mining_wait_time_max) + self.mining_wait_time_max
+                print(f'Idem tazit {self.ore_check_timer + self.randomized_ore_time}s')
+                self.is_mining = True
+
+        return np_image_out
+
+    def __click_at_ore(self, ore_x:int, ore_y:int):
+        scan_x1, scan_y1, _, _ = self.scan_window_location
+        ore_x += self.game_window.window_left + scan_x1
+        ore_y += self.game_window.window_top + scan_y1
+
+        mouse_left_click(ore_x, ore_y, self.game_window.window_name)
 
     def __ore_check(self, np_image:np.ndarray):
         hsv = cv2.cvtColor(np_image, cv2.COLOR_BGR2HSV)
