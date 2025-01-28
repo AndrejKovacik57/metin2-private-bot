@@ -43,12 +43,13 @@ class AntiBot:
         cropped_image = np_image[cropped_image_y1:cropped_image_y2, cropped_image_x1:cropped_image_x2]
         location = locate_image(self.bot_img_path, cropped_image, confidence=0.70)
         if location is not None:
+            crop = 15
             options = [  # coords for options menu buttons
-                (location.left, location.top, location.left + location.width // 2, location.top + location.height // 3), # lavo,hore, lavo+polka sirky, hore+ tretina vrchu
-                (location.left + location.width // 2, location.top, location.left + location.width, location.top + location.height // 3),# lavo + pola sirky,hore, lavo+polka sirky + sirka, hore+ tretina vrchu
-                (location.left, location.top + location.height // 3, location.left + location.width // 2, location.top + 2* (location.height // 3)),
-                (location.left + location.width // 2, location.top + location.height // 3, location.left + location.width, location.top + 2* (location.height // 3)),
-                (location.left + location.width // 4, location.top + 2* (location.height // 3), location.left + (location.width // 4) + 2 * (location.width // 4), location.top + 3 *(location.height // 3))
+                (location.left + crop, location.top, location.left + (location.width // 2) - crop, location.top + location.height // 3), # lavo,hore, lavo+polka sirky, hore+ tretina vrchu
+                (location.left + crop + location.width // 2, location.top, location.left + location.width - crop, location.top + location.height // 3),# lavo + pola sirky,hore, lavo+polka sirky + sirka, hore+ tretina vrchu
+                (location.left + crop, location.top + location.height // 3, location.left + (location.width // 2) - crop, location.top + 2* (location.height // 3)),
+                (location.left + crop + location.width // 2, location.top + location.height // 3, location.left + location.width - crop, location.top + 2* (location.height // 3)),
+                (location.left + crop + location.width // 4, location.top + 2 * (location.height // 3) + 8, location.left + ((location.width // 4) + 2 * (location.width // 4)) - crop, location.top + 3 *(location.height // 3))
             ]
             # code to find
             x_find = location.left + location.width//2 # middle
@@ -71,6 +72,7 @@ class AntiBot:
             for option_tuple in options:
                 result_x1, result_y1, result_x2, result_y2 = option_tuple
                 option = cropped_image[result_y1:result_y2, result_x1:result_x2]
+                preprocess_image(option)
                 option_hash = hashlib.md5(preprocess_image(option)).hexdigest()
 
                 if option_hash in self.text_hash_map:

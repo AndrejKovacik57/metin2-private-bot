@@ -98,7 +98,7 @@ def mouse_right_click(pos_x, pos_y, window_title :str) -> None:
         pyautogui.rightClick()
 
 
-def preprocess_image(image):
+def preprocess_image(image, ik = 0):
     # Convert the image to HSV
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     # Define the lower and upper range for the white color
@@ -124,7 +124,8 @@ def preprocess_image(image):
         y_end = min(image.shape[1], y + h + 1)
         image = image[x_start:x_end, y_start:y_end]
     else:
-        return image
+        print('No mask')
+        # return image
 
     color_to_replace = np.array([199, 199, 199])  # OpenCV uses BGR format
 
@@ -141,6 +142,10 @@ def preprocess_image(image):
 
     # Invert the colors (swap black and white)
     image = cv2.bitwise_not(image)
+
+    cv2.imshow(f'image2 {ik}',image)
+    cv2.waitKey(0)
+
 
     return image
 
