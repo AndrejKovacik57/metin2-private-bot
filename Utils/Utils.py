@@ -143,10 +143,6 @@ def preprocess_image(image, ik = 0):
     # Invert the colors (swap black and white)
     image = cv2.bitwise_not(image)
 
-    cv2.imshow(f'image2 {ik}',image)
-    cv2.waitKey(0)
-
-
     return image
 
 
