@@ -1,36 +1,7 @@
-/bot-test.py
-/models_yolov8/
-/yolov8n.pt
-/yolov8m.pt
-/training_images.zip
 /test.py
-/runs.zip
-/models.zip
 /venv_test/
 /venv/
-/Old-Bot/yolov8_model_traning/training_images/
-/runs
-/dataset
-/bot data
-/models_yolov8.zip
-/old/bot_solver.log
-/Old-Bot/bot_solver.log
-/debug-images/
-/Old-Bot/Config-local.json
-/dung_play.py
-/bot data.zip
 /ideas.py
-/new_model/
-/Old-Bot/yolov8_model_traning/skusam.py
-/Old-Bot/yolov8_model_traning/yolov8n.pt
-/weights.zip
-/best_nove.zip
-/cropped_image.png
-/Config-local2.json
-/old/bot_solver2.log
-/bottest/
 /bot_solver2.log
-/Old-Bot/bot_solver.log
-/Old-Bot/Config-local.json
 /Config-local.json
 /.idea
