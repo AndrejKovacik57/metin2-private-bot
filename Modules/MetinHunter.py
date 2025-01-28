@@ -4,7 +4,7 @@ import hashlib
 import numpy as np
 from Modules import GameWindow
 from Utils.Utils import load_image, crop_image, preprocess_image, press_button, cancel_all, mouse_left_click, \
-    is_subimage, create_low_upp
+    is_subimage, create_low_upp, locate_image
 import cv2
 import keyboard
 
@@ -67,8 +67,13 @@ class MetinHunter:
         self.boss_check_time = 0
         self.killing_boss = False
 
+        self.tree_not_found_counter = 0
+        self.tree_check_time = 0
+        self.tree_check_timer = 10
+
         self.metin_hp_img = load_image('../bot_images/metin_hp2.png')
         self.cancel_img = load_image('../bot_images/cancel_metin_button.png')
+        self.tree_img = load_image('../bot_images/tree.png')
 
 
     def load_values(self, scan_window_location, hp_bar_location, metin_stack_location, not_destroying_metin_treshold,
@@ -117,6 +122,9 @@ class MetinHunter:
         x_middle = self.game_window.window_left + (width // 2) - scan_x1
         y_middle = self.game_window.window_top + (height // 2) - scan_y1
 
+        tree_active = self.__locate_tree(np_image)
+        if not tree_active: return np_image_crop
+
         stop_bot = self.__handle_metin_destruction_timer()
         if stop_bot: return np_image_crop
 
@@ -138,6 +146,22 @@ class MetinHunter:
         print(f'METIN NUM: {metin_num}')
         image_to_display = self.__handle_metin_stones(np_image_crop, hp_bar, metin_num, x_middle, y_middle)
         if image_to_display is not None: return image_to_display
+
+    def __locate_tree(self, np_image):
+        tree_check_time_diff = time.time() - self.tree_check_time
+        if self.tree_check_time == 0 or tree_check_time_diff >= self.tree_check_timer:
+            self.boss_check_time = time.time()
+            location = locate_image(self.tree_img, np_image)
+            if location is None:
+                if self.tree_not_found_counter == 5:
+                    print('Strom vypnuty')
+                    self.stop_running()
+                    return False
+                self.tree_not_found_counter += 1
+            else:
+                self.tree_not_found_counter = 0
+                print('Strom zapnuty')
+                return True
 
     def __handle_boss_check_timer(self, np_image:np.ndarray) -> bool:
         boss_check_time_diff = time.time() - self.boss_check_time
