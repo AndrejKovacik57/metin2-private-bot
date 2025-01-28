@@ -69,7 +69,7 @@ class MetinHunter:
 
         self.tree_not_found_counter = 0
         self.tree_check_time = 0
-        self.tree_check_timer = 10
+        self.tree_check_timer = 5
 
         self.metin_hp_img = load_image('../bot_images/metin_hp2.png')
         self.cancel_img = load_image('../bot_images/cancel_metin_button.png')
@@ -121,12 +121,14 @@ class MetinHunter:
         scan_x1, scan_y1, _, _ = self.scan_window_location
         x_middle = self.game_window.window_left + (width // 2) - scan_x1
         y_middle = self.game_window.window_top + (height // 2) - scan_y1
-
+        print('step1')
         tree_active = self.__locate_tree(np_image)
         if not tree_active: return np_image_crop
+        print('step2')
 
         stop_bot = self.__handle_metin_destruction_timer()
         if stop_bot: return np_image_crop
+        print('step3')
 
         # boss_exists = self.__handle_boss_check_timer(np_image)
         # if boss_exists: return np_image_crop
@@ -136,7 +138,8 @@ class MetinHunter:
         self.__update_metin_status(metin_is_alive)
 
         metin_num, metins_in_stack = self.__process_metin_stack(np_image, metin_is_alive)
-
+        print(f'metin_num {metin_num} metins_in_stack{metins_in_stack}')
+        print('step4')
         self.__check_metin_destruction_stuck(metins_in_stack)
 
         if self.is_event_stone_selected:
@@ -150,7 +153,7 @@ class MetinHunter:
     def __locate_tree(self, np_image):
         tree_check_time_diff = time.time() - self.tree_check_time
         if self.tree_check_time == 0 or tree_check_time_diff >= self.tree_check_timer:
-            self.boss_check_time = time.time()
+            self.tree_check_time = time.time()
             location = locate_image(self.tree_img, np_image)
             if location is None:
                 if self.tree_not_found_counter == 5:
@@ -158,10 +161,9 @@ class MetinHunter:
                     self.stop_running()
                     return False
                 self.tree_not_found_counter += 1
-            else:
-                self.tree_not_found_counter = 0
-                print('Strom zapnuty')
-                return True
+        self.tree_not_found_counter = 0
+        print('Strom zapnuty')
+        return True
 
     def __handle_boss_check_timer(self, np_image:np.ndarray) -> bool:
         boss_check_time_diff = time.time() - self.boss_check_time

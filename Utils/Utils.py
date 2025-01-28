@@ -98,7 +98,7 @@ def mouse_right_click(pos_x, pos_y, window_title :str) -> None:
         pyautogui.rightClick()
 
 
-def preprocess_image(image, ik = 0):
+def preprocess_image(image):
     # Convert the image to HSV
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     # Define the lower and upper range for the white color

@@ -10,7 +10,7 @@ class CharacterActions:
         self.cape_time_min = 0
         self.cape_time_max = 0
         self.randomized_cape_time = 0.0
-        self.cape_timer = 0
+        self.cape_timer = 10
         self.cape_key = ''
 
         self.buff_timer = 0
