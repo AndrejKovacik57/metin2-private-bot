@@ -17,7 +17,7 @@ class MiningBot:
         self.is_mining = False
 
         self.ore_check_time = 0
-        self.ore_check_timer = 25
+        self.ore_check_timer = 22
         self.randomized_ore_time = 0
         self.mining_wait_time_min = 0
         self.mining_wait_time_max = 0
