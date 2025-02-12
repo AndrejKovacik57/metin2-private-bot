@@ -45,7 +45,7 @@ class MessageCheck:
 
                 local_time = time.localtime(time.time())
                 payload = {
-                    "content": f"<@{self.user_id}>, Nova sprava - {time.strftime("%Y-%m-%d %H:%M:%S", local_time)}",  # Optional: Add a message
+                    "content": f"<@{self.user_id}>, Nova sprava - {time.strftime('%Y-%m-%d %H:%M:%S', local_time)}",  # Optional: Add a message
                     "username": "Image Sender"  # Optional: Set a custom username
                 }
 
