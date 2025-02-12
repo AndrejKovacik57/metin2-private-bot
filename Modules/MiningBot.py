@@ -4,7 +4,7 @@ from random import random
 import  numpy as np
 import cv2
 from Utils.Utils import create_low_upp, mouse_left_click, crop_image
-from Modules import GameWindow
+from Modules.GameWindow import GameWindow
 import random
 
 

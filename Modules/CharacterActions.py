@@ -1,5 +1,8 @@
 import random
 import time
+
+import numpy as np
+
 from Modules import GameWindow
 from Utils.Utils import load_image, press_button, locate_image, press_button_multiple, click_location_middle, \
     mouse_left_click, cancel_all
@@ -22,6 +25,9 @@ class CharacterActions:
         self.skill_timer = 0
         self.skills_cd = 30
 
+        self.board_timer = 0
+        self.board_cd = 30
+
         self.selected_class = None
 
         self.game_window = game_window
@@ -32,6 +38,7 @@ class CharacterActions:
         self.game_settings = load_image('../bot_images/game_settings.png')
         self.weather_image = load_image('../bot_images/weather.png')
         self.cancel_img = load_image('../bot_images/cancel_metin_button.png')
+        self.leaderboard_img = load_image('../bot_images/leaderboard.png')
 
     def load_values(self, skills_cfg:dict, selected_class:str, cape_time_min:int, cape_time_max:int, cape_key:str):
         self.skills_cfg = skills_cfg
@@ -104,6 +111,17 @@ class CharacterActions:
             self.buff_timer = time.time()
             press_button('F9', self.game_window.window_name)
             time.sleep(0.15)
+
+    def cancel_leader_board(self, np_image:np.ndarray):
+        board_timer_diff = time.time() - self.board_timer
+        if self.board_timer == 0 or board_timer_diff >= self.board_cd:
+            self.board_timer = time.time()
+            location = locate_image(self.leaderboard_img, np_image, 0.9)
+            if location is None:
+                return
+            print('Zatvaram leaderboard')
+            click_location_middle(location, self.game_window)
+
 
     def choose_weather(self, weather):
         print(f'weather num {weather}')

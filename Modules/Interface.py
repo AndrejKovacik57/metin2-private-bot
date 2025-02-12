@@ -125,30 +125,42 @@ class ApplicationWindow:
         self.text_entry_cape_key  = tk.Entry(self.root, width=15)
         self.text_entry_cape_key.grid(row=11, column=2, columnspan=1, pady=5)
 
+
+        self.entry_web_hook = tk.Label(self.root, text="Webhook:")
+        self.entry_web_hook.grid(row=12, column=0, columnspan=1, pady=5)
+        self.text_entry_web_hook  = tk.Entry(self.root, width=15)
+        self.text_entry_web_hook.grid(row=13, column=0, columnspan=1, pady=5)
+
+
+        self.entry_user_id = tk.Label(self.root, text="Discord User ID:")
+        self.entry_user_id.grid(row=12, column=1, columnspan=1, pady=5)
+        self.text_entry_user_id  = tk.Entry(self.root, width=15)
+        self.text_entry_user_id.grid(row=13, column=1, columnspan=1, pady=5)
+
         # Create a button to take a screenshot and center it
         self.screenshot_button = tk.Button(self.root, text="Take Screenshot", command=self.take_screenshot)
-        self.screenshot_button.grid(row=13, column=1, pady=10)
+        self.screenshot_button.grid(row=15, column=1, pady=10)
 
         self.set_metin_hp_bar_location = tk.Button(text="Set HP bar location", command=self.apply_hp_bar_location)
-        self.set_metin_hp_bar_location.grid(row=14, column=0, pady=10)
+        self.set_metin_hp_bar_location.grid(row=16, column=0, pady=10)
 
         self.set_scan_window = tk.Button(text="Set scan window", command=self.apply_scan_window_location)
-        self.set_scan_window.grid(row=14, column=1, pady=10)
+        self.set_scan_window.grid(row=16, column=1, pady=10)
 
         self.set_metin_stack = tk.Button(text="Set metin stack location", command=self.apply_metin_stack_location)
-        self.set_metin_stack.grid(row=14, column=2, pady=10)
+        self.set_metin_stack.grid(row=16, column=2, pady=10)
 
         self.set_bot_check = tk.Button(text="Set bot check location", command=self.apply_bot_check_location)
-        self.set_bot_check.grid(row=15, column=0, pady=10)
+        self.set_bot_check.grid(row=17, column=0, pady=10)
 
         self.sec_scan_ore_window = tk.Button(text="Set ore check location", command=self.apply_ore_check_location)
-        self.sec_scan_ore_window.grid(row=15, column=1, pady=10)
+        self.sec_scan_ore_window.grid(row=17, column=1, pady=10)
 
         # Create the Apply button and center it
         self.apply = tk.Button(self.root, text="Apply", command=self.apply_fields)
-        self.apply.grid(row=16, column=0, columnspan=4, pady=10)
+        self.apply.grid(row=18, column=0, columnspan=4, pady=10)
 
-        self.last_row = 17
+        self.last_row = 19
 
         self.cfg = {}
         self.cfg_local = {}
@@ -229,6 +241,12 @@ class ApplicationWindow:
         if 'cape_key' not in self.cfg_local:
             self.cfg_local['cape_key'] = ''
 
+        if 'webhook' not in self.cfg_local:
+            self.cfg_local['webhook'] = ''
+
+        if 'user_id' not in self.cfg_local:
+            self.cfg_local['user_id'] = ''
+
         if 'ore_time' not in self.cfg_local:
             self.cfg_local['ore_time'] = ''
 
@@ -265,14 +283,14 @@ class ApplicationWindow:
         self.text_turn_off_bot.insert(0, self.cfg_local['metin_turn_off'])
         self.text_entry_cape.insert(0, self.cfg_local['cape_time'])
         self.text_entry_cape_key.insert(0, self.cfg_local['cape_key'])
+        self.text_entry_user_id.insert(0, self.cfg_local['user_id'])
+        self.text_entry_web_hook.insert(0, self.cfg_local['webhook'])
         self.text_mining_wait_time.insert(0, self.cfg_local['ore_time'])
 
     def apply_fields(self):
         self.cfg['tesseract_path'] = self.text_tesseract_path.get()
-
-        self.load_values()
-
         self.save_fields()
+        self.load_values()
         save_config(self.cfg_local, '../Config-local.json')
 
     def load_values(self):
@@ -313,7 +331,10 @@ class ApplicationWindow:
                                      metin_treshold,
                                      self.cfg_local['information_locations']['ore_check_location'],
                                      mining_wait_time_min,
-                                     mining_wait_time_max)
+                                     mining_wait_time_max,
+                                     self.cfg_local['webhook'],
+                                     self.cfg_local['user_id']
+                                     )
 
 
     def save_fields(self):
@@ -323,6 +344,8 @@ class ApplicationWindow:
         self.cfg_local['metin_turn_off'] = self.text_turn_off_bot.get()
         self.cfg_local['cape_time'] = self.text_entry_cape.get()
         self.cfg_local['cape_key'] = self.text_entry_cape_key.get()
+        self.cfg_local['user_id'] = self.text_entry_user_id.get()
+        self.cfg_local['webhook'] = self.text_entry_web_hook.get()
         self.cfg_local['ore_time'] = self.text_mining_wait_time.get()
 
 

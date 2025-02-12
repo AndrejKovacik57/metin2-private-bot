@@ -153,6 +153,13 @@ def locate_image(path, np_image, confidence=0.9):
         location = None
     return location
 
+def locate_all_images(path, np_image, confidence=0.9):
+    try:
+        # Use locateAll to find all occurrences of the template image
+        locations = list(pyautogui.locateAll(path, np_image, confidence=confidence))
+    except pyautogui.ImageNotFoundException:
+        locations = []  # Return an empty list if no matches are found
+    return locations
 
 def load_image(path):
     script_dir = os.path.dirname(os.path.abspath(__file__))

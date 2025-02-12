@@ -7,6 +7,7 @@ from Modules.Respawn import Respawn
 from Modules.MetinHunter import MetinHunter
 from Modules.FishBot import FishBot
 from Modules.MiningBot import MiningBot
+from Modules.MessageCheck import MessageCheck
 import random
 import json
 import os
@@ -32,6 +33,7 @@ class BotManager:
         self.metin_hunter = MetinHunter(self.game_window,self.text_hash_map, self.__stop_running)
         self.fish_bot = FishBot(self.game_window, fishing_config)
         self.mining_bot = MiningBot(mining_config, self.game_window)
+        self.message_check = MessageCheck(self.game_window)
 
 
         self.show_img = show_img
@@ -55,7 +57,9 @@ class BotManager:
                     metin_treshold:int,
                     ore_check_location:tuple[int, int, int, int],
                     mining_wait_time_min:int,
-                    mining_wait_time_max:int):
+                    mining_wait_time_max:int,
+                    webhook:str,
+                    user_id:str):
 
         self.game_window.window_name = window_name
         self.character_actions.load_values(skills_cfg, selected_class, cape_time_min, cape_time_max, cape_key)
@@ -64,6 +68,7 @@ class BotManager:
                                       selected_metin, metin_treshold, cape_key)
         self.mining_bot.load_values(ore_check_location, mining_wait_time_min, mining_wait_time_max)
         self.respawn.reset_not_destroying_metin_callback = self.metin_hunter.reset_not_destroying_metin_callback
+        self.message_check.load_values(webhook, user_id)
 
 
 
@@ -106,6 +111,10 @@ class BotManager:
                         self.display_screenshot()
                 if self.running:
                     self.character_actions.use_cape()
+                if self.running:
+                    self.character_actions.cancel_leader_board(np_image)
+                if self.running:
+                    self.message_check.locate_messages(np_image)
 
                 print(f'Iteration execution time {time.time() - loop_time}s')
         else:
