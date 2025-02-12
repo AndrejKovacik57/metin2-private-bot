@@ -84,6 +84,9 @@ class BotManager:
 
     def __stop_running(self):
         self.running = False
+        for i in range(5):
+            if self.game_window.terminate_process():
+                break
 
     def run_metin_hunter(self):
         time.sleep(2)
@@ -117,10 +120,7 @@ class BotManager:
                     self.message_check.locate_messages(np_image)
 
                 print(f'Iteration execution time {time.time() - loop_time}s')
-        else:
-            for i in range(5):
-                if self.game_window.terminate_process():
-                    break
+
     # todo kontrola stromu
     def run_fish_bot(self):
         time.sleep(2)
