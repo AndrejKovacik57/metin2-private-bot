@@ -108,6 +108,10 @@ class BotManager:
                     self.character_actions.use_cape()
 
                 print(f'Iteration execution time {time.time() - loop_time}s')
+        else:
+            for i in range(5):
+                if self.game_window.terminate_process():
+                    break
     # todo kontrola stromu
     def run_fish_bot(self):
         time.sleep(2)
