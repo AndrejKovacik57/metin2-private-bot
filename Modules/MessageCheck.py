@@ -44,10 +44,7 @@ class MessageCheck:
                 image_bytes.seek(0)  # Reset the stream position to the beginning
 
                 local_time = time.localtime(time.time())
-                payload = {
-                    "content": f"<@{self.user_id}>, Nova sprava - {time.strftime('%Y-%m-%d %H:%M:%S', local_time)}",  # Optional: Add a message
-                    "username": "Image Sender"  # Optional: Set a custom username
-                }
+                payload = self.get_payload(f"Nova sprava - {time.strftime('%Y-%m-%d %H:%M:%S', local_time)}")
 
                 # Attach the image file from memory
                 files = {
@@ -57,13 +54,24 @@ class MessageCheck:
 
                 cancel_all(np_image, self.cancel_img, self.game_window)
 
-    def send_message_async(self, payload, files):
+    def get_payload(self, message):
+        return {
+            "content": f"<@{self.user_id}>, {message}",
+            # Optional: Add a message
+            "username": "Image Sender"  # Optional: Set a custom username
+        }
+
+    def send_message_async(self, payload, files=None):
         """
         Sends a message to Discord via webhook in a separate thread.
         """
 
         def send():
-            response = requests.post(self.webhook_url, data=payload, files=files)
+            if files:
+                response = requests.post(self.webhook_url, data=payload, files=files)
+            else:
+                response = requests.post(self.webhook_url, data=payload)
+
             if response.status_code == 204:
                 print("Message sent successfully!")
             else:

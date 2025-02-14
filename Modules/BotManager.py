@@ -87,6 +87,9 @@ class BotManager:
         for i in range(5):
             if self.game_window.terminate_process():
                 break
+        local_time = time.localtime(time.time())
+        payload = self.message_check.get_payload(f"Metin okno zatvorene - {time.strftime('%Y-%m-%d %H:%M:%S', local_time)}")
+        self.message_check.send_message_async(payload)
 
     def run_metin_hunter(self):
         time.sleep(2)
