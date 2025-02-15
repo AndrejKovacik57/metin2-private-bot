@@ -59,13 +59,14 @@ class BotManager:
                     mining_wait_time_min:int,
                     mining_wait_time_max:int,
                     webhook:str,
-                    user_id:str):
+                    user_id:str,
+                    circle_r):
 
         self.game_window.window_name = window_name
         self.character_actions.load_values(skills_cfg, selected_class, cape_time_min, cape_time_max, cape_key)
         self.anti_bot.load_values(tesseract_path, bot_check_location)
         self.metin_hunter.load_values(scan_window_location, hp_bar_location, metin_stack_location, not_destroying_metin_treshold,
-                                      selected_metin, metin_treshold, cape_key)
+                                      selected_metin, metin_treshold, cape_key, circle_r)
         self.mining_bot.load_values(ore_check_location, mining_wait_time_min, mining_wait_time_max)
         self.respawn.reset_not_destroying_metin_callback = self.metin_hunter.reset_not_destroying_metin_callback
         self.message_check.load_values(webhook, user_id)

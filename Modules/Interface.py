@@ -6,7 +6,8 @@ from tkinter import ttk, Canvas, messagebox
 import threading
 import re
 from Modules.BotManager import BotManager
-from Utils.Utils import load_config, save_config, get_window_screenshot, process_possible_double_values
+from Utils.Utils import load_config, save_config, get_window_screenshot, process_possible_double_values, \
+    process_text_to_digit
 import logging
 
 
@@ -131,36 +132,41 @@ class ApplicationWindow:
         self.text_entry_web_hook  = tk.Entry(self.root, width=15)
         self.text_entry_web_hook.grid(row=13, column=0, columnspan=1, pady=5)
 
-
         self.entry_user_id = tk.Label(self.root, text="Discord User ID:")
         self.entry_user_id.grid(row=12, column=1, columnspan=1, pady=5)
         self.text_entry_user_id  = tk.Entry(self.root, width=15)
         self.text_entry_user_id.grid(row=13, column=1, columnspan=1, pady=5)
 
+
+        self.entry_circle_r = tk.Label(self.root, text="No click area (pixels):")
+        self.entry_circle_r.grid(row=14, column=1, columnspan=1, pady=5)
+        self.text_entry_circle_r  = tk.Entry(self.root, width=15)
+        self.text_entry_circle_r.grid(row=15, column=1, columnspan=1, pady=5)
+
         # Create a button to take a screenshot and center it
         self.screenshot_button = tk.Button(self.root, text="Take Screenshot", command=self.take_screenshot)
-        self.screenshot_button.grid(row=15, column=1, pady=10)
+        self.screenshot_button.grid(row=20, column=1, pady=10)
 
         self.set_metin_hp_bar_location = tk.Button(text="Set HP bar location", command=self.apply_hp_bar_location)
-        self.set_metin_hp_bar_location.grid(row=16, column=0, pady=10)
+        self.set_metin_hp_bar_location.grid(row=21, column=0, pady=10)
 
         self.set_scan_window = tk.Button(text="Set scan window", command=self.apply_scan_window_location)
-        self.set_scan_window.grid(row=16, column=1, pady=10)
+        self.set_scan_window.grid(row=21, column=1, pady=10)
 
         self.set_metin_stack = tk.Button(text="Set metin stack location", command=self.apply_metin_stack_location)
-        self.set_metin_stack.grid(row=16, column=2, pady=10)
+        self.set_metin_stack.grid(row=21, column=2, pady=10)
 
         self.set_bot_check = tk.Button(text="Set bot check location", command=self.apply_bot_check_location)
-        self.set_bot_check.grid(row=17, column=0, pady=10)
+        self.set_bot_check.grid(row=22, column=0, pady=10)
 
         self.sec_scan_ore_window = tk.Button(text="Set ore check location", command=self.apply_ore_check_location)
-        self.sec_scan_ore_window.grid(row=17, column=1, pady=10)
+        self.sec_scan_ore_window.grid(row=22, column=1, pady=10)
 
         # Create the Apply button and center it
         self.apply = tk.Button(self.root, text="Apply", command=self.apply_fields)
-        self.apply.grid(row=18, column=0, columnspan=4, pady=10)
+        self.apply.grid(row=23, column=0, columnspan=4, pady=10)
 
-        self.last_row = 19
+        self.last_row = 24
 
         self.cfg = {}
         self.cfg_local = {}
@@ -262,6 +268,9 @@ class ApplicationWindow:
         if 'metin_turn_off' not in self.cfg_local:
             self.cfg_local['metin_turn_off'] = ''
 
+        if 'circle_r' not in self.cfg_local:
+            self.cfg_local['circle_r'] = '150'
+
         if 'bot_check_location' not in self.cfg_local['information_locations']:
             self.cfg_local['information_locations']['bot_check_location'] = [0, 0, 0, 0]
 
@@ -286,6 +295,7 @@ class ApplicationWindow:
         self.text_entry_user_id.insert(0, self.cfg_local['user_id'])
         self.text_entry_web_hook.insert(0, self.cfg_local['webhook'])
         self.text_mining_wait_time.insert(0, self.cfg_local['ore_time'])
+        self.text_entry_circle_r.insert(0, self.cfg_local['circle_r'])
 
     def apply_fields(self):
         self.cfg['tesseract_path'] = self.text_tesseract_path.get()
@@ -296,22 +306,13 @@ class ApplicationWindow:
     def load_values(self):
         selected_class = self.dropdown_class.get()
         selected_metin = self.dropdown_metin.get()
-        cape_time = self.text_entry_cape.get()
-        mining_wait_time = self.text_mining_wait_time.get()
 
-        cape_time_min, cape_time_max = process_possible_double_values(cape_time)
-        mining_wait_time_min, mining_wait_time_max = process_possible_double_values(mining_wait_time)
+        cape_time_min, cape_time_max = process_possible_double_values(self.cfg_local['cape_time'])
+        mining_wait_time_min, mining_wait_time_max = process_possible_double_values(self.cfg_local['ore_time'])
 
-        metin_treshold_val = self.cfg_local['metin_treshold']
-        if metin_treshold_val == '':
-            metin_treshold = 0
-        else:
-            metin_treshold = int(self.cfg_local['metin_treshold'])
-        metin_turn_off_val = self.cfg_local['metin_turn_off']
-        if metin_turn_off_val  == '':
-            metin_turn_off = 0
-        else:
-            metin_turn_off = int(self.cfg_local['metin_turn_off'])
+        metin_treshold = process_text_to_digit(self.cfg_local['metin_treshold'])
+        metin_turn_off = process_text_to_digit(self.cfg_local['metin_turn_off'])
+        circle_r = process_text_to_digit(self.cfg_local['circle_r'])
 
 
 
@@ -333,7 +334,8 @@ class ApplicationWindow:
                                      mining_wait_time_min,
                                      mining_wait_time_max,
                                      self.cfg_local['webhook'],
-                                     self.cfg_local['user_id']
+                                     self.cfg_local['user_id'],
+                                     circle_r
                                      )
 
 
@@ -345,6 +347,7 @@ class ApplicationWindow:
         self.cfg_local['cape_time'] = self.text_entry_cape.get()
         self.cfg_local['cape_key'] = self.text_entry_cape_key.get()
         self.cfg_local['user_id'] = self.text_entry_user_id.get()
+        self.cfg_local['circle_r'] = self.text_entry_circle_r.get()
         self.cfg_local['webhook'] = self.text_entry_web_hook.get()
         self.cfg_local['ore_time'] = self.text_mining_wait_time.get()
 

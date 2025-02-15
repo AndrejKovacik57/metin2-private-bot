@@ -225,3 +225,9 @@ def process_possible_double_values(value:str) -> (int, int):
         value_max = int(value_list[1].strip())
 
     return value_min, value_max
+
+def process_text_to_digit(text_value:str):
+    text_value = text_value.strip()
+
+    return int(text_value) if text_value.isdigit() else 0
+

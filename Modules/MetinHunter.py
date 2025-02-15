@@ -77,7 +77,7 @@ class MetinHunter:
 
 
     def load_values(self, scan_window_location, hp_bar_location, metin_stack_location, not_destroying_metin_treshold,
-                    selected_metin, metin_treshold, cape_key):
+                    selected_metin, metin_treshold, cape_key, circle_r=150):
         self.scan_window_location = scan_window_location
         self.hp_bar_location = hp_bar_location
         self.metin_stack_location = metin_stack_location
@@ -85,6 +85,7 @@ class MetinHunter:
         self.selected_metin = selected_metin
         self.metin_stuck_time = metin_treshold
         self.cape_key = cape_key
+        self.circle_r = circle_r
 
     def initialize_contour_parameters(self, metin_stones):
         for metin_config in metin_stones:
@@ -458,11 +459,12 @@ class MetinHunter:
             contour_center_y = y + h // 2
             selected_contour_positions.append((contour_center_x, contour_center_y))
 
+        cv2.circle(np_image, (x_middle, y_middle), self.circle_r, (255, 190, 200),
+                   2)
+
         if not closest_contours:
             return None, np_image
 
-        cv2.circle(np_image, (x_middle, y_middle), self.circle_r, (255, 190, 200),
-                   2)  # The color is (255, 190, 200) and the thickness is 2
         print(f'posielam pocet { len(selected_contour_positions) }')
         return selected_contour_positions, np_image
 
