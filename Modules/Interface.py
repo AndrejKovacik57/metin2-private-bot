@@ -33,10 +33,8 @@ class ApplicationWindow:
         self.root = tk.Tk()
         self.root.title(title)
 
-        # Set window size
         self.root.geometry(f'{450}x{600}')
 
-        # Create a grid layout for better organization
         self.root.grid_columnconfigure(0, weight=1)
         self.root.grid_columnconfigure(1, weight=1)
         self.root.grid_columnconfigure(2, weight=1)
@@ -44,13 +42,11 @@ class ApplicationWindow:
         self.display_images_var = tk.BooleanVar()
         self.destroy_event_stones = tk.BooleanVar()
 
-        # Add the "Display" checkbox on the left side of the input field for "Window name"
         self.display_checkbox = tk.Checkbutton(self.root, text="Display", variable=self.display_images_var)
         self.display_checkbox.grid(row=0, column=0, padx=5, pady=5)
 
         self.display_images_var.trace_add("write", self.toggle_display_images)
 
-        # Create a text entry field for window name
         self.entry_window_name = tk.Label(self.root, text="Window name:")
         self.entry_window_name.grid(row=0, column=0, columnspan=4, pady=5)
         self.text_window_name = tk.Entry(self.root, width=15)
@@ -85,7 +81,7 @@ class ApplicationWindow:
         self.metin_options = ["Option 1", "Option 2", "Option 3", "Option 4"]
         self.dropdown_metin = ttk.Combobox(self.root, values=self.metin_options, state="readonly")
         self.dropdown_metin.grid(row=5, column=2, pady=5)
-        # Bind event to the dropdown
+
         self.dropdown_metin.bind("<<ComboboxSelected>>", self.save_selected_option_metins)
 
         self.mining_wait_time_label = tk.Label(self.root, text="Mining wait time:")
@@ -99,15 +95,14 @@ class ApplicationWindow:
         self.text_metin_time_treshold.grid(row=9, column=1, columnspan=1, pady=5)
 
         self.destroy_event_stones.trace_add("write", self.toggle_destroy_event_stones)
-        # self.reset_skill = tk.Button(self.root, text="Reset skill", command=self.reset_skill)
-        # self.reset_skill.grid(row=8, column=1, pady=10)
+
         self.class_skills = {"War-Mental":{"Silne telo":'bot_images\\War-Silne-Telo.png'}, "Sura-Weapon": {"Cepel":'bot_images\\Sura-Cepel.png', "Zacarovane brnenie": 'bot_images\\Sura-ZacBrn.png', "Strach":'bot_images\\Sura-Strach.png'}, "Shaman-Buff":{"Kritik": 'bot_images\\Saman-Krit.png'}}
         self.dropdown_class_label = tk.Label(self.root, text="Choose class:")
         self.dropdown_class_label.grid(row=8, column=2, columnspan=1, pady=5)
         self.dropdown_class = ttk.Combobox(self.root, values=list(self.class_skills.keys()), state="readonly")
         self.dropdown_class.grid(row=9, column=2, pady=5)
         self.dropdown_class.set("War-Mental")
-        # Bind event to the dropdown
+
         self.dropdown_class.bind("<<ComboboxSelected>>", self.save_selected_option_class)
 
 
@@ -143,7 +138,6 @@ class ApplicationWindow:
         self.text_entry_circle_r  = tk.Entry(self.root, width=15)
         self.text_entry_circle_r.grid(row=15, column=1, columnspan=1, pady=5)
 
-        # Create a button to take a screenshot and center it
         self.screenshot_button = tk.Button(self.root, text="Take Screenshot", command=self.take_screenshot)
         self.screenshot_button.grid(row=20, column=1, pady=10)
 
@@ -162,7 +156,6 @@ class ApplicationWindow:
         self.sec_scan_ore_window = tk.Button(text="Set ore check location", command=self.apply_ore_check_location)
         self.sec_scan_ore_window.grid(row=22, column=1, pady=10)
 
-        # Create the Apply button and center it
         self.apply = tk.Button(self.root, text="Apply", command=self.apply_fields)
         self.apply.grid(row=23, column=0, columnspan=4, pady=10)
 
@@ -314,8 +307,6 @@ class ApplicationWindow:
         metin_turn_off = process_text_to_digit(self.cfg_local['metin_turn_off'])
         circle_r = process_text_to_digit(self.cfg_local['circle_r'])
 
-
-
         self.bot_manager.load_values(self.cfg_local['window_name'],
                                      self.cfg_local['information_locations']['bot_check_location'],
                                      self.cfg['tesseract_path'],
@@ -355,40 +346,32 @@ class ApplicationWindow:
     def set_skills(self):
         selected_class = self.dropdown_class.get()
 
-        # Create a new window for setting skills
         self.skill_window = tk.Toplevel(self.root)
         self.skill_window.title("Set Skills")
 
-        # Containers to keep track of rows
         self.skill_labels = []
         self.keyboard_entries = []
 
-        # Initial row with labels and entry fields
         for skill in self.class_skills[selected_class]:
             skill_key = self.cfg_local['classes'][selected_class][skill]['key_bind']
             self.create_row(skill, skill_key)
 
-        # Apply button to save entries to dictionary
         apply_button = tk.Button(self.skill_window, text="Apply", command=self.apply_skills)
         apply_button.grid(row=101, column=0, columnspan=2, pady=10)
 
     def create_row(self, skill_name="", skill_key=""):
-        # Skill Name label (read-only)
         skill_label = tk.Label(self.skill_window, text=skill_name)
         skill_label.grid(row=len(self.skill_labels) + 1, column=0, padx=10, pady=5)
 
-        # Keyboard Button entry
         keyboard_entry = tk.Entry(self.skill_window)
         keyboard_entry.grid(row=len(self.keyboard_entries) + 1, column=1, padx=10, pady=5)
-        keyboard_entry.insert(tk.END, skill_key)
 
-        # Append to lists for tracking
+        keyboard_entry.insert(tk.END, skill_key)
         self.skill_labels.append(skill_label)
         self.keyboard_entries.append(keyboard_entry)
 
 
     def apply_skills(self):
-        # Save the skills to a dictionary and show in messagebox
         selected_class = self.dropdown_class.get()
         for skill_label, keyboard_entry in zip(self.skill_labels, self.keyboard_entries):
             skill_name = skill_label.cget("text").strip()
@@ -397,7 +380,6 @@ class ApplicationWindow:
             if skill_name and keyboard_button:
                 self.cfg_local['classes'][selected_class][skill_name]["key_bind"] = keyboard_button
 
-        # Display the dictionary in a messagebox (or you could do other processing)
         print(f"Skills Saved: {self.cfg_local['classes']}")
 
 
@@ -501,12 +483,12 @@ class ApplicationWindow:
             messagebox.showerror("Bot selection ERROR:", 'There was error while selecting bot')
 
     def start_bot_loop_thread(self):
-        if not self.bot_manager.running:  # Prevent starting multiple threads
+        if not self.bot_manager.running:
             self.bot_manager.running = True
             threading.Thread(target=self.bot_manager.run_metin_hunter, daemon=True).start()
 
     def start_fishbot_thread(self):
-        if not self.bot_manager.running:  # Prevent starting multiple threads
+        if not self.bot_manager.running:
             self.bot_manager.running = True
             threading.Thread(target=self.bot_manager.run_fish_bot, daemon=True).start()
 
@@ -516,36 +498,29 @@ class ApplicationWindow:
             threading.Thread(target=self.bot_manager.run_miner_bot, daemon=True).start()
 
     def take_screenshot(self):
-        # Capture the screenshot of the entire screen
         metin_window = gw.getWindowsWithTitle(self.bot_manager.game_window.window_name)[0]
         screenshot = get_window_screenshot(metin_window)
         self.screenshot_image = screenshot
         self.screenshot_image_left = metin_window.left
         self.screenshot_image_top = metin_window.top
 
-        # Create a new window to display the screenshot
         new_window = tk.Toplevel(self.root)
         new_window.title("Screenshot")
         new_window.geometry(f"{screenshot.width}x{screenshot.height}")
 
-        # Convert the screenshot to ImageTk format for display
         screenshot_tk = ImageTk.PhotoImage(screenshot)
 
-        # Create a canvas widget to display the screenshot
         canvas = Canvas(new_window, width=screenshot.width, height=screenshot.height)
         canvas.pack()
         canvas.create_image(0, 0, anchor=tk.NW, image=screenshot_tk)
 
-        # Keep a reference to the image to avoid garbage collection
         canvas.image = screenshot_tk
 
-        # Bind mouse events for drawing the rectangle
         canvas.bind("<ButtonPress-1>", lambda event: self.on_button_press(event, canvas))
         canvas.bind("<B1-Motion>", lambda event: self.on_mouse_drag(event, canvas))
         canvas.bind("<ButtonRelease-1>", lambda event: self.on_button_release(event))
         canvas.bind("<Button-3>", lambda event: self.on_right_click(canvas))
 
-        # Store the canvas in the instance for reference
         self.canvas = canvas
         self.rect = None
         self.start_x = None
@@ -555,30 +530,23 @@ class ApplicationWindow:
         screenshot = self.bot_manager.image_to_display
 
         def update_image(screenshot=screenshot):
-            # If the screenshot is not a PIL image, convert it
             if not isinstance(screenshot, Image.Image):
                 screenshot = screenshot[:, :, ::-1]
                 screenshot = Image.fromarray(screenshot)
 
-            # Resize the image to fit the width of the window and half the height
             img = screenshot.resize((self.root.winfo_width(), int(self.root.winfo_height() / 2)))
 
-            # Convert the image to a format that can be displayed in Tkinter
             self.screenshot_img = ImageTk.PhotoImage(img)
 
-            # Update or create the label to display the image at the bottom of the grid
             if self.image_label:
                 self.image_label.config(image=self.screenshot_img)
             else:
-                # Create the label and place it at the bottom of the grid
                 self.image_label = tk.Label(self.root, image=self.screenshot_img)
                 self.image_label.grid(row=self.last_row, column=0, columnspan=4, pady=10)
 
-        # Use `after` to safely update the GUI from the main thread
         self.root.after(0, update_image)
 
     def on_button_press(self, event, canvas):
-        # Store the initial coordinates on mouse button press
         self.start_x = event.x
         self.start_y = event.y
         if self.rect:
@@ -586,21 +554,17 @@ class ApplicationWindow:
         self.rect = canvas.create_rectangle(self.start_x, self.start_y, self.start_x, self.start_y, outline='green')
 
     def on_mouse_drag(self, event, canvas):
-        # Update the rectangle as the user drags the mouse
         cur_x, cur_y = (event.x, event.y)
         if self.rect:
             canvas.coords(self.rect, self.start_x, self.start_y, cur_x, cur_y)
 
     def on_button_release(self, event):
-        # Finalize the rectangle and print/save the coordinates
         self.end_x, self.end_y = (event.x, event.y)
         print(f"Rectangle coordinates: {self.start_x}, {self.start_y} -> {self.end_x}, {self.end_y}")
 
-        # Save the coordinates or use them in your logic as needed
         self.selected_area = (self.start_x, self.start_y, self.end_x, self.end_y)
 
     def on_right_click(self, canvas):
-        # Delete the rectangle if right-clicked
         if self.rect:
             canvas.delete(self.rect)
             self.rect = None

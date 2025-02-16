@@ -430,12 +430,11 @@ class MetinHunter:
                     circularity_obj = 4 * np.pi * (area / (perimeter * perimeter))
                     if aspect_low < aspect_ratio < aspect_high and circularity_obj > circularity:
 
-                        cv2.rectangle(np_image, (x, y), (x + w, y + h), (0, 255, 0), 2)  # Draw rectangle
+                        cv2.rectangle(np_image, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
                         contour_center_x = x + w // 2
                         contour_center_y = y + h // 2
 
-                        # Draw a line from the middle of the screenshot to the center of the contour
                         cv2.line(np_image, (x_middle, y_middle), (contour_center_x, contour_center_y),
                                  (255, 190, 200), 2)
                         cur_distance = abs(x_middle - contour_center_x) + abs(y_middle - contour_center_y)
@@ -452,7 +451,7 @@ class MetinHunter:
         print(f'pocet zhod metinov { len(contour_list) }')
         closest_contours = contour_list[:metin_num]
 
-        selected_contour_positions = []  # List to store positions of the 5 closest contours
+        selected_contour_positions = []
         for _, contour in closest_contours:
             x, y, w, h = cv2.boundingRect(contour)
             contour_center_x = x + w // 2

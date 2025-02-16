@@ -17,12 +17,11 @@ class AntiBot:
         self.game_window = game_window
 
         self.custom_config = r'--oem 3 --psm 6 outputbase digits'
-        # Configure logging
         logging.basicConfig(
-            filename='../bot_solver2.log',  # Log to a file
-            level=logging.INFO,  # Set the logging level
+            filename='../bot_solver2.log',
+            level=logging.INFO,
             format='%(asctime)s - %(levelname)s - %(message)s',  # Log format
-            datefmt='%Y-%m-%d %H:%M:%S'  # Date format
+            datefmt='%Y-%m-%d %H:%M:%S'
         )
         pytesseract.pytesseract.tesseract_cmd = ''
 

@@ -36,13 +36,12 @@ class GameWindow:
     def terminate_process(self):
         for proc in psutil.process_iter(['pid', 'name', 'exe', 'cmdline']):
             try:
-                # Check the process description (name, exe, or cmdline)
                 if proc.info['exe'] and self.window_name in proc.info['exe']:
                     proc.terminate()
                     print(f"Process with description '{self.window_name}' (PID: {proc.info['pid']}) terminated successfully.")
                     return True
             except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-                pass  # Process no longer exists or cannot be accessed
+                pass
             except Exception as e:
                 print(f"Failed to terminate process with description '{self.window_name}' (PID: {proc.info['pid']}): {e}")
         return False

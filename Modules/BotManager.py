@@ -90,7 +90,7 @@ class BotManager:
                 break
         local_time = time.localtime(time.time())
         payload = self.message_check.get_payload(f"Metin okno zatvorene - {time.strftime('%Y-%m-%d %H:%M:%S', local_time)}")
-        self.message_check.send_message_async(payload)
+        self.message_check.send_message_new_thread(payload)
 
     def run_metin_hunter(self):
         time.sleep(2)
@@ -125,7 +125,6 @@ class BotManager:
 
                 print(f'Iteration execution time {time.time() - loop_time}s')
 
-    # todo kontrola stromu
     def run_fish_bot(self):
         time.sleep(2)
         upper_limit = 0.5

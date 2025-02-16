@@ -40,32 +40,27 @@ class MessageCheck:
                 image_to_send = Image.fromarray(np_image)
 
                 image_bytes = io.BytesIO()
-                image_to_send.save(image_bytes, format='PNG')  # Save the image in PNG format to BytesIO
-                image_bytes.seek(0)  # Reset the stream position to the beginning
+                image_to_send.save(image_bytes, format='PNG')
+                image_bytes.seek(0)
 
                 local_time = time.localtime(time.time())
                 payload = self.get_payload(f"Nova sprava - {time.strftime('%Y-%m-%d %H:%M:%S', local_time)}")
 
-                # Attach the image file from memory
+
                 files = {
-                    'file': ('image.png', image_bytes, 'image/png')  # (filename, file object, content type)
+                    'file': ('image.png', image_bytes, 'image/png')
                 }
-                self.send_message_async(payload, files)
+                self.send_message_new_thread(payload, files)
 
                 cancel_all(np_image, self.cancel_img, self.game_window)
 
     def get_payload(self, message):
         return {
             "content": f"<@{self.user_id}>, {message}",
-            # Optional: Add a message
-            "username": "Image Sender"  # Optional: Set a custom username
+            "username": "Image Sender"
         }
 
-    def send_message_async(self, payload, files=None):
-        """
-        Sends a message to Discord via webhook in a separate thread.
-        """
-
+    def send_message_new_thread(self, payload, files=None):
         def send():
             if files:
                 response = requests.post(self.webhook_url, data=payload, files=files)
@@ -77,6 +72,4 @@ class MessageCheck:
             else:
                 print(f"Failed to send message. Status code: {response.status_code}")
 
-        # Create and start a new thread
-        thread = threading.Thread(target=send)
-        thread.start()
+        threading.Thread(target=send).start()

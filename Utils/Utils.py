@@ -16,14 +16,11 @@ def resize_image(image):
     new_width = int(width * 2)
     new_height = int(height * 2)
 
-    # Resize the image using a better upscaling method
     return cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_CUBIC)
 
 
 def get_window_screenshot(window):
-    # Get the position and size of the window
     left, top, right, bottom = window.left, window.top, window.right, window.bottom
-    # Take a screenshot of the specified region
     screenshot = ImageGrab.grab(bbox=(left, top, right, bottom), include_layered_windows=False, all_screens=True)
 
     return screenshot
@@ -99,24 +96,19 @@ def mouse_right_click(pos_x, pos_y, window_title :str) -> None:
 
 
 def preprocess_image(image):
-    # Convert the image to HSV
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    # Define the lower and upper range for the white color
-    lower_white = np.array([0, 0, 180])  # Lower bound for light gray-white in HSV
-    upper_white = np.array([180, 50, 220])  # Upper bound for light gray-white in HSV
-    # Create a mask for green areas in the image
+
+    lower_white = np.array([0, 0, 180])
+    upper_white = np.array([180, 50, 220])
+
     mask = cv2.inRange(hsv, lower_white, upper_white)
 
-    # Bitwise-AND the mask and the original image
     image = cv2.bitwise_and(image, image, mask=mask)
-    # Find all non-black pixels in the mask (which should correspond to green)
     coords = np.column_stack(np.where(mask > 0))
-    # Check if we found any green text
+    # if green text
     if len(coords) > 0:
-        # Get the bounding box of the non-black pixels
         x, y, w, h = cv2.boundingRect(coords)
 
-        # Crop the image using the bounding box
         # image = image[x - 1:x + w + 1, y - 1:y + h + 1]
         x_start = max(0, x - 1)
         y_start = max(0, y - 1)
@@ -125,22 +117,17 @@ def preprocess_image(image):
         image = image[x_start:x_end, y_start:y_end]
     else:
         print('No mask')
-        # return image
 
-    color_to_replace = np.array([199, 199, 199])  # OpenCV uses BGR format
+    color_to_replace = np.array([199, 199, 199])
 
-    # Define the tolerance for the color (you may adjust this if needed)
     tolerance = 5
 
-    # Create a mask for the color to replace
     lower_bound = np.maximum(color_to_replace - tolerance, 0)
     upper_bound = np.minimum(color_to_replace + tolerance, 255)
     mask = cv2.inRange(image, lower_bound, upper_bound)
 
-    # Replace the color with white (255, 255, 255)
     image[mask != 0] = [255, 255, 255]
 
-    # Invert the colors (swap black and white)
     image = cv2.bitwise_not(image)
 
     return image
@@ -155,10 +142,9 @@ def locate_image(path, np_image, confidence=0.9):
 
 def locate_all_images(path, np_image, confidence=0.9):
     try:
-        # Use locateAll to find all occurrences of the template image
         locations = list(pyautogui.locateAll(path, np_image, confidence=confidence))
     except pyautogui.ImageNotFoundException:
-        locations = []  # Return an empty list if no matches are found
+        locations = []
     return locations
 
 def load_image(path):
@@ -166,23 +152,18 @@ def load_image(path):
     joined_path = os.path.join(script_dir, path)
 
     image = Image.open(joined_path)
-    # Convert the image to a NumPy array
     image_array = np.array(image)
     return cv2.cvtColor(image_array, cv2.COLOR_RGB2BGR)
 
 
 def is_subimage(image, template):
-    # Get dimensions of the image and the template
     image_h, image_w = image.shape[:2]
     template_h, template_w = template.shape[:2]
 
-    # Iterate over every possible starting position in the image
     for y in range(image_h - template_h + 1):
         for x in range(image_w - template_w + 1):
-            # Extract the subimage from the main image
             sub_image = image[y:y + template_h, x:x + template_w]
 
-            # Check if the subimage matches the template
             if np.array_equal(sub_image, template):
                 return True
     return False
