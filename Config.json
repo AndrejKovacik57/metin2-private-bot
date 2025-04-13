@@ -131,6 +131,19 @@
         {
             "name": "Kamen vraku",
             "mask": {
+                            "mask": {
+                "hMin": 21,
+                "sMin": 34,
+                "vMin": 0,
+                "hMax": 83,
+                "sMax": 255,
+                "vMax": 252
+            },
+            "contourLow": 4526,
+            "contourHigh": 26511,
+            "aspect_low": 36,
+            "aspect_high": 156,
+            "circularity": 42,
                 "hMin": 21,
                 "sMin": 34,
                 "vMin": 0,
@@ -150,6 +163,78 @@
             "bosses": [
                 
             ]
+        },
+        {
+            "name": "Hadi kamen",
+            "mask": {
+                "hMin": 0,
+                "sMin": 0,
+                "vMin": 0,
+                "hMax": 17,
+                "sMax": 255,
+                "vMax": 255
+            },
+            "contourLow": 928,
+            "contourHigh": 15065,
+            "aspect_low": 40,
+            "aspect_high": 127,
+            "circularity": 127,
+            "weather": 1,
+            "event_stones": [
+                {
+                    "name": "Tekvica",
+                    "mask": {
+                        "hMin": 13,
+                        "sMin": 155,
+                        "vMin": 79,
+                        "hMax": 27,
+                        "sMax": 255,
+                        "vMax": 255
+                    },
+                    "contourLow": 1112,
+                    "contourHigh": 10500,
+                    "aspect_low": 82,
+                    "aspect_high": 187,
+                    "circularity": 126
+                }
+            ],
+            "bosses": []
+        },
+        {
+            "name": "Kamen Faraona",
+            "mask": {
+                "hMin": 23,
+                "sMin": 0,
+                "vMin": 0,
+                "hMax": 255,
+                "sMax": 246,
+                "vMax": 81
+            },
+            "contourLow": 4707,
+            "contourHigh": 11765,
+            "aspect_low": 79,
+            "aspect_high": 116,
+            "circularity": 83,
+            "weather": 1,
+            "event_stones": [
+                {
+                    "name": "Tekvica",
+                    "mask": {
+                        "hMin": 13,
+                        "sMin": 155,
+                        "vMin": 79,
+                        "hMax": 27,
+                        "sMax": 255,
+                        "vMax": 255
+                    },
+                    "contourLow": 1112,
+                    "contourHigh": 10500,
+                    "aspect_low": 82,
+                    "aspect_high": 187,
+                    "circularity": 126
+                }
+            ],
+            "bosses": []
         }
     ],
     "fishing": {

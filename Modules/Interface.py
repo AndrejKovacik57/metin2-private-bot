@@ -95,8 +95,12 @@ class ApplicationWindow:
         self.text_metin_time_treshold.grid(row=9, column=1, columnspan=1, pady=5)
 
         self.destroy_event_stones.trace_add("write", self.toggle_destroy_event_stones)
-
-        self.class_skills = {"War-Mental":{"Silne telo":'bot_images\\War-Silne-Telo.png'}, "Sura-Weapon": {"Cepel":'bot_images\\Sura-Cepel.png', "Zacarovane brnenie": 'bot_images\\Sura-ZacBrn.png', "Strach":'bot_images\\Sura-Strach.png'}, "Shaman-Buff":{"Kritik": 'bot_images\\Saman-Krit.png'}}
+        # self.reset_skill = tk.Button(self.root, text="Reset skill", command=self.reset_skill)
+        # self.reset_skill.grid(row=8, column=1, pady=10)
+        self.class_skills = {"War-Mental":{"Silne telo":'bot_images\\War-Silne-Telo.png'},
+                             "Sura-Weapon": {"Cepel":'bot_images\\Sura-Cepel.png', "Zacarovane brnenie": 'bot_images\\Sura-ZacBrn.png', "Strach":'bot_images\\Sura-Strach.png'},
+                             "Sura-Spell": {"Ohen":'bot_images\\Sura-duch-plamen.png', "Magicke brnenie": 'bot_images\\Sura-temn-ochrana.png'},
+                             "Shaman-Buff":{"Kritik": 'bot_images\\Saman-Krit.png'}}
         self.dropdown_class_label = tk.Label(self.root, text="Choose class:")
         self.dropdown_class_label.grid(row=8, column=2, columnspan=1, pady=5)
         self.dropdown_class = ttk.Combobox(self.root, values=list(self.class_skills.keys()), state="readonly")
@@ -222,14 +226,15 @@ class ApplicationWindow:
 
         if 'classes' not in self.cfg_local:
             self.cfg_local['classes'] = {}
-            for class_option in self.class_skills.keys():
-                if class_option not in self.cfg_local['classes']:
-                    self.cfg_local['classes'][class_option] = {}
-                for skill_option in self.class_skills[class_option]:
-                    if skill_option not in self.cfg_local['classes'][class_option]:
-                        path = self.class_skills[class_option][skill_option]
-                        self.cfg_local['classes'][class_option][skill_option] = {'key_bind': "",
-                                                                                 'skill_active_img_path': path}
+        for class_option in self.class_skills.keys():
+            if class_option not in self.cfg_local['classes']:
+                self.cfg_local['classes'][class_option] = {}
+            for skill_option in self.class_skills[class_option]:
+                if skill_option not in self.cfg_local['classes'][class_option]:
+                    print(f'set null key for {skill_option}')
+                    path = self.class_skills[class_option][skill_option]
+                    self.cfg_local['classes'][class_option][skill_option] = {'key_bind': "",
+                                                                             'skill_active_img_path': path}
 
         if 'window_name' not in self.cfg_local:
             self.cfg_local['window_name'] = ''
