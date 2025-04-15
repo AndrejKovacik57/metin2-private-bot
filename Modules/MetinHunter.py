@@ -261,6 +261,7 @@ class MetinHunter:
         self.clicked_at_mob_diff = 0
         metin_stack_string = self.text_hash_map[metin_stack_hash]
         stack = int(metin_stack_string[3])
+        stack = 3 #temp stack limiter
         metins_in_stack = int(metin_stack_string[1])
         metin_num = stack - metins_in_stack
         print('nasiel sa metin hash')
