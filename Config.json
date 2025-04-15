@@ -57,18 +57,18 @@
                 {
                     "name": "Vajce",
                     "mask": {
-                        "hMin": 16,
-                        "sMin": 139,
-                        "vMin": 40,
+                        "hMin": 17,
+                        "sMin": 171,
+                        "vMin": 61,
                         "hMax": 32,
                         "sMax": 235,
                         "vMax": 226
                     },
-                    "contourLow": 1000,
-                    "contourHigh": 6516,
-                    "aspect_low": 71,
-                    "aspect_high": 140,
-                    "circularity": 150
+                    "contourLow": 863,
+                    "contourHigh": 7000,
+                    "aspect_low": 67,
+                    "aspect_high": 114,
+                    "circularity": 81
                 },
                 {
                     "name": "Tekvica",
