@@ -55,6 +55,22 @@
             "weather": 5,
             "event_stones": [
                 {
+                    "name": "Vajce",
+                    "mask": {
+                        "hMin": 16,
+                        "sMin": 139,
+                        "vMin": 40,
+                        "hMax": 32,
+                        "sMax": 235,
+                        "vMax": 226
+                    },
+                    "contourLow": 1000,
+                    "contourHigh": 6516,
+                    "aspect_low": 71,
+                    "aspect_high": 140,
+                    "circularity": 150
+                },
+                {
                     "name": "Tekvica",
                     "mask": {
                         "hMin": 8,
