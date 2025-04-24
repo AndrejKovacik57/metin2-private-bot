@@ -156,7 +156,7 @@ class CharacterActions:
 
             if location is not None:
                 print("elik je aktivovany")
-                # return
+                return
 
             np_image = self.game_window.get_np_image()
             location = locate_image(self.inventory, np_image, 0.9)
