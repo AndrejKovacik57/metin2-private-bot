@@ -28,6 +28,9 @@ class CharacterActions:
         self.board_timer = 0
         self.board_cd = 30
 
+        self.clan_meet_timer = 0
+        self.clan_meet_cd = 10
+
         self.selected_class = None
 
         self.game_window = game_window
@@ -39,6 +42,7 @@ class CharacterActions:
         self.weather_image = load_image('../bot_images/weather.png')
         self.cancel_img = load_image('../bot_images/cancel_metin_button.png')
         self.leaderboard_img = load_image('../bot_images/leaderboard.png')
+        self.clan_meeting = load_image('../bot_images/schudze.png')
 
     def load_values(self, skills_cfg:dict, selected_class:str, cape_time_min:int, cape_time_max:int, cape_key:str):
         self.skills_cfg = skills_cfg
@@ -121,6 +125,16 @@ class CharacterActions:
                 return
             print('Zatvaram leaderboard')
             click_location_middle(location, self.game_window)
+
+    def check_clan_meet(self, np_image:np.ndarray):
+        clan_timer_diff = time.time() - self.clan_meet_timer
+        if self.clan_meet_timer == 0 or clan_timer_diff >= self.clan_meet_cd:
+            print("kontrolujeeem cech")
+            self.clan_meet_timer = time.time()
+            location = locate_image(self.clan_meeting, np_image, 0.8)
+            if location is not None:
+                return True
+        return False
 
 
     def choose_weather(self, weather):

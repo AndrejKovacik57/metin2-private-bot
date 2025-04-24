@@ -122,6 +122,19 @@ class BotManager:
                     self.character_actions.cancel_leader_board(np_image)
                 if self.running:
                     self.message_check.locate_messages(np_image)
+                if self.running:
+                    is_clan_meet = self.character_actions.check_clan_meet(np_image)
+                    if is_clan_meet:
+                        print("ceh cech ceh")
+                        print("ceh cech ceh")
+                        print("ceh cech ceh")
+                        print("ceh cech ceh")
+                        print("ceh cech ceh")
+                        print("ceh cech ceh")
+                        payload = self.message_check.get_payload(
+                            f"Je cehové stretnutie!!!")
+                        self.message_check.send_message_new_thread(payload)
+
 
                 print(f'Iteration execution time {time.time() - loop_time}s')
 
