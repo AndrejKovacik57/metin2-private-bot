@@ -188,6 +188,12 @@ def click_location_middle(location, game_window:GameWindow) -> None:
     print(f'click x {x} y {x}')
     mouse_left_click(x, y, game_window.window_name)
 
+def right_click_location_middle(location, game_window:GameWindow) -> None:
+    x = game_window.window_left + location.left + location.width / 2
+    y = game_window.window_top + location.top + location.height / 2
+    print(f'right click x {x} y {x}')
+    mouse_right_click(x, y, game_window.window_name)
+
 def crop_image(image:np.ndarray, location:list[int]):
     x1, y1, x2, y2 = location
     return image[y1: y2, x1: x2]

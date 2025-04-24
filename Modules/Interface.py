@@ -39,6 +39,7 @@ class ApplicationWindow:
         self.root.grid_columnconfigure(1, weight=1)
         self.root.grid_columnconfigure(2, weight=1)
 
+        self.pirate_elixir_var = tk.BooleanVar()
         self.display_images_var = tk.BooleanVar()
         self.destroy_event_stones = tk.BooleanVar()
 
@@ -135,6 +136,11 @@ class ApplicationWindow:
         self.entry_user_id.grid(row=12, column=1, columnspan=1, pady=5)
         self.text_entry_user_id  = tk.Entry(self.root, width=15)
         self.text_entry_user_id.grid(row=13, column=1, columnspan=1, pady=5)
+
+
+        self.pirate_checkbox = tk.Checkbutton(self.root, text="Pirate elixir", variable=self.pirate_elixir_var)
+        self.pirate_checkbox.grid(row=12, column=2, padx=5, pady=5)
+        self.pirate_elixir_var.trace_add("write", self.toggle_pirate)
 
 
         self.entry_circle_r = tk.Label(self.root, text="No click area (pixels):")
@@ -331,8 +337,7 @@ class ApplicationWindow:
                                      mining_wait_time_max,
                                      self.cfg_local['webhook'],
                                      self.cfg_local['user_id'],
-                                     circle_r
-                                     )
+                                     circle_r)
 
 
     def save_fields(self):
@@ -407,6 +412,13 @@ class ApplicationWindow:
             self.bot_manager.metin_hunter.destroy_event_stones = True
         else:
             self.bot_manager.metin_hunter.destroy_event_stones = False
+
+
+    def toggle_pirate(self, *args):
+        if self.pirate_elixir_var.get() == 1:
+            self.bot_manager.character_actions.use_pirate_elixir = True
+        else:
+            self.bot_manager.character_actions.use_pirate_elixir = False
 
     def apply_hp_bar_location(self):
         if None not in [self.start_x, self.start_y, self.end_x, self.end_y]:

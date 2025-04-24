@@ -5,7 +5,7 @@ import numpy as np
 
 from Modules import GameWindow
 from Utils.Utils import load_image, press_button, locate_image, press_button_multiple, click_location_middle, \
-    mouse_left_click, cancel_all
+    mouse_left_click, cancel_all, right_click_location_middle
 
 
 class CharacterActions:
@@ -35,6 +35,10 @@ class CharacterActions:
 
         self.game_window = game_window
 
+        self.use_pirate_elixir = False
+        self.pirate_timer = 0
+        self.pirate_cd = 10
+
         self.selected_weather = 999
         self.settings_options = load_image('../bot_images/settings_options.png')
         self.sky_settings = load_image('../bot_images/sky_settings.png')
@@ -43,6 +47,10 @@ class CharacterActions:
         self.cancel_img = load_image('../bot_images/cancel_metin_button.png')
         self.leaderboard_img = load_image('../bot_images/leaderboard.png')
         self.clan_meeting = load_image('../bot_images/schudze.png')
+        self.inventory = load_image('../bot_images/inventar.png')
+        self.inventory_slots = load_image('../bot_images/stranky_inventar.png')
+        self.pirate_buff = load_image('../bot_images/elik_pirat_buff.png')
+        self.pirate_item = load_image('../bot_images/elik_pirat_item.png')
 
     def load_values(self, skills_cfg:dict, selected_class:str, cape_time_min:int, cape_time_max:int, cape_key:str):
         self.skills_cfg = skills_cfg
@@ -135,6 +143,51 @@ class CharacterActions:
             if location is not None:
                 return True
         return False
+
+    def check_pirate_elixir(self):
+        if not self.use_pirate_elixir:
+            return
+
+        pirate_timer_diff = time.time() - self.pirate_timer
+        if self.pirate_timer == 0 or pirate_timer_diff >= self.pirate_cd:
+            self.pirate_timer = time.time()
+            np_image = self.game_window.get_np_image()
+            location = locate_image(self.pirate_buff, np_image, 0.9)
+
+            if location is not None:
+                print("elik je aktivovany")
+                # return
+
+            np_image = self.game_window.get_np_image()
+            location = locate_image(self.inventory, np_image, 0.9)
+
+            if location is None:
+                return
+
+            click_location_middle(location, self.game_window)
+            time.sleep(0.5)
+
+            np_image = self.game_window.get_np_image()
+            location = locate_image(self.inventory_slots, np_image, 0.9)
+
+            if location is None:
+                return
+            left, slot_top, width, height = location
+            slot_middle_y = slot_top + height // 2
+            for slot_index in range(0,4):
+                print(slot_index)
+                slot_left =  left + slot_index * 30
+                slot_middle_x = slot_left + 15
+                mouse_left_click(slot_middle_x, slot_middle_y, self.game_window.window_name)
+                time.sleep(0.5)
+
+                np_image = self.game_window.get_np_image()
+                location = locate_image(self.pirate_item, np_image, 0.9)
+
+                if location is None:
+                    continue
+                right_click_location_middle(location, self.game_window)
+                break
 
 
     def choose_weather(self, weather):
