@@ -96,7 +96,7 @@ class BotManager:
         time.sleep(2)
         print('idem vybrat pocasie')
         weather = self.metin_hunter.initialize_contour_parameters(self.metin_config)
-        self.character_actions.choose_weather(weather)
+        # self.character_actions.choose_weather(weather)
 
         while self.running:
             with self.lock:
@@ -113,10 +113,6 @@ class BotManager:
                 if self.running:
                     self.character_actions.activate_buffs()
                 if self.running:
-                    self.image_to_display = self.metin_hunter.hunt_metin(np_image)
-                    if self.show_img:
-                        self.display_screenshot()
-                if self.running:
                     self.character_actions.use_cape()
                 if self.running:
                     self.character_actions.check_pirate_elixir()
@@ -127,16 +123,14 @@ class BotManager:
                 if self.running:
                     is_clan_meet = self.character_actions.check_clan_meet(np_image)
                     if is_clan_meet:
-                        print("ceh cech ceh")
-                        print("ceh cech ceh")
-                        print("ceh cech ceh")
-                        print("ceh cech ceh")
-                        print("ceh cech ceh")
-                        print("ceh cech ceh")
                         payload = self.message_check.get_payload(
                             f"Je cehové stretnutie!!!")
                         self.message_check.send_message_new_thread(payload)
-
+                # must be last alters np_image
+                if self.running:
+                    self.image_to_display = self.metin_hunter.hunt_metin(np_image)
+                    if self.show_img:
+                        self.display_screenshot()
 
                 print(f'Iteration execution time {time.time() - loop_time}s')
 

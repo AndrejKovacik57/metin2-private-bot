@@ -136,6 +136,8 @@ class CharacterActions:
 
     def check_clan_meet(self, np_image:np.ndarray):
         clan_timer_diff = time.time() - self.clan_meet_timer
+
+        print("clan_timer_diff ", clan_timer_diff)
         if self.clan_meet_timer == 0 or clan_timer_diff >= self.clan_meet_cd:
             print("kontrolujeeem cech")
             self.clan_meet_timer = time.time()
