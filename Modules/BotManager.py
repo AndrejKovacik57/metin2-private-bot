@@ -96,7 +96,7 @@ class BotManager:
         time.sleep(2)
         print('idem vybrat pocasie')
         weather = self.metin_hunter.initialize_contour_parameters(self.metin_config)
-        # self.character_actions.choose_weather(weather)
+        self.character_actions.choose_weather(weather)
 
         while self.running:
             with self.lock:
