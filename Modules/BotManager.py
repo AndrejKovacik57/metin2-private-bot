@@ -117,7 +117,7 @@ class BotManager:
                 if self.running:
                     self.character_actions.check_pirate_elixir()
                 if self.running:
-                    self.character_actions.check_spin(np_image)
+                    self.character_actions.check_spin()
                 if self.running:
                     self.character_actions.cancel_leader_board(np_image)
                 if self.running:

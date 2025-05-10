@@ -1,6 +1,5 @@
 import random
 import time
-
 import numpy as np
 
 from Modules import GameWindow
@@ -151,12 +150,14 @@ class CharacterActions:
                 return True
         return False
 
-    def check_spin(self, np_image:np.ndarray):
+    def check_spin(self):
         spin_timer_diff = time.time() - self.spin_timer
 
         if self.spin_timer == 0 or spin_timer_diff >= self.spin_cd:
             self.clan_meet_timer = time.time()
-            location = locate_image(self.clan_meeting, np_image, 0.8)
+
+            np_image = self.game_window.get_np_image()
+            location = locate_image(self.spin, np_image, 0.8)
             if location is None:
                 return
             print('klikam spin')
