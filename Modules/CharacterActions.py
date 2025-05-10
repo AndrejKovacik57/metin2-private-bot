@@ -39,6 +39,9 @@ class CharacterActions:
         self.pirate_timer = 0
         self.pirate_cd = 10
 
+        self.spin_timer = 0
+        self.spin_cd = 10
+
         self.selected_weather = 999
         self.settings_options = load_image('../bot_images/settings_options.png')
         self.sky_settings = load_image('../bot_images/sky_settings.png')
@@ -51,6 +54,7 @@ class CharacterActions:
         self.inventory_slots = load_image('../bot_images/stranky_inventar.png')
         self.pirate_buff = load_image('../bot_images/elik_pirat_buff.png')
         self.pirate_item = load_image('../bot_images/elik_pirat_item.png')
+        self.spin = load_image('../bot_images/spin.png')
 
     def load_values(self, skills_cfg:dict, selected_class:str, cape_time_min:int, cape_time_max:int, cape_key:str):
         self.skills_cfg = skills_cfg
@@ -142,9 +146,21 @@ class CharacterActions:
             print("kontrolujeeem cech")
             self.clan_meet_timer = time.time()
             location = locate_image(self.clan_meeting, np_image, 0.8)
+
             if location is not None:
                 return True
         return False
+
+    def check_spin(self, np_image:np.ndarray):
+        spin_timer_diff = time.time() - self.spin_timer
+
+        if self.spin_timer == 0 or spin_timer_diff >= self.spin_cd:
+            self.clan_meet_timer = time.time()
+            location = locate_image(self.clan_meeting, np_image, 0.8)
+            if location is None:
+                return
+            print('klikam spin')
+            click_location_middle(location, self.game_window)
 
     def check_pirate_elixir(self):
         if not self.use_pirate_elixir:
