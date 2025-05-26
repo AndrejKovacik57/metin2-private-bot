@@ -186,6 +186,7 @@ class MetinHunter:
 
     def __handle_metin_destruction_timer(self) -> bool:
         self.not_destroying_metin_diff = time.time() - self.not_destroying_metin if self.not_destroying_metin else 0
+        print(f'self.not_destroying_metin_diff {self.not_destroying_metin_diff} self.not_destroying_metin_treshold {self.not_destroying_metin_treshold}')
         if self.not_destroying_metin_diff > self.not_destroying_metin_treshold:
             self.stop_running()
             self.destroying_metins = False
