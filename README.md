@@ -7,4 +7,4 @@ Install python, pip and tesseract to your machine from https://github.com/UB-Man
 Install requirements with following command in command line 'pip install -r requirements.txt'
 
 ### Step 3
-Start command line as administrator and open directory with Metin2Bot.py and start it with command 'python  Metin2Bot.py'
+Start command line as administrator and open directory with MetinBot.py and start it with command 'python  MetinBot.py'
