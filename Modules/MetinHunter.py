@@ -314,7 +314,7 @@ class MetinHunter:
         if metin_is_alive:
             self.__update_clicked_mob_timer()
         print('nenasiel sa metin hash')
-        return 3, 0
+        return 1, 0
 
     def __update_clicked_mob_timer(self) -> None:
         if self.clicked_at_mob_timer == 0:
