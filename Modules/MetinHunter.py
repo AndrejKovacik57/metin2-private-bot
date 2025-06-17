@@ -9,6 +9,17 @@ import cv2
 import keyboard
 
 
+class bonus_stone_class:
+    def __init__(self, name:str, lower_bonus, upper_bonus, contour_low:int, contour_high:int, aspect_low:int, aspect_high:int, circularity:int):
+        self.name = name
+        self.lower = lower_bonus, 
+        self.upper = upper_bonus
+        self.contour_low = contour_low
+        self.contour_high = contour_high
+        self.aspect_low = aspect_low
+        self.aspect_high = aspect_high
+        self.circularity = circularity
+    
 class MetinHunter:
     def __init__(self, game_window:GameWindow, text_hash_map, stop_running):
 
@@ -71,6 +82,11 @@ class MetinHunter:
         self.tree_check_time = 0
         self.tree_check_timer = 5
 
+        self.bonus_stones = []
+        self.bonus_stone_timer = 0
+        self.bonus_stone_timer_diff = 0
+        self.bonus_stone_search_timer = 2
+
         self.metin_hp_img = load_image('../bot_images/metin_hp2.png')
         self.cancel_img = load_image('../bot_images/cancel_metin_button.png')
         self.tree_img = load_image('../bot_images/tree.png')
@@ -95,7 +111,7 @@ class MetinHunter:
                 self.aspect_low = metin_config['aspect_low'] / 100.0
                 self.aspect_high = metin_config['aspect_high'] / 100.0
                 self.circularity = metin_config['circularity'] / 1000.0
-                if metin_config['event_stones']:
+                if 'event_stones' in metin_config:
                     self.is_event_stone_selected = self.is_event_stone_selected = True
                     event_config = metin_config['event_stones'][0]
                     self.contour_low_event = event_config['contourLow']
@@ -106,6 +122,23 @@ class MetinHunter:
                     self.lower_event, self.upper_event = create_low_upp(event_config)
                 else:
                     self.is_event_stone_selected = False
+
+                if 'bonus_stones' in metin_config:
+                    bonus_stones = metin_config[bonus_stones]
+                    self.bonus_stones = []
+                    for bonus_stone_item in bonus_stones:
+                        lower_bonus, upper_bonus = create_low_upp(bonus_stone_item)
+                        bonus_stone = bonus_stone_class(bonus_stone_item['name'],
+                                                        lower_bonus, 
+                                                        upper_bonus,
+                                                        bonus_stone_item['contourLow'],
+                                                        bonus_stone_item['contourHigh'],
+                                                        bonus_stone_item['aspect_low'],
+                                                        bonus_stone_item['aspect_high'],
+                                                        bonus_stone_item['circularity'])
+                        self.bonus_stones.append(bonus_stone)
+                else:
+                    self.bonus_stones = []
 
                 self.lower, self.upper = create_low_upp(metin_config)
 
@@ -142,6 +175,10 @@ class MetinHunter:
         print(f'metin_num {metin_num} metins_in_stack{metins_in_stack}')
         print('step4')
         self.__check_metin_destruction_stuck(metins_in_stack)
+
+        if self.bonus_stones:
+            self.__handle_bonus_stones(np_image_crop, metin_num, x_middle, y_middle)
+
 
         if self.is_event_stone_selected:
             image_to_display_event = self.__handle_event_stones(np_image_crop, metin_num, x_middle, y_middle)
@@ -324,6 +361,35 @@ class MetinHunter:
         press_button('w', self.game_window.window_name)
         keyboard.release('space')
         time.sleep(0.15)
+
+
+    def __handle_bonus_stones(self, np_image_crop: np.ndarray, metin_num: int, x_middle: int,
+                              y_middle: int) -> np.ndarray | None:
+        
+        self.bonus_stone_timer_diff = time.time() - self.bonus_stone_timer
+        if self.bonus_stone_timer == 0 or self.bonus_stone_timer != 0 and self.bonus_stone_timer_diff >= self.bonus_stone_search_timer:
+           
+            self.bonus_stone_timer = time.time()
+            for bonus_stone in self.bonus_stones:
+                print(f'hladam bonus kamen!! {bonus_stone.name}')
+                metin_positions_bonus, _ = self.__locate_metin(np_image_crop, metin_num, x_middle, y_middle,
+                                                                                    bonus_stone.lower, 
+                                                                                    bonus_stone.upper,
+                                                                                    bonus_stone.contour_high,
+                                                                                    bonus_stone.contour_low,
+                                                                                    bonus_stone.aspect_low,
+                                                                                    bonus_stone.aspect_high,
+                                                                                    bonus_stone.circularity)
+                if metin_positions_bonus is not None:
+                    self.event_search_timer = 10
+                    print(f'nasiel sa bonus kamen!  {bonus_stone.name}')
+                    self.__cancel_stack()
+                    self.__click_on_metins(metin_positions_bonus, None, event=True)
+                    press_button('q', self.game_window.window_name)
+
+                else:
+                    self.event_search_timer = 2
+                    press_button('q', self.game_window.window_name)
 
     def __handle_event_stones(self, np_image_crop: np.ndarray, metin_num: int, x_middle: int,
                               y_middle: int) -> np.ndarray | None:

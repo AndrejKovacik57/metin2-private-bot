@@ -230,6 +230,56 @@
                     "circularity": 126
                 }
             ],
+            "bonus_stones":[
+                {
+                    "name": "Ruzovy",
+                    "mask": {
+                        "hMin": 0,
+                        "sMin": 81,
+                        "vMin": 0,
+                        "hMax": 14,
+                        "sMax": 156,
+                        "vMax": 255
+                    },
+                    "contourLow": 864,
+                    "contourHigh": 15021,
+                    "aspect_low": 33,
+                    "aspect_high": 199,
+                    "circularity": 37
+                },
+                {
+                    "name":"Zeleny",
+                    "mask": {
+                        "hMin": 43,
+                        "sMin": 40,
+                        "vMin": 41,
+                        "hMax": 65,
+                        "sMax": 111,
+                        "vMax": 255
+                    },
+                    "contourLow": 1440,
+                    "contourHigh": 16255,
+                    "aspect_low": 31,
+                    "aspect_high": 175,
+                    "circularity": 29
+                },
+                {
+                    "name":"Modry",
+                    "mask": {
+                        "hMin": 79,
+                        "sMin": 38,
+                        "vMin": 0,
+                        "hMax": 102,
+                        "sMax": 143,
+                        "vMax": 167
+                    },
+                    "contourLow": 1111,
+                    "contourHigh": 16872,
+                    "aspect_low": 36,
+                    "aspect_high": 173,
+                    "circularity": 100
+                }
+            ],
             "bosses": []
         },
         {
