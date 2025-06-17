@@ -147,7 +147,6 @@
         {
             "name": "Kamen vraku",
             "mask": {
-                            "mask": {
                 "hMin": 21,
                 "sMin": 34,
                 "vMin": 0,
@@ -160,22 +159,6 @@
             "aspect_low": 36,
             "aspect_high": 156,
             "circularity": 42,
-                "hMin": 21,
-                "sMin": 34,
-                "vMin": 0,
-                "hMax": 83,
-                "sMax": 255,
-                "vMax": 252
-            },
-            "contourLow": 4526,
-            "contourHigh": 26511,
-            "aspect_low": 36,
-            "aspect_high": 156,
-            "circularity": 42,
-            "weather": 9,
-            "event_stones": [
-
-            ],
             "bosses": [
                 
             ]
