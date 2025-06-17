@@ -182,8 +182,8 @@ class MetinHunter:
         self.__check_metin_destruction_stuck(metins_in_stack)
 
         if self.bonus_stones:
-            self.__handle_bonus_stones(np_image_crop, metin_num, x_middle, y_middle)
-
+            image_to_display_bonus = self.__handle_bonus_stones(np_image_crop, metin_num, x_middle, y_middle)
+            if image_to_display_bonus is not None: return image_to_display_bonus
 
         if self.is_event_stone_selected:
             image_to_display_event = self.__handle_event_stones(np_image_crop, metin_num, x_middle, y_middle)
@@ -384,7 +384,7 @@ class MetinHunter:
                 # print(f'bonus_stone.aspect_low { bonus_stone.aspect_low}')
                 # print(f'bonus_stone.aspect_high{  bonus_stone.aspect_high}')
                 # print(f'bonus_stone.circularity { bonus_stone.circularity}')
-                metin_positions_bonus, _ = self.__locate_metin(np_image_crop, metin_num, x_middle, y_middle,
+                metin_positions_bonus, image_to_display_bonus = self.__locate_metin(np_image_crop, metin_num, x_middle, y_middle,
                                                                                     bonus_stone.lower, 
                                                                                     bonus_stone.upper,
                                                                                     bonus_stone.contour_high,
@@ -402,6 +402,7 @@ class MetinHunter:
                     self.event_search_timer = 2
             
             press_button('q', self.game_window.window_name)
+            return image_to_display_bonus
 
     def __handle_event_stones(self, np_image_crop: np.ndarray, metin_num: int, x_middle: int,
                               y_middle: int) -> np.ndarray | None:
