@@ -136,9 +136,9 @@ class MetinHunter:
                                                         upper_bonus,
                                                         bonus_stone_item['contourLow'],
                                                         bonus_stone_item['contourHigh'],
-                                                        bonus_stone_item['aspect_low'],
-                                                        bonus_stone_item['aspect_high'],
-                                                        bonus_stone_item['circularity'])
+                                                        bonus_stone_item['aspect_low'] / 100.0,
+                                                        bonus_stone_item['aspect_high'] / 100.0,
+                                                        bonus_stone_item['circularity'] / 1000.0)
                         self.bonus_stones.append(bonus_stone)
                         print("self.bonus_stones")
                         print(self.bonus_stones)
@@ -377,13 +377,13 @@ class MetinHunter:
             self.bonus_stone_timer = time.time()
             for bonus_stone in self.bonus_stones:
                 print(f'hladam bonus kamen!! {bonus_stone.name}')
-                # print(f'bonus_stone.lower {bonus_stone.lower}')
-                # print(f'bonus_stone.upper {bonus_stone.upper}')
-                # print(f'bonus_stone.contour_high {bonus_stone.contour_high}')
-                # print(f'bonus_stone.contour_low{bonus_stone.contour_low}')
-                # print(f'bonus_stone.aspect_low { bonus_stone.aspect_low}')
-                # print(f'bonus_stone.aspect_high{  bonus_stone.aspect_high}')
-                # print(f'bonus_stone.circularity { bonus_stone.circularity}')
+                print(f'bonus_stone.lower {bonus_stone.lower}')
+                print(f'bonus_stone.upper {bonus_stone.upper}')
+                print(f'bonus_stone.contour_high {bonus_stone.contour_high}')
+                print(f'bonus_stone.contour_low{bonus_stone.contour_low}')
+                print(f'bonus_stone.aspect_low { bonus_stone.aspect_low}')
+                print(f'bonus_stone.aspect_high{  bonus_stone.aspect_high}')
+                print(f'bonus_stone.circularity { bonus_stone.circularity}')
                 metin_positions_bonus, image_to_display_bonus = self.__locate_metin(np_image_crop, metin_num, x_middle, y_middle,
                                                                                     bonus_stone.lower, 
                                                                                     bonus_stone.upper,
@@ -401,7 +401,6 @@ class MetinHunter:
                 else:
                     self.event_search_timer = 2
             
-            press_button('q', self.game_window.window_name)
             return image_to_display_bonus
 
     def __handle_event_stones(self, np_image_crop: np.ndarray, metin_num: int, x_middle: int,
@@ -509,8 +508,8 @@ class MetinHunter:
                     area = cv2.contourArea(contour)
                     perimeter = cv2.arcLength(contour, True)
                     circularity_obj = 4 * np.pi * (area / (perimeter * perimeter))
-                    if aspect_low < aspect_ratio < aspect_high and circularity_obj > circularity:
-
+                    if aspect_low <= aspect_ratio <= aspect_high and circularity_obj >= circularity:
+                        print(f"area {area}")
                         cv2.rectangle(np_image, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
                         contour_center_x = x + w // 2
@@ -527,6 +526,8 @@ class MetinHunter:
 
                         a = cur_distance, contour
                         contour_list.append(a)
+                    else:
+                        print("no fit")
 
         contour_list.sort(key=lambda cont: cont[0])
         print(f'pocet zhod metinov { len(contour_list) }')
