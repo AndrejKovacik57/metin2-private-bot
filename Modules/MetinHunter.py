@@ -128,6 +128,9 @@ class MetinHunter:
                     self.bonus_stones = []
                     for bonus_stone_item in bonus_stones:
                         lower_bonus, upper_bonus = create_low_upp(bonus_stone_item)
+                        print("create_low_upp")
+                        print("create_low_upp")
+                        print(lower_bonus, upper_bonus)
                         bonus_stone = bonus_stone_class(bonus_stone_item['name'],
                                                         lower_bonus, 
                                                         upper_bonus,
@@ -137,6 +140,8 @@ class MetinHunter:
                                                         bonus_stone_item['aspect_high'],
                                                         bonus_stone_item['circularity'])
                         self.bonus_stones.append(bonus_stone)
+                        print("self.bonus_stones")
+                        print(self.bonus_stones)
                 else:
                     self.bonus_stones = []
 
