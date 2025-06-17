@@ -397,11 +397,11 @@ class MetinHunter:
                     print(f'nasiel sa bonus kamen!  {bonus_stone.name}')
                     # self.__cancel_stack()
                     self.__click_on_metins(metin_positions_bonus, None, event=True)
-                    press_button('q', self.game_window.window_name)
 
                 else:
                     self.event_search_timer = 2
-                    press_button('q', self.game_window.window_name)
+            
+            press_button('q', self.game_window.window_name)
 
     def __handle_event_stones(self, np_image_crop: np.ndarray, metin_num: int, x_middle: int,
                               y_middle: int) -> np.ndarray | None:
