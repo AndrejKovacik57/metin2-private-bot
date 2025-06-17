@@ -33,13 +33,15 @@ class ApplicationWindow:
         self.root = tk.Tk()
         self.root.title(title)
 
-        self.root.geometry(f'{450}x{600}')
+        self.root.geometry(f'{450}x{800}')
 
         self.root.grid_columnconfigure(0, weight=1)
         self.root.grid_columnconfigure(1, weight=1)
         self.root.grid_columnconfigure(2, weight=1)
 
         self.pirate_elixir_var = tk.BooleanVar()
+        self.snake_elixir_var = tk.BooleanVar()
+        self.faraon_elixir_var = tk.BooleanVar()
         self.display_images_var = tk.BooleanVar()
         self.destroy_event_stones = tk.BooleanVar()
 
@@ -141,6 +143,15 @@ class ApplicationWindow:
         self.pirate_checkbox = tk.Checkbutton(self.root, text="Pirate elixir", variable=self.pirate_elixir_var)
         self.pirate_checkbox.grid(row=12, column=2, padx=5, pady=5)
         self.pirate_elixir_var.trace_add("write", self.toggle_pirate)
+
+        self.snake_checkbox = tk.Checkbutton(self.root, text="Snake elixir", variable=self.snake_elixir_var)
+        self.snake_checkbox.grid(row=12, column=2, padx=5, pady=5)
+        self.snake_elixir_var.trace_add("write", self.toggle_snake)
+
+
+        self.faraon_checkbox = tk.Checkbutton(self.root, text="Faraon elixir", variable=self.faraon_elixir_var)
+        self.faraon_checkbox.grid(row=12, column=2, padx=5, pady=5)
+        self.faraon_elixir_var.trace_add("write", self.toggle_faraon)
 
 
         self.entry_circle_r = tk.Label(self.root, text="No click area (pixels):")
@@ -419,6 +430,18 @@ class ApplicationWindow:
             self.bot_manager.character_actions.use_pirate_elixir = True
         else:
             self.bot_manager.character_actions.use_pirate_elixir = False
+
+    def toggle_faraon(self, *args):
+        if self.faraon_elixir_var.get() == 1:
+            self.bot_manager.character_actions.use_faraon_elixir = True
+        else:
+            self.bot_manager.character_actions.use_faraon_elixir = False
+
+    def toggle_snake(self, *args):
+        if self.snake_elixir_var.get() == 1:
+            self.bot_manager.character_actions.use_snake_elixir = True
+        else:
+            self.bot_manager.character_actions.use_snake_elixir = False
 
     def apply_hp_bar_location(self):
         if None not in [self.start_x, self.start_y, self.end_x, self.end_y]:

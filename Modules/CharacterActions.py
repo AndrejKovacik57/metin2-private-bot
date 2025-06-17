@@ -35,8 +35,13 @@ class CharacterActions:
         self.game_window = game_window
 
         self.use_pirate_elixir = False
-        self.pirate_timer = 0
-        self.pirate_cd = 10
+        self.elixir_timer = 0
+        self.elixir_cd = 10
+
+
+        self.use_faraon_elixir = False
+        
+        self.use_snake_elixir = False
 
         self.spin_timer = 0
         self.spin_cd = 10
@@ -52,7 +57,11 @@ class CharacterActions:
         self.inventory = load_image('../bot_images/inventar.png')
         self.inventory_slots = load_image('../bot_images/stranky_inventar.png')
         self.pirate_buff = load_image('../bot_images/elik_pirat_buff.png')
+        self.snake_buff = load_image('../bot_images/elik_pirat_buff.png')
+        self.faraon_buff = load_image('../bot_images/elik_pirat_buff.png')
         self.pirate_item = load_image('../bot_images/elik_pirat_item.png')
+        self.snake_item = load_image('../bot_images/elik_pirat_item.png')
+        self.faraon_item = load_image('../bot_images/elik_pirat_item.png')
         self.spin = load_image('../bot_images/spin.png')
 
     def load_values(self, skills_cfg:dict, selected_class:str, cape_time_min:int, cape_time_max:int, cape_key:str):
@@ -164,14 +173,24 @@ class CharacterActions:
             click_location_middle(location, self.game_window)
 
     def check_pirate_elixir(self):
-        if not self.use_pirate_elixir:
+        if not self.use_pirate_elixir and not self.use_pirate_elixir and not self.use_faraon_elixir :
             return
 
-        pirate_timer_diff = time.time() - self.pirate_timer
-        if self.pirate_timer == 0 or pirate_timer_diff >= self.pirate_cd:
-            self.pirate_timer = time.time()
+        elixir_timer_diff = time.time() - self.elixir_timer
+        if self.elixir_timer == 0 or elixir_timer_diff >= self.elixir_cd:
+            self.elixir_timer = time.time()
             np_image = self.game_window.get_np_image()
-            location = locate_image(self.pirate_buff, np_image, 0.9)
+            if self.use_faraon_elixir:
+                item_to_locate = self.faraon_item
+                buff_to_locate = self.faraon_buff
+            elif self.use_pirate_elixir:
+                item_to_locate = self.pirate_item
+                buff_to_locate = self.pirate_buff
+            else:
+                item_to_locate = self.snake_item
+                buff_to_locate = self.snake_buff
+
+            location = locate_image(buff_to_locate, np_image, 0.9)
 
             if location is not None:
                 print("elik je aktivovany")
@@ -201,7 +220,7 @@ class CharacterActions:
                 time.sleep(0.5)
 
                 np_image = self.game_window.get_np_image()
-                location = locate_image(self.pirate_item, np_image, 0.9)
+                location = locate_image(item_to_locate, np_image, 0.9)
 
                 if location is None:
                     continue
