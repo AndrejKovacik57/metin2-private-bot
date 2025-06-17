@@ -85,7 +85,7 @@ def mouse_left_click(pos_x, pos_y, window_title :str) -> None:
     if active_window and window_title in active_window.title:
         pyautogui.moveTo(pos_x, pos_y)
         print('KLIK KLIK KLIK')
-        time.sleep(2)
+        time.sleep(0.3)
         pyautogui.click()
 
 
