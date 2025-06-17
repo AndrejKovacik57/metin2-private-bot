@@ -12,7 +12,7 @@ import keyboard
 class bonus_stone_class:
     def __init__(self, name:str, lower_bonus, upper_bonus, contour_low:int, contour_high:int, aspect_low:int, aspect_high:int, circularity:int):
         self.name = name
-        self.lower = lower_bonus, 
+        self.lower = lower_bonus
         self.upper = upper_bonus
         self.contour_low = contour_low
         self.contour_high = contour_high
@@ -376,7 +376,14 @@ class MetinHunter:
            
             self.bonus_stone_timer = time.time()
             for bonus_stone in self.bonus_stones:
-                print(f'hladam bonus kamen!! {bonus_stone.name}')
+                # print(f'hladam bonus kamen!! {bonus_stone.name}')
+                # print(f'bonus_stone.lower {bonus_stone.lower}')
+                # print(f'bonus_stone.upper {bonus_stone.upper}')
+                # print(f'bonus_stone.contour_high {bonus_stone.contour_high}')
+                # print(f'bonus_stone.contour_low{bonus_stone.contour_low}')
+                # print(f'bonus_stone.aspect_low { bonus_stone.aspect_low}')
+                # print(f'bonus_stone.aspect_high{  bonus_stone.aspect_high}')
+                # print(f'bonus_stone.circularity { bonus_stone.circularity}')
                 metin_positions_bonus, _ = self.__locate_metin(np_image_crop, metin_num, x_middle, y_middle,
                                                                                     bonus_stone.lower, 
                                                                                     bonus_stone.upper,

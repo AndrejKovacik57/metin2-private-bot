@@ -145,12 +145,12 @@ class ApplicationWindow:
         self.pirate_elixir_var.trace_add("write", self.toggle_pirate)
 
         self.snake_checkbox = tk.Checkbutton(self.root, text="Snake elixir", variable=self.snake_elixir_var)
-        self.snake_checkbox.grid(row=12, column=2, padx=5, pady=5)
+        self.snake_checkbox.grid(row=13, column=2, padx=5, pady=5)
         self.snake_elixir_var.trace_add("write", self.toggle_snake)
 
 
         self.faraon_checkbox = tk.Checkbutton(self.root, text="Faraon elixir", variable=self.faraon_elixir_var)
-        self.faraon_checkbox.grid(row=12, column=2, padx=5, pady=5)
+        self.faraon_checkbox.grid(row=14, column=2, padx=5, pady=5)
         self.faraon_elixir_var.trace_add("write", self.toggle_faraon)
 
 

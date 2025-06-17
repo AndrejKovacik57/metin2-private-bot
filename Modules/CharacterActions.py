@@ -57,11 +57,11 @@ class CharacterActions:
         self.inventory = load_image('../bot_images/inventar.png')
         self.inventory_slots = load_image('../bot_images/stranky_inventar.png')
         self.pirate_buff = load_image('../bot_images/elik_pirat_buff.png')
-        self.snake_buff = load_image('../bot_images/elik_pirat_buff.png')
-        self.faraon_buff = load_image('../bot_images/elik_pirat_buff.png')
+        self.snake_buff = load_image('../bot_images/elik_had_buff.png')
+        self.faraon_buff = load_image('../bot_images/elik_faraon_buff.png')
         self.pirate_item = load_image('../bot_images/elik_pirat_item.png')
-        self.snake_item = load_image('../bot_images/elik_pirat_item.png')
-        self.faraon_item = load_image('../bot_images/elik_pirat_item.png')
+        self.snake_item = load_image('../bot_images/elik_had_item.png')
+        self.faraon_item = load_image('../bot_images/elik_faraon_item.png')
         self.spin = load_image('../bot_images/spin.png')
 
     def load_values(self, skills_cfg:dict, selected_class:str, cape_time_min:int, cape_time_max:int, cape_key:str):
