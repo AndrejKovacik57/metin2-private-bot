@@ -124,7 +124,7 @@ class MetinHunter:
                     self.is_event_stone_selected = False
 
                 if 'bonus_stones' in metin_config:
-                    bonus_stones = metin_config[bonus_stones]
+                    bonus_stones = metin_config['bonus_stones']
                     self.bonus_stones = []
                     for bonus_stone_item in bonus_stones:
                         lower_bonus, upper_bonus = create_low_upp(bonus_stone_item)
@@ -383,7 +383,7 @@ class MetinHunter:
                 if metin_positions_bonus is not None:
                     self.event_search_timer = 10
                     print(f'nasiel sa bonus kamen!  {bonus_stone.name}')
-                    self.__cancel_stack()
+                    # self.__cancel_stack()
                     self.__click_on_metins(metin_positions_bonus, None, event=True)
                     press_button('q', self.game_window.window_name)
 
