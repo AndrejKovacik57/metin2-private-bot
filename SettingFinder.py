@@ -15,39 +15,44 @@ def get_window_screenshot(window):
 def export_settings_to_json(filename="settings_export.json"):
     settings = {
         "mask": {
-            "hMin": cv2.getTrackbarPos('HMin', 'image'),
-            "sMin": cv2.getTrackbarPos('SMin', 'image'),
-            "vMin": cv2.getTrackbarPos('VMin', 'image'),
-            "hMax": cv2.getTrackbarPos('HMax', 'image'),
-            "sMax": cv2.getTrackbarPos('SMax', 'image'),
-            "vMax": cv2.getTrackbarPos('VMax', 'image')
+            "hMin": cv2.getTrackbarPos('HMin', 'settings'),
+            "sMin": cv2.getTrackbarPos('SMin', 'settings'),
+            "vMin": cv2.getTrackbarPos('VMin', 'settings'),
+            "hMax": cv2.getTrackbarPos('HMax', 'settings'),
+            "sMax": cv2.getTrackbarPos('SMax', 'settings'),
+            "vMax": cv2.getTrackbarPos('VMax', 'settings')
         },
-        "contourLow": cv2.getTrackbarPos('contour_low', 'image'),
-        "contourHigh": cv2.getTrackbarPos('contour_high', 'image'),
-        "aspect_low": int(cv2.getTrackbarPos('aspect_ratio_low', 'image') / 100 * 100),
-        "aspect_high": int(cv2.getTrackbarPos('aspect_ratio_high', 'image') / 100 * 100),
-        "circularity": int(cv2.getTrackbarPos('circularity', 'image') / 1000 * 100)
+        "contourLow": cv2.getTrackbarPos('contour_low', 'settings'),
+        "contourHigh": cv2.getTrackbarPos('contour_high', 'settings'),
+        "aspect_low": int(cv2.getTrackbarPos('aspect_ratio_low', 'settings')),
+        "aspect_high": int(cv2.getTrackbarPos('aspect_ratio_high', 'settings')),
+        "circularity": int(cv2.getTrackbarPos('circularity', 'settings'))
     }
 
     with open(filename, 'w') as f:
         json.dump(settings, f, indent=4)
     print(f"[INFO] Settings exported to '{filename}'")
 
-def main(window_title):
-    cv2.namedWindow('image')
+def main():
+    window_title = input("Enter the name of the window to capture: ")
 
-    # Trackbars
-    cv2.createTrackbar('HMin', 'image', 0, 255, nothing)
-    cv2.createTrackbar('SMin', 'image', 0, 255, nothing)
-    cv2.createTrackbar('VMin', 'image', 0, 255, nothing)
-    cv2.createTrackbar('HMax', 'image', 255, 255, nothing)
-    cv2.createTrackbar('SMax', 'image', 255, 255, nothing)
-    cv2.createTrackbar('VMax', 'image', 255, 255, nothing)
-    cv2.createTrackbar('contour_low', 'image', 2500, 10000, nothing)
-    cv2.createTrackbar('contour_high', 'image', 7000, 50000, nothing)
-    cv2.createTrackbar('aspect_ratio_low', 'image', int(0.8 * 100), int(3.0 * 100), nothing)
-    cv2.createTrackbar('aspect_ratio_high', 'image', int(1.3 * 100), int(3.0 * 100), nothing)
-    cv2.createTrackbar('circularity', 'image', int(0.7 * 1000), int(1000), nothing)
+    # Create two separate windows
+    cv2.namedWindow('image')
+    cv2.namedWindow('settings', cv2.WINDOW_NORMAL)
+    cv2.resizeWindow('settings', 400, 600)
+
+    # Create trackbars in the 'settings' window
+    cv2.createTrackbar('HMin', 'settings', 0, 255, nothing)
+    cv2.createTrackbar('SMin', 'settings', 0, 255, nothing)
+    cv2.createTrackbar('VMin', 'settings', 0, 255, nothing)
+    cv2.createTrackbar('HMax', 'settings', 255, 255, nothing)
+    cv2.createTrackbar('SMax', 'settings', 255, 255, nothing)
+    cv2.createTrackbar('VMax', 'settings', 255, 255, nothing)
+    cv2.createTrackbar('contour_low', 'settings', 2500, 10000, nothing)
+    cv2.createTrackbar('contour_high', 'settings', 7000, 50000, nothing)
+    cv2.createTrackbar('aspect_ratio_low', 'settings', int(0.8 * 100), int(3.0 * 100), nothing)
+    cv2.createTrackbar('aspect_ratio_high', 'settings', int(1.3 * 100), int(3.0 * 100), nothing)
+    cv2.createTrackbar('circularity', 'settings', int(0.7 * 1000), int(1000), nothing)
 
     while True:
         windows = gw.getWindowsWithTitle(window_title)
@@ -57,25 +62,23 @@ def main(window_title):
         metin_window = windows[0]
         screenshot = get_window_screenshot(metin_window)
 
-        x1, y1 = 259, 212
-        x2, y2 = 2000, 1000
         np_image = np.array(screenshot)
-        np_image = np_image[y1:y2, x1:x2]
         np_image = cv2.cvtColor(np_image, cv2.COLOR_RGB2BGR)
 
         hsv = cv2.cvtColor(np_image, cv2.COLOR_BGR2HSV)
 
-        hMin = cv2.getTrackbarPos('HMin', 'image')
-        sMin = cv2.getTrackbarPos('SMin', 'image')
-        vMin = cv2.getTrackbarPos('VMin', 'image')
-        hMax = cv2.getTrackbarPos('HMax', 'image')
-        sMax = cv2.getTrackbarPos('SMax', 'image')
-        vMax = cv2.getTrackbarPos('VMax', 'image')
-        contour_low = cv2.getTrackbarPos('contour_low', 'image')
-        contour_high = cv2.getTrackbarPos('contour_high', 'image')
-        aspect_ratio_low = cv2.getTrackbarPos('aspect_ratio_low', 'image') / 100.0
-        aspect_ratio_high = cv2.getTrackbarPos('aspect_ratio_high', 'image') / 100.0
-        circularity_min = cv2.getTrackbarPos('circularity', 'image') / 1000.0
+        # Read settings from trackbars
+        hMin = cv2.getTrackbarPos('HMin', 'settings')
+        sMin = cv2.getTrackbarPos('SMin', 'settings')
+        vMin = cv2.getTrackbarPos('VMin', 'settings')
+        hMax = cv2.getTrackbarPos('HMax', 'settings')
+        sMax = cv2.getTrackbarPos('SMax', 'settings')
+        vMax = cv2.getTrackbarPos('VMax', 'settings')
+        contour_low = cv2.getTrackbarPos('contour_low', 'settings')
+        contour_high = cv2.getTrackbarPos('contour_high', 'settings')
+        aspect_ratio_low = cv2.getTrackbarPos('aspect_ratio_low', 'settings') / 100.0
+        aspect_ratio_high = cv2.getTrackbarPos('aspect_ratio_high', 'settings') / 100.0
+        circularity_min = cv2.getTrackbarPos('circularity', 'settings') / 1000.0
 
         lower = np.array([hMin, sMin, vMin])
         upper = np.array([hMax, sMax, vMax])
@@ -108,4 +111,4 @@ def main(window_title):
     cv2.destroyAllWindows()
 
 if __name__ == '__main__':
-    main('EmtGen')
+    main()
