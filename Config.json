@@ -159,6 +159,7 @@
             "aspect_low": 36,
             "aspect_high": 156,
             "circularity": 42,
+            "weather": 9,
             "bosses": [
                 
             ]
