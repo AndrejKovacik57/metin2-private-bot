@@ -123,7 +123,22 @@
             "circularity": 121,
             "weather": 9,
             "event_stones": [
-
+                {
+                    "name": "Tekvica",
+                    "mask": {
+                        "hMin": 13,
+                        "sMin": 155,
+                        "vMin": 79,
+                        "hMax": 27,
+                        "sMax": 255,
+                        "vMax": 255
+                    },
+                    "contourLow": 1112,
+                    "contourHigh": 10500,
+                    "aspect_low": 82,
+                    "aspect_high": 187,
+                    "circularity": 126
+                }
             ],
             "bosses": [
                 {
