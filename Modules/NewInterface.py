@@ -10,6 +10,8 @@ from Utils.Utils import load_config, save_config, get_window_screenshot, process
     process_text_to_digit
 import logging
 
+
+
 custom_config = r'--oem 3 --psm 6 odsutputbase digits'
 
 # Configure logging
@@ -26,167 +28,46 @@ class NoCudaOrCPUModuleFound(ValueError):
         super().__init__(message)
 
 
+
 class ApplicationWindow:
     bot_manager: BotManager
+
     def __init__(self, title='Metin Bot'):
         self.root = tk.Tk()
         self.root.title(title)
+        self.root.geometry("600x700")
 
-        self.root.geometry(f'{450}x{800}')
+        # === Top Bot Controls ===
+        top_frame = ttk.Frame(self.root)
+        top_frame.pack(pady=10, fill='x')
 
-        self.root.grid_columnconfigure(0, weight=1)
-        self.root.grid_columnconfigure(1, weight=1)
-        self.root.grid_columnconfigure(2, weight=1)
-
+        # === Variables & State ===
         self.pirate_elixir_var = tk.BooleanVar()
         self.snake_elixir_var = tk.BooleanVar()
         self.faraon_elixir_var = tk.BooleanVar()
         self.display_images_var = tk.BooleanVar()
         self.destroy_event_stones = tk.BooleanVar()
 
-        self.display_checkbox = tk.Checkbutton(self.root, text="Display", variable=self.display_images_var)
-        self.display_checkbox.grid(row=0, column=0, padx=5, pady=5)
-
-        self.display_images_var.trace_add("write", self.toggle_display_images)
-
-        self.entry_window_name = tk.Label(self.root, text="Window name:")
-        self.entry_window_name.grid(row=0, column=0, columnspan=4, pady=5)
-        self.text_window_name = tk.Entry(self.root, width=15)
-        self.text_window_name.grid(row=1, column=0, columnspan=4, pady=5)
-
-        self.dropdown_bot_label = tk.Label(self.root, text="Choose Bot:")
-        self.dropdown_bot_label.grid(row=1, column=0, pady=5)
-        self.bot_options = ["Metin bot", "Fish bot", "Mining bot"]
-        self.dropdown_bot = ttk.Combobox(self.root, values=self.bot_options, state="readonly")
-        self.dropdown_bot.grid(row=2, column=0, pady=5)
-
-        self.start_bot_button = tk.Button(self.root, text="Start bot", command=self.start_bot_thread)
-        self.start_bot_button.grid(row=2, column=1, pady=10, padx=10)
-
-        self.stop_bot_loop_button = tk.Button(self.root, text="Stop bot", command=self.stop_bot_loop)
-        self.stop_bot_loop_button.grid(row=2, column=2, pady=10, padx=10)
-
-        self.event_checkbox = tk.Checkbutton(self.root, text="Event stone", variable=self.destroy_event_stones)
-        self.event_checkbox.grid(row=4, column=1, padx=5, pady=5)
-
-        self.entry_tesseract_path = tk.Label(self.root, text="Tesseract Path:")
-        self.entry_tesseract_path.grid(row=4, column=0, pady=5)
-        self.text_tesseract_path = tk.Entry(self.root, width=20)
-        self.text_tesseract_path.grid(row=5, column=0, pady=5)
-
-        self.reset_skill = tk.Button(self.root, text="Set skills", command=self.set_skills)
-        self.reset_skill.grid(row=5, column=1, pady=10)
-
-
-        self.dropdown_metin_label = tk.Label(self.root, text="Choose Metin Stone:")
-        self.dropdown_metin_label.grid(row=4, column=2, columnspan=2, pady=5)
-        self.metin_options = ["Option 1", "Option 2", "Option 3", "Option 4"]
-        self.dropdown_metin = ttk.Combobox(self.root, values=self.metin_options, state="readonly")
-        self.dropdown_metin.grid(row=5, column=2, pady=5)
-
-        self.dropdown_metin.bind("<<ComboboxSelected>>", self.save_selected_option_metins)
-
-        self.mining_wait_time_label = tk.Label(self.root, text="Mining wait time:")
-        self.mining_wait_time_label.grid(row=8, column=0, columnspan=1, pady=5)
-        self.text_mining_wait_time = tk.Entry(self.root, width=15)
-        self.text_mining_wait_time.grid(row=9, column=0, columnspan=1, pady=5)
-
-        self.entry_metin_time_treshold = tk.Label(self.root, text="Metin destroy time MAX:")
-        self.entry_metin_time_treshold.grid(row=8, column=1, columnspan=1, pady=5)
-        self.text_metin_time_treshold = tk.Entry(self.root, width=15)
-        self.text_metin_time_treshold.grid(row=9, column=1, columnspan=1, pady=5)
-
-        self.destroy_event_stones.trace_add("write", self.toggle_destroy_event_stones)
-        # self.reset_skill = tk.Button(self.root, text="Reset skill", command=self.reset_skill)
-        # self.reset_skill.grid(row=8, column=1, pady=10)
-        self.class_skills = {"War-Mental":{"Silne telo":'bot_images\\War-Silne-Telo.png'},
-                             "Sura-Weapon": {"Cepel":'bot_images\\Sura-Cepel.png', "Zacarovane brnenie": 'bot_images\\Sura-ZacBrn.png', "Strach":'bot_images\\Sura-Strach.png'},
-                             "Sura-Spell": {"Ohen":'bot_images\\Sura-duch-plamen.png', "Magicke brnenie": 'bot_images\\Sura-temn-ochrana.png'},
-                             "Shaman-Buff":{"Kritik": 'bot_images\\Saman-Krit.png'}}
-        self.dropdown_class_label = tk.Label(self.root, text="Choose class:")
-        self.dropdown_class_label.grid(row=8, column=2, columnspan=1, pady=5)
-        self.dropdown_class = ttk.Combobox(self.root, values=list(self.class_skills.keys()), state="readonly")
-        self.dropdown_class.grid(row=9, column=2, pady=5)
-        self.dropdown_class.set("War-Mental")
-
-        self.dropdown_class.bind("<<ComboboxSelected>>", self.save_selected_option_class)
-
-
-        self.entry_turn_off_bot = tk.Label(self.root, text="Stuck time MAX:")
-        self.entry_turn_off_bot.grid(row=10, column=0, columnspan=1, pady=5)
-        self.text_turn_off_bot  = tk.Entry(self.root, width=15)
-        self.text_turn_off_bot.grid(row=11, column=0, columnspan=1, pady=5)
-
-        self.entry_cape = tk.Label(self.root, text="Cape time:")
-        self.entry_cape.grid(row=10, column=1, columnspan=1, pady=5)
-        self.text_entry_cape  = tk.Entry(self.root, width=15)
-        self.text_entry_cape.grid(row=11, column=1, columnspan=1, pady=5)
-
-        self.entry_cape_key = tk.Label(self.root, text="Cape key:")
-        self.entry_cape_key.grid(row=10, column=2, columnspan=1, pady=5)
-        self.text_entry_cape_key  = tk.Entry(self.root, width=15)
-        self.text_entry_cape_key.grid(row=11, column=2, columnspan=1, pady=5)
-
-
-        self.entry_web_hook = tk.Label(self.root, text="Webhook:")
-        self.entry_web_hook.grid(row=12, column=0, columnspan=1, pady=5)
-        self.text_entry_web_hook  = tk.Entry(self.root, width=15)
-        self.text_entry_web_hook.grid(row=13, column=0, columnspan=1, pady=5)
-
-        self.entry_user_id = tk.Label(self.root, text="Discord User ID:")
-        self.entry_user_id.grid(row=12, column=1, columnspan=1, pady=5)
-        self.text_entry_user_id  = tk.Entry(self.root, width=15)
-        self.text_entry_user_id.grid(row=13, column=1, columnspan=1, pady=5)
-
-
-        self.pirate_checkbox = tk.Checkbutton(self.root, text="Pirate elixir", variable=self.pirate_elixir_var)
-        self.pirate_checkbox.grid(row=12, column=2, padx=5, pady=5)
-        self.pirate_elixir_var.trace_add("write", self.toggle_pirate)
-
-        self.snake_checkbox = tk.Checkbutton(self.root, text="Snake elixir", variable=self.snake_elixir_var)
-        self.snake_checkbox.grid(row=13, column=2, padx=5, pady=5)
-        self.snake_elixir_var.trace_add("write", self.toggle_snake)
-
-
-        self.faraon_checkbox = tk.Checkbutton(self.root, text="Faraon elixir", variable=self.faraon_elixir_var)
-        self.faraon_checkbox.grid(row=14, column=2, padx=5, pady=5)
-        self.faraon_elixir_var.trace_add("write", self.toggle_faraon)
-
-
-        self.entry_circle_r = tk.Label(self.root, text="No click area (pixels):")
-        self.entry_circle_r.grid(row=14, column=1, columnspan=1, pady=5)
-        self.text_entry_circle_r  = tk.Entry(self.root, width=15)
-        self.text_entry_circle_r.grid(row=15, column=1, columnspan=1, pady=5)
-
-        self.screenshot_button = tk.Button(self.root, text="Take Screenshot", command=self.take_screenshot)
-        self.screenshot_button.grid(row=20, column=1, pady=10)
-
-        self.set_metin_hp_bar_location = tk.Button(text="Set HP bar location", command=self.apply_hp_bar_location)
-        self.set_metin_hp_bar_location.grid(row=21, column=0, pady=10)
-
-        self.set_scan_window = tk.Button(text="Set scan window", command=self.apply_scan_window_location)
-        self.set_scan_window.grid(row=21, column=1, pady=10)
-
-        self.set_metin_stack = tk.Button(text="Set metin stack location", command=self.apply_metin_stack_location)
-        self.set_metin_stack.grid(row=21, column=2, pady=10)
-
-        self.set_bot_check = tk.Button(text="Set bot check location", command=self.apply_bot_check_location)
-        self.set_bot_check.grid(row=22, column=0, pady=10)
-
-        self.sec_scan_ore_window = tk.Button(text="Set ore check location", command=self.apply_ore_check_location)
-        self.sec_scan_ore_window.grid(row=22, column=1, pady=10)
-
-        self.apply = tk.Button(self.root, text="Apply", command=self.apply_fields)
-        self.apply.grid(row=23, column=0, columnspan=4, pady=10)
-
-        self.last_row = 24
-
         self.cfg = {}
         self.cfg_local = {}
         self.information_locations = {}
-
         self.tesseract_path = ''
 
+        self.class_skills = {
+            "War-Mental": {"Silne telo": 'bot_images\\War-Silne-Telo.png'},
+            "Sura-Weapon": {
+                "Cepel": 'bot_images\\Sura-Cepel.png',
+                "Zacarovane brnenie": 'bot_images\\Sura-ZacBrn.png',
+                "Strach": 'bot_images\\Sura-Strach.png'
+            },
+            "Sura-Spell": {
+                "Ohen": 'bot_images\\Sura-duch-plamen.png',
+                "Magicke brnenie": 'bot_images\\Sura-temn-ochrana.png'
+            },
+            "Shaman-Buff": {"Kritik": 'bot_images\\Saman-Krit.png'}
+        }
+
+        # Screenshot selection state
         self.canvas = None
         self.screenshot_image = None
         self.rect = None
@@ -199,7 +80,154 @@ class ApplicationWindow:
         self.screenshot_image_top = None
         self.image_label = None
 
+        ttk.Label(top_frame, text="Choose Bot:").pack(side='left', padx=5)
+        self.bot_options = ["Metin bot", "Fish bot", "Mining bot"]
+        self.dropdown_bot = ttk.Combobox(top_frame, values=self.bot_options, state="readonly")
+        self.dropdown_bot.pack(side='left', padx=5)
+
+        self.start_bot_button = ttk.Button(top_frame, text="Start Bot", command=self.start_bot_thread)
+        self.start_bot_button.pack(side='left', padx=5)
+
+        self.stop_bot_loop_button = ttk.Button(top_frame, text="Stop Bot", command=self.stop_bot_loop)
+        self.stop_bot_loop_button.pack(side='left', padx=5)
+
+        self.toggle_settings_button = ttk.Button(top_frame, text="⚙️", width=3, command=self.toggle_settings)
+        self.toggle_settings_button.pack(side='right', padx=5)
+
+        # === Settings Container ===
+        self.settings_container = ttk.Frame(self.root)
+        self.settings_visible = False  # start hidden
+
+        self.notebook = ttk.Notebook(self.settings_container)
+        self.notebook.pack(expand=True, fill='both', padx=10, pady=10)
+
+        self.create_general_settings_tab()
+        self.create_bot_settings_tab()
+        self.create_position_settings_tab()
+
+        self.apply = ttk.Button(self.settings_container, text="Apply", command=self.apply_fields)
+        self.apply.pack(pady=10)
+
+
+
+
+
         self.init_bot()
+
+    def toggle_settings(self):
+        if self.settings_visible:
+            self.settings_container.pack_forget()
+        else:
+            self.settings_container.pack(expand=True, fill='both')
+        self.settings_visible = not self.settings_visible
+
+    def create_general_settings_tab(self):
+        tab = ttk.Frame(self.notebook)
+        self.notebook.add(tab, text="General Settings")
+
+        # Window Name (Top of tab)
+        ttk.Label(tab, text="Window name:").grid(row=0, column=0, sticky='e', padx=5, pady=5)
+        self.text_window_name = tk.Entry(tab, width=40)
+        self.text_window_name.grid(row=0, column=1, padx=5, pady=5)
+
+        # Tesseract Path
+        ttk.Label(tab, text="Tesseract Path:").grid(row=1, column=0, sticky='e', padx=5, pady=5)
+        self.text_tesseract_path = tk.Entry(tab, width=40)
+        self.text_tesseract_path.grid(row=1, column=1, padx=5, pady=5)
+
+        # Webhook
+        ttk.Label(tab, text="Webhook:").grid(row=2, column=0, sticky='e', padx=5, pady=5)
+        self.text_entry_web_hook = tk.Entry(tab, width=40)
+        self.text_entry_web_hook.grid(row=2, column=1, padx=5, pady=5)
+
+        # Discord User ID
+        ttk.Label(tab, text="Discord User ID:").grid(row=3, column=0, sticky='e', padx=5, pady=5)
+        self.text_entry_user_id = tk.Entry(tab, width=40)
+        self.text_entry_user_id.grid(row=3, column=1, padx=5, pady=5)
+
+        # Display Checkbox
+        self.display_checkbox = ttk.Checkbutton(tab, text="Display", variable=self.display_images_var)
+        self.display_checkbox.grid(row=4, column=0, columnspan=2, sticky='w', padx=5, pady=5)
+        self.display_images_var.trace_add("write", self.toggle_display_images)
+
+    def create_bot_settings_tab(self):
+        tab = ttk.Frame(self.notebook)
+        self.notebook.add(tab, text="Bot Settings")
+
+        row = 0
+        ttk.Checkbutton(tab, text="Destroy Event Stone", variable=self.destroy_event_stones).grid(row=row, column=0, columnspan=2, sticky='w', padx=5, pady=5)
+        self.destroy_event_stones.trace_add("write", self.toggle_destroy_event_stones)
+
+        row += 1
+        ttk.Label(tab, text="Choose Metin Stone:").grid(row=row, column=0, sticky='e', padx=5, pady=5)
+        self.metin_options = ["Option 1", "Option 2", "Option 3", "Option 4"]
+        self.dropdown_metin = ttk.Combobox(tab, values=self.metin_options, state="readonly")
+        self.dropdown_metin.grid(row=row, column=1, padx=5, pady=5)
+        self.dropdown_metin.bind("<<ComboboxSelected>>", self.save_selected_option_metins)
+
+        row += 1
+        ttk.Button(tab, text="Set Skills", command=self.set_skills).grid(row=row, column=0, columnspan=2, pady=5)
+
+        row += 1
+        ttk.Label(tab, text="Mining wait time:").grid(row=row, column=0, sticky='e', padx=5, pady=5)
+        self.text_mining_wait_time = tk.Entry(tab, width=20)
+        self.text_mining_wait_time.grid(row=row, column=1, padx=5, pady=5)
+
+        row += 1
+        ttk.Label(tab, text="Metin destroy time MAX:").grid(row=row, column=0, sticky='e', padx=5, pady=5)
+        self.text_metin_time_treshold = tk.Entry(tab, width=20)
+        self.text_metin_time_treshold.grid(row=row, column=1, padx=5, pady=5)
+
+        row += 1
+        ttk.Label(tab, text="Choose class:").grid(row=row, column=0, sticky='e', padx=5, pady=5)
+        self.dropdown_class = ttk.Combobox(tab, values=list(self.class_skills.keys()), state="readonly")
+        self.dropdown_class.grid(row=row, column=1, padx=5, pady=5)
+        self.dropdown_class.set("War-Mental")
+        self.dropdown_class.bind("<<ComboboxSelected>>", self.save_selected_option_class)
+
+        row += 1
+        ttk.Label(tab, text="Stuck time MAX:").grid(row=row, column=0, sticky='e', padx=5, pady=5)
+        self.text_turn_off_bot = tk.Entry(tab, width=20)
+        self.text_turn_off_bot.grid(row=row, column=1, padx=5, pady=5)
+
+        row += 1
+        ttk.Label(tab, text="Cape time:").grid(row=row, column=0, sticky='e', padx=5, pady=5)
+        self.text_entry_cape = tk.Entry(tab, width=20)
+        self.text_entry_cape.grid(row=row, column=1, padx=5, pady=5)
+
+        row += 1
+        ttk.Label(tab, text="Cape key:").grid(row=row, column=0, sticky='e', padx=5, pady=5)
+        self.text_entry_cape_key = tk.Entry(tab, width=20)
+        self.text_entry_cape_key.grid(row=row, column=1, padx=5, pady=5)
+
+        row += 1
+        ttk.Checkbutton(tab, text="Pirate elixir", variable=self.pirate_elixir_var).grid(row=row, column=0, sticky='w', padx=5, pady=5)
+        self.pirate_elixir_var.trace_add("write", self.toggle_pirate)
+
+        row += 1
+        ttk.Checkbutton(tab, text="Snake elixir", variable=self.snake_elixir_var).grid(row=row, column=0, sticky='w', padx=5, pady=5)
+        self.snake_elixir_var.trace_add("write", self.toggle_snake)
+
+        row += 1
+        ttk.Checkbutton(tab, text="Faraon elixir", variable=self.faraon_elixir_var).grid(row=row, column=0, sticky='w', padx=5, pady=5)
+        self.faraon_elixir_var.trace_add("write", self.toggle_faraon)
+
+        row += 1
+        ttk.Label(tab, text="No click area (pixels):").grid(row=row, column=0, sticky='e', padx=5, pady=5)
+        self.text_entry_circle_r = tk.Entry(tab, width=20)
+        self.text_entry_circle_r.grid(row=row, column=1, padx=5, pady=5)
+
+    def create_position_settings_tab(self):
+        tab = ttk.Frame(self.notebook)
+        self.notebook.add(tab, text="Position Settings")
+
+        ttk.Button(tab, text="Take Screenshot", command=self.take_screenshot).grid(row=0, column=0, padx=5, pady=5)
+        ttk.Button(tab, text="Set HP bar location", command=self.apply_hp_bar_location).grid(row=1, column=0, padx=5, pady=5)
+        ttk.Button(tab, text="Set scan window", command=self.apply_scan_window_location).grid(row=2, column=0, padx=5, pady=5)
+        ttk.Button(tab, text="Set metin stack location", command=self.apply_metin_stack_location).grid(row=3, column=0, padx=5, pady=5)
+        ttk.Button(tab, text="Set bot check location", command=self.apply_bot_check_location).grid(row=4, column=0, padx=5, pady=5)
+        ttk.Button(tab, text="Set ore check location", command=self.apply_ore_check_location).grid(row=5, column=0, padx=5, pady=5)
+
 
     def init_bot(self):
         self.load_config_values()
