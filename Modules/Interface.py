@@ -221,13 +221,12 @@ class ApplicationWindow:
 
 
     def init_bot(self):
-        # self.load_config_values()
-        # self.load_cfg_local()
-        # self.bot_manager = BotManager(self.display_screenshot, self.cfg['metin_stones'], self.cfg['fishing'],
-        #                               self.cfg['mining'], False)
+        self.load_config_values()
+        self.load_cfg_local()
+        self.bot_manager = BotManager(self.display_screenshot, self.cfg['metin_stones'], self.cfg['fishing'],
+                                      self.cfg['mining'], False)
 
-        # self.load_values()
-        pass
+        self.load_values()
 
     def load_config_values(self):
         config_path ='../Config.json'
