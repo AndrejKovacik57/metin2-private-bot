@@ -125,20 +125,29 @@ class ApplicationWindow:
         tab = ttk.Frame(self.notebook)
         self.notebook.add(tab, text="General Settings")
 
-        ttk.Label(tab, text="Tesseract Path:").grid(row=0, column=0, sticky='e', padx=5, pady=5)
+        # Window Name (Top of tab)
+        ttk.Label(tab, text="Window name:").grid(row=0, column=0, sticky='e', padx=5, pady=5)
+        self.text_window_name = tk.Entry(tab, width=40)
+        self.text_window_name.grid(row=0, column=1, padx=5, pady=5)
+
+        # Tesseract Path
+        ttk.Label(tab, text="Tesseract Path:").grid(row=1, column=0, sticky='e', padx=5, pady=5)
         self.text_tesseract_path = tk.Entry(tab, width=40)
-        self.text_tesseract_path.grid(row=0, column=1, padx=5, pady=5)
+        self.text_tesseract_path.grid(row=1, column=1, padx=5, pady=5)
 
-        ttk.Label(tab, text="Webhook:").grid(row=1, column=0, sticky='e', padx=5, pady=5)
+        # Webhook
+        ttk.Label(tab, text="Webhook:").grid(row=2, column=0, sticky='e', padx=5, pady=5)
         self.text_entry_web_hook = tk.Entry(tab, width=40)
-        self.text_entry_web_hook.grid(row=1, column=1, padx=5, pady=5)
+        self.text_entry_web_hook.grid(row=2, column=1, padx=5, pady=5)
 
-        ttk.Label(tab, text="Discord User ID:").grid(row=2, column=0, sticky='e', padx=5, pady=5)
+        # Discord User ID
+        ttk.Label(tab, text="Discord User ID:").grid(row=3, column=0, sticky='e', padx=5, pady=5)
         self.text_entry_user_id = tk.Entry(tab, width=40)
-        self.text_entry_user_id.grid(row=2, column=1, padx=5, pady=5)
+        self.text_entry_user_id.grid(row=3, column=1, padx=5, pady=5)
 
+        # Display Checkbox
         self.display_checkbox = ttk.Checkbutton(tab, text="Display", variable=self.display_images_var)
-        self.display_checkbox.grid(row=3, column=0, columnspan=2, sticky='w', padx=5, pady=5)
+        self.display_checkbox.grid(row=4, column=0, columnspan=2, sticky='w', padx=5, pady=5)
         self.display_images_var.trace_add("write", self.toggle_display_images)
 
     def create_bot_settings_tab(self):
