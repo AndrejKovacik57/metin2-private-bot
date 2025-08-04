@@ -282,20 +282,20 @@
             "bosses": []
         },
         {
-            "name": "Kamen Faraona",
-            "mask": {
-                "hMin": 23,
-                "sMin": 0,
+            "name": "Kamen soumraku",
+                "mask": {
+                "hMin": 71,
+                "sMin": 71,
                 "vMin": 0,
-                "hMax": 255,
-                "sMax": 246,
-                "vMax": 81
+                "hMax": 114,
+                "sMax": 255,
+                "vMax": 151
             },
-            "contourLow": 4707,
-            "contourHigh": 11765,
-            "aspect_low": 79,
-            "aspect_high": 116,
-            "circularity": 83,
+            "contourLow": 494,
+            "contourHigh": 13374,
+            "aspect_low": 62,
+            "aspect_high": 130,
+            "circularity": 29,
             "weather": 1,
             "event_stones": [
                 {
