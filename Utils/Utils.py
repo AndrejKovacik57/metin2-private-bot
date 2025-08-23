@@ -144,7 +144,7 @@ def locate_image(path, np_image, confidence=0.9):
 def locate_all_images(path, np_image, confidence=0.9):
     try:
         locations = list(pyautogui.locateAll(path, np_image, confidence=confidence))
-    except pyautogui.ImageNotFoundException:
+    except (pyautogui.ImageNotFoundException, pyscreeze.ImageNotFoundException):
         locations = []
     return locations
 
