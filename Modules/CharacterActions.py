@@ -3,7 +3,7 @@ import time
 import numpy as np
 
 from Modules import GameWindow
-from Utils.Utils import load_image, press_button, locate_image, press_button_multiple, click_location_middle, \
+from Utils.Utils import load_image, press_button, locate_all_images, locate_image, press_button_multiple, click_location_middle, \
     mouse_left_click, cancel_all, right_click_location_middle
 
 
@@ -166,11 +166,10 @@ class CharacterActions:
             self.clan_meet_timer = time.time()
 
             np_image = self.game_window.get_np_image()
-            location = locate_image(self.spin, np_image, 0.8)
-            if location is None:
-                return
-            print('klikam spin')
-            click_location_middle(location, self.game_window)
+            locations = locate_all_images(self.spin, np_image, 0.8)
+            for location in locations:
+                print('klikam spin')
+                click_location_middle(location, self.game_window)
 
     def check_pirate_elixir(self):
         if not self.use_pirate_elixir and not self.use_pirate_elixir and not self.use_faraon_elixir :
